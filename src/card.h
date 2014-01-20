@@ -9,8 +9,7 @@
 #ifndef LANDLORD_CARD_H_
 #define LANDLORD_CARD_H_
 
-#include <stdint.h>
-#include "memtracker.h"
+#include "common.h"
 
 #define CARD_RANK_3     0x01
 #define CARD_RANK_4     0x02
@@ -56,13 +55,17 @@
 #define CardArray_Copy(d,s)     (memcpy((d), (s), sizeof(card_array_t)))
 #define CardArray_IsFull(a)     ((a)->length >= CARD_SET_LENGTH)
 #define CardArray_IsEmpty(a)    ((a)->length == 0)
+#define CardArray_Capacity(a)   (CARD_ARRAY_PRESET_LENGTH - (a)->length)
 
 typedef struct card_array_t
 {
-    int length;
+    int     length;
     uint8_t cards[CARD_ARRAY_PRESET_LENGTH];
     
 }card_array_t;
+
+/* sort function */
+typedef int (*CardSortFunc)(void *, void *);
 
 /*
  * creat a empty card array
@@ -118,6 +121,11 @@ uint8_t CardArray_Insert(card_array_t *array, int before, uint8_t card);
  * remove a card from the front of index
  */
 uint8_t CardArray_Remove(card_array_t *array, int where);
+
+/*
+ * sort cards
+ */
+void CardArray_Sort(card_array_t *array, int (*comparator)(const void *, const void *));
 
 /*
  * print every card in the array

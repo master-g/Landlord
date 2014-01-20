@@ -7,8 +7,6 @@
  */
 
 #include "card.h"
-#include <string.h>
-#include <time.h>
 
 card_array_t *CardArray_CreateEmpty(void)
 {
@@ -183,6 +181,22 @@ uint8_t CardArray_Remove(card_array_t *array, int where)
     return ret;
 }
 
+int CardArray_StandardSort(const void *a, const void *b)
+{
+    if (CARD_RANK(*(uint8_t *)a) == CARD_RANK(*(uint8_t *)b))
+        return CARD_SUIT(*(uint8_t *)b) - CARD_SUIT(*(uint8_t *)a);
+    else
+        return CARD_RANK(*(uint8_t *)b) - CARD_RANK(*(uint8_t *)a);
+}
+
+void CardArray_Sort(card_array_t *array, int (*comparator)(const void *, const void *))
+{
+    if (comparator == NULL)
+        qsort(array->cards, array->length, sizeof(uint8_t), CardArray_StandardSort);
+    else
+        qsort(array->cards, array->length, sizeof(uint8_t), comparator);
+}
+
 
 #define CARD_STRING_LENGTH 4
 
@@ -245,7 +259,6 @@ void CardArray_Print(card_array_t *array)
 /*
  * test functions
  */
-#define PRINT_TEST_SEPARATOR printf("------------------------------\n")
 #define MAKE_RANDOM_CARD Card_Make((rand() % 4 + 1) << 4, rand() % 13 + 1)
 
 void CardArray_FillRandomCards(card_array_t *array, int length)
