@@ -26,6 +26,9 @@
 #define CARD_RANK_2     0x0D
 #define CARD_RANK_R     0x0E
 
+#define CARD_RANK_BEG   0x01
+#define CARD_RANK_END   0x0F
+
 #define CARD_SUIT_CLUB      0x10
 #define CARD_SUIT_DIAMOND   0x20
 #define CARD_SUIT_HEART     0x30

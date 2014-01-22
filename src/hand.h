@@ -31,8 +31,27 @@
 #define HAND_CHAIN_NONE         0x00
 #define HAND_CHAIN              0x80
 
-/* macro */
 
+#define HAND_MIN_LENGTH         1
+#define HAND_MAX_LENGTH         20
+
+#define Hand_GetPrimal(h)       ((h)&0x0F)
+#define Hand_GetKicker(h)       ((h)&0x70)
+#define Hand_GetChain(h)        ((h)&0x80)
+
+typedef enum
+{
+    HAND_CMP_ILLEGAL = -3,
+    HAND_CMP_LESS    = -1,
+    HAND_CMP_EQUAL   = 0,
+    HAND_CMP_GREATER = 1
+    
+}HandCompareResult;
+
+/*
+ * hand is a valid card set that can play.
+ * most of the time Hand_XXX won't check
+ */
 typedef struct hand_t
 {
     uint8_t         type;
@@ -56,13 +75,73 @@ void Hand_Destroy(hand_t *hand);
 void Hand_Clear(hand_t *hand);
 
 /*
+ * validate a hand
+ */
+int Hand_Validate(hand_t *hand);
+
+/*
  * parse an card array to hand
  */
-uint8_t Hand_Parse(hand_t *hand, card_array_t *array);
+void Hand_Parse(hand_t *hand, card_array_t *array);
 
 /*
  * compare two hands
  */
 int Hand_Compare(hand_t *a, hand_t *b);
+
+/*
+ * ************************************************************
+ * hand graph
+ * ************************************************************
+ */
+
+/*           <--link-->[CardC]<--
+ * -->[CardA]<--link-->[CardB]<--
+ *           <--link-->[CardD]<--
+ */
+
+/*
+ * link between graph nodes
+ */
+typedef struct link_t
+{
+    uint8_t type;       /* card type */
+    void    *prev;      /* prev node */
+    void    *next;      /* next node */
+    
+} link_t;
+
+/*
+ * link list
+ */
+typedef struct link_list_t
+{
+    link_t              *link;
+    struct link_list_t  *prev;
+    struct link_list_t  *next;
+    
+} link_list_t;
+
+/*
+ * graph node
+ */
+typedef struct graph_t
+{
+    uint8_t         card;
+    link_list_t     *links;
+    struct graph_t  *prev;
+    struct graph_t  *next;
+    
+} graph_t;
+
+/*
+ * parse a card array into hands graph
+ */
+graph_t *Graph_Parse(card_array_t *array);
+
+/*
+ * destroy a hands graph
+ */
+void Graph_Destroy(graph_t *graph);
 
 #endif
