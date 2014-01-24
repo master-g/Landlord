@@ -85,5 +85,9 @@ void Hand_Parse(hand_t *hand, card_array_t *array);
  */
 int Hand_Compare(hand_t *a, hand_t *b);
 
+/*
+ * hand print
+ */
+void Hand_Print(hand_t *hand);
 
 #endif

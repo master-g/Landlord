@@ -10,6 +10,11 @@
 #include "card.h"
 
 /*
+ * http://scim.brad.ac.uk/staff/pdf/picowlin/AISB2011.pdf
+ * http://en.wikipedia.org/wiki/Monte-Carlo_tree_search
+ */
+
+/*
  * ************************************************************
  * hand graph
  * ************************************************************
