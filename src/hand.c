@@ -26,8 +26,11 @@
 
 #include "hand.h"
 
-#define HAND_MIN_LENGTH         1
-#define HAND_MAX_LENGTH         20
+#define HAND_MIN_LENGTH             1
+#define HAND_MAX_LENGTH             20
+#define HAND_SOLO_CHAIN_MIN_LENGTH  5
+#define HAND_PAIR_CHAIN_MIN_LENGTH  6
+#define HAND_TRIO_CHAIN_MIN_LENGTH  6
 
 /*
  * ************************************************************
@@ -157,10 +160,13 @@ int _Hand_PatternSort(const void *a, const void *b)
 /* sort count array by counts */
 void _Hand_SortCount(int *count)
 {
-    qsort(count, PATTERN_LENGTH, sizeof(int), _Hand_PatternSort);
+    qsort(count, CARD_RANK_END, sizeof(int), _Hand_PatternSort);
 }
 
-/* count rank in card array */
+/* 
+ * count rank in card array 
+ * count[rank] = num
+ */
 void _Hand_CountRank(card_array_t *array, int *count, int *sort)
 {
     int i = 0;
@@ -205,7 +211,7 @@ int _Hand_CheckChain(int *count, int num, int expectLength)
     int marker = 0;
     int length = 0;
     
-    for (i = CARD_RANK_3; i < CARD_RANK_2; i++)
+    for (i = CARD_RANK_3; i < CARD_RANK_R; i++)
     {
         /* found first match */
         if (count[i] == num && marker == 0)
@@ -215,9 +221,9 @@ int _Hand_CheckChain(int *count, int num, int expectLength)
         }
         
         /* matches end */
-        if (count[i] != num && marker != 0)
+        if ((count[i] != num && marker != 0))
         {
-            length = i - marker + 1;
+            length = i - marker;
             break;
         }
     }
@@ -267,7 +273,7 @@ void _Hand_Parse_1(hand_t *hand, card_array_t *array, int *count, int *sorted)
 void _Hand_Parse_2(hand_t *hand, card_array_t *array, int *count, int *sorted)
 {
     /* pair or nuke */
-    if (array->cards[0] == array->cards[1])
+    if (CARD_RANK(array->cards[0]) == CARD_RANK(array->cards[1]))
     {
         hand->type = CARD_RANK(array->cards[0]) == CARD_RANK_R ? HAND_PRIMAL_NUKE : HAND_PRIMAL_PAIR;
         CardArray_Copy(hand->cards, array);
@@ -277,9 +283,9 @@ void _Hand_Parse_2(hand_t *hand, card_array_t *array, int *count, int *sorted)
 void _Hand_Parse_3(hand_t *hand, card_array_t *array, int *count, int *sorted)
 {
     /* trio */
-    if (CARD_RANK(array->cards[0]) ==
-        CARD_RANK(array->cards[1]) ==
-        CARD_RANK(array->cards[2]))
+    uint8_t rank = CARD_RANK(array->cards[0]);
+    if (CARD_RANK(array->cards[1]) == rank &&
+        CARD_RANK(array->cards[2]) == rank)
     {
         CardArray_Copy(hand->cards, array);
         hand->type = HAND_PRIMAL_TRIO;
@@ -291,12 +297,13 @@ void _Hand_Parse_4(hand_t *hand, card_array_t *array, int *count, int *sorted)
     int i = 0;
     int trio = 0;
     uint8_t kicker = 0;
+    uint8_t rank = 0;
     
     /* trio solo | bomb */
-    if (CARD_RANK(array->cards[0]) ==
-        CARD_RANK(array->cards[1]) ==
-        CARD_RANK(array->cards[2]) ==
-        CARD_RANK(array->cards[3]))
+    rank = CARD_RANK(array->cards[0]);
+    if (CARD_RANK(array->cards[1]) == rank &&
+        CARD_RANK(array->cards[2]) == rank &&
+        CARD_RANK(array->cards[3]) == rank)
     {
         CardArray_Copy(hand->cards, array);
         hand->type = HAND_PRIMAL_BOMB;
@@ -362,9 +369,9 @@ void _Hand_Parse_5(hand_t *hand, card_array_t *array, int *count, int *sorted)
             for (j = 0; j < array->length; j++)
             {
                 if (CARD_RANK(array->cards[j]) == trio)
-                    CardArray_PushBack(hand->cards, array->cards[i]);
+                    CardArray_PushBack(hand->cards, array->cards[j]);
                 else
-                    CardArray_PushBack(&pairArray, array->cards[i]);
+                    CardArray_PushBack(&pairArray, array->cards[j]);
             }
             
             CardArray_Concate(hand->cards, &pairArray);
@@ -516,25 +523,28 @@ void Hand_Parse(hand_t *hand, card_array_t *array)
     /* count ranks */
     _Hand_CountRank(array, count, sorted);
     
+    /* clear hand */
+    Hand_Clear(hand);
+    
     /* validate length */
     if (array->length < HAND_MIN_LENGTH || array->length > HAND_MAX_LENGTH)
     {
         hand->type = HAND_PRIMAL_NONE;
     }
     /* solo chain */
-    else if (array->length > 1 && _Hand_CheckChain(count, 1, array->length))
+    else if (array->length >= HAND_SOLO_CHAIN_MIN_LENGTH && _Hand_CheckChain(count, 1, array->length))
     {
         hand->type = HAND_PRIMAL_SOLO | HAND_KICKER_NONE | HAND_CHAIN;
         CardArray_Copy(hand->cards, array);
     }
     /* pair chain */
-    else if (array->length > 2 && array->length % 2 == 0 && _Hand_CheckChain(count, 2, array->length / 2))
+    else if (array->length >= HAND_PAIR_CHAIN_MIN_LENGTH && array->length % 2 == 0 && _Hand_CheckChain(count, 2, array->length / 2))
     {
         hand->type = HAND_PRIMAL_PAIR | HAND_KICKER_NONE | HAND_CHAIN;
         CardArray_Copy(hand->cards, array);
     }
     /* trio chain */
-    else if (array->length > 3 && array->length % 3 == 0 && _Hand_CheckChain(count, 3, array->length / 3))
+    else if (array->length >= HAND_TRIO_CHAIN_MIN_LENGTH && array->length % 3 == 0 && _Hand_CheckChain(count, 3, array->length / 3))
     {
         hand->type = HAND_PRIMAL_TRIO | HAND_KICKER_NONE | HAND_CHAIN;
         CardArray_Copy(hand->cards, array);
@@ -612,5 +622,76 @@ int Hand_Compare(hand_t *a, hand_t *b)
 
 void Hand_Print(hand_t *hand)
 {
+    int i = 0;
+    char str[10];
     
+    printf("hand: %p \n", (void *)hand);
+    printf("type: ");
+    switch (Hand_GetPrimal(hand->type))
+    {
+        case HAND_PRIMAL_NONE:
+            printf("none ");
+            break;
+        case HAND_PRIMAL_SOLO:
+            printf("solo ");
+            break;
+        case HAND_PRIMAL_PAIR:
+            printf("pair ");
+            break;
+        case HAND_PRIMAL_TRIO:
+            printf("trio ");
+            break;
+        case HAND_PRIMAL_FOUR:
+            printf("four ");
+            break;
+        case HAND_PRIMAL_BOMB:
+            printf("bomb ");
+            break;
+        case HAND_PRIMAL_NUKE:
+            printf("nuke ");
+            break;
+        default:
+            break;
+    }
+    
+    switch (Hand_GetKicker(hand->type))
+    {
+        case HAND_KICKER_NONE:
+            printf("none ");
+            break;
+        case HAND_KICKER_SOLO:
+            printf("solo ");
+            break;
+        case HAND_KICKER_PAIR:
+            printf("pair ");
+            break;
+        case HAND_KICKER_DUAL_SOLO:
+            printf("dual solo ");
+            break;
+        case HAND_KICKER_DUAL_PAIR:
+            printf("dual pair ");
+            break;
+        default:
+            break;
+    }
+    
+    switch (Hand_GetChain(hand->type))
+    {
+        case HAND_CHAIN:
+            printf("chain ");
+            break;
+        default:
+            break;
+    }
+    printf("\n");
+    
+    memset(str, 0, 10);
+    printf("Cards: %d | ", hand->cards->length);
+    
+    for (i = 0; i < hand->cards->length; i++)
+    {
+        Card_ToString(hand->cards->cards[i], str, 10);
+        printf("%s ", str);
+    }
+    printf("\n");
 }

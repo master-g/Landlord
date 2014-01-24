@@ -9,22 +9,73 @@
 #include "common.h"
 #include "deck.h"
 #include "hand.h"
+#include "mt19937.h"
+
+/* 
+ * TODO
+ * parse string to card array
+ */
 
 void test_hand(void)
 {
+    int i = 0;
     deck_t *deck = NULL;
     card_array_t *cards;
-    hand_t hand;
+    hand_t *hand;
+    mt19937_t mt;
+    
     memset(&hand, 0, sizeof(hand));
     
+    Random_Init(&mt, (uint32_t)time(NULL));
+    
+    hand = Hand_Create();
     deck = Deck_Create();
-    Deck_Shuffle(deck, NULL);
-    
     cards = CardArray_CreateEmpty();
-    Deck_Deal(deck, cards, rand() % 20 + 1);
     
-    CardArray_Print(cards);
+#define shit2
     
+#ifdef shit
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_CLUB, CARD_RANK_3));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_DIAMOND, CARD_RANK_3));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_HEART, CARD_RANK_3));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_CLUB, CARD_RANK_4));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_DIAMOND, CARD_RANK_4));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_HEART, CARD_RANK_4));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_CLUB, CARD_RANK_5));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_DIAMOND, CARD_RANK_5));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_HEART, CARD_RANK_5));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_CLUB, CARD_RANK_6));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_DIAMOND, CARD_RANK_6));
+    CardArray_PushBack(cards, Card_Make(CARD_SUIT_HEART, CARD_RANK_6));
+    
+    Hand_Parse(hand, cards);
+    
+    if (hand->type != 0)
+    {
+        Hand_Print(hand);
+        printf("--------------------\n");
+    }
+#else
+    while (1)
+    {
+        Deck_Reset(deck);
+        Deck_Shuffle(deck, &mt);
+        
+        CardArray_Clear(cards);
+        
+        Deck_Deal(deck, cards, 20);
+    
+        Hand_Parse(hand, cards);
+        
+        if (hand->type != 0)
+        {
+            Hand_Print(hand);
+            printf("=====================\n");
+        }
+    }
+#endif
+    
+    Hand_Destroy(hand);
     CardArray_Destroy(cards);
     Deck_Destroy(deck);
 }
