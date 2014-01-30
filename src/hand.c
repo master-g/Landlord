@@ -167,7 +167,7 @@ void _Hand_SortCount(int *count)
  * count rank in card array 
  * count[rank] = num
  */
-void _Hand_CountRank(card_array_t *array, int *count, int *sort)
+void Hand_CountRank(card_array_t *array, int *count, int *sort)
 {
     int i = 0;
     memset(count, 0, sizeof(int) * CARD_RANK_END);
@@ -521,7 +521,7 @@ void Hand_Parse(hand_t *hand, card_array_t *array)
     CardArray_Sort(array, NULL);
     
     /* count ranks */
-    _Hand_CountRank(array, count, sorted);
+    Hand_CountRank(array, count, sorted);
     
     /* clear hand */
     Hand_Clear(hand);
@@ -694,4 +694,152 @@ void Hand_Print(hand_t *hand)
         printf("%s ", str);
     }
     printf("\n");
+}
+
+/*
+ * ************************************************************
+ * hand list
+ * ************************************************************
+ */
+
+hand_list_t *HandList_Create(void)
+{
+    hand_list_t *hl = (hand_list_t *)calloc(1, sizeof(hand_list_t));
+    return hl;
+}
+
+void HandList_PushFront(hand_list_t **hl, hand_t *hand)
+{
+    hand_list_t *head = *hl;
+    if (head == NULL)
+    {
+        head = (hand_list_t *)calloc(1, sizeof(hand_list_t));
+        head->hand = hand;
+        head->next = NULL;
+    }
+    else if (head->hand == NULL)
+    {
+        head->hand = hand;
+    }
+    else
+    {
+        hand_list_t *newhead = (hand_list_t *)calloc(1, sizeof(hand_list_t));
+        newhead->hand = hand;
+        newhead->next = head;
+        head = newhead;
+    }
+    *hl = head;
+}
+
+void HandList_Destroy(hand_list_t *hl)
+{
+    hand_list_t *temp;
+    hand_list_t *prev;
+    
+    if (hl == NULL)
+        return;
+    
+    for (temp = hl; temp != NULL; )
+    {
+        prev = temp;
+        temp = temp->next;
+        
+        if (prev->hand != NULL)
+            Hand_Destroy(prev->hand);
+        
+        free(prev);
+    }
+}
+
+hand_list_t *HandList_StandardAnalyze(card_array_t *array)
+{
+    int i = 0;
+    int count[CARD_RANK_END];
+    hand_list_t *hl = NULL;
+    hand_t *hand = NULL;
+    
+    Hand_CountRank(array, count, NULL);
+    
+    /* nuke */
+    if (count[CARD_RANK_R] == 2)
+    {
+        hand = Hand_Create();
+        hand->type = HAND_PRIMAL_NUKE | HAND_KICKER_NONE | HAND_CHAIN_NONE;
+        CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_CLUB, CARD_RANK_R));
+        CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_DIAMOND, CARD_RANK_R));
+        
+        HandList_PushFront(&hl, hand);
+        
+        count[CARD_RANK_R] = 0;
+    }
+    /* bomb */
+    for (i = CARD_RANK_3; i < CARD_RANK_R; i++)
+    {
+        if (count[i] == 4)
+        {
+            hand = Hand_Create();
+            hand->type = HAND_PRIMAL_BOMB | HAND_KICKER_NONE | HAND_CHAIN_NONE;
+            CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_CLUB, i));
+            CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_DIAMOND, i));
+            CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_HEART, i));
+            CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_SPADE, i));
+            
+            HandList_PushFront(&hl, hand);
+            
+            count[i] = 0;
+        }
+    }
+    /* 2 */
+    if (count[CARD_RANK_2] != 0)
+    {
+        hand = Hand_Create();
+        for (i = 0; i < array->length; i++)
+        {
+            if (CARD_RANK(array->cards[i]) == CARD_RANK_2)
+                CardArray_PushBack(hand->cards, array->cards[i]);
+        }
+        
+        switch (count[CARD_RANK_2])
+        {
+            case 1:
+                hand->type = HAND_PRIMAL_SOLO | HAND_KICKER_NONE | HAND_CHAIN_NONE;
+                break;
+            case 2:
+                hand->type = HAND_PRIMAL_PAIR | HAND_KICKER_NONE | HAND_CHAIN_NONE;
+                break;
+            case 3:
+                hand->type = HAND_PRIMAL_TRIO | HAND_KICKER_NONE | HAND_CHAIN_NONE;
+            default:
+                break;
+        }
+        
+        HandList_PushFront(&hl, hand);
+    }
+    /* chains */
+    for (i = CARD_RANK_3; i < CARD_RANK_2; i++)
+    {
+        /* TODO */
+    }
+    
+    return hl;
+}
+
+hand_list_t *HandList_FindBeat(card_array_t *array, hand_t *beat)
+{
+    return NULL;
+}
+
+void HandList_Print(hand_list_t *hl)
+{
+    hand_list_t *node = hl;
+    
+    if (node == NULL || node->hand == NULL)
+        return;
+    
+    printf("-----hand_list_t begin---------\n");
+    for (node = hl; node != NULL; node = node->next)
+    {
+        Hand_Print(node->hand);
+    }
+    printf("-----hand_list_t ended---------\n");
 }

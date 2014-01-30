@@ -42,7 +42,7 @@ typedef enum
     HAND_CMP_EQUAL   = 0,
     HAND_CMP_GREATER = 1
     
-}HandCompareResult;
+} HandCompareResult;
 
 /*
  * hand is a valid card set that can play.
@@ -53,7 +53,7 @@ typedef struct hand_t
     uint8_t         type;
     card_array_t    *cards;
     
-}hand_t;
+} hand_t;
 
 /* 
  * create an empty hand
@@ -71,12 +71,17 @@ void Hand_Destroy(hand_t *hand);
 void Hand_Clear(hand_t *hand);
 
 /*
+ * count ranks in a card array
+ */
+void Hand_CountRank(card_array_t *array, int *count, int *sort);
+
+/*
  * validate a hand
  */
 int Hand_Validate(hand_t *hand);
 
 /*
- * parse an card array to hand
+ * parse a card array to hand
  */
 void Hand_Parse(hand_t *hand, card_array_t *array);
 
@@ -90,4 +95,29 @@ int Hand_Compare(hand_t *a, hand_t *b);
  */
 void Hand_Print(hand_t *hand);
 
-#endif
+/*
+ * ************************************************************
+ * utils
+ * ************************************************************
+ */
+
+typedef struct hand_list_t
+{
+    hand_t *hand;
+    struct hand_list_t *next;
+    
+} hand_list_t;
+
+hand_list_t *HandList_Create(void);
+
+void HandList_PushFront(hand_list_t **hl, hand_t *hand);
+
+void HandList_Destroy(hand_list_t *hl);
+
+hand_list_t *HandList_StandardAnalyze(card_array_t *array);
+
+hand_list_t *HandList_FindBeat(card_array_t *array, hand_t *beat);
+
+void HandList_Print(hand_list_t *hl);
+
+#endif /* LANDLORD_HAND_H_ */

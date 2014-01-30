@@ -11,14 +11,8 @@
 #include "hand.h"
 #include "mt19937.h"
 
-/* 
- * TODO
- * parse string to card array
- */
-
 void test_hand(void)
 {
-    int i = 0;
     deck_t *deck = NULL;
     card_array_t *cards;
     hand_t *hand;
@@ -63,7 +57,7 @@ void test_hand(void)
         
         CardArray_Clear(cards);
         
-        Deck_Deal(deck, cards, 20);
+        Deck_Deal(deck, cards, 5);
     
         Hand_Parse(hand, cards);
         
@@ -80,13 +74,31 @@ void test_hand(void)
     Deck_Destroy(deck);
 }
 
+char szr[] = { '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'R' };
+
+void Count_Print(int *count)
+{
+    int i = 0;
+    for (i = CARD_RANK_BEG; i < CARD_RANK_END; i++)
+    {
+        printf("%c ", szr[i - 1]);
+    }
+    printf("\n");
+    for (i = CARD_RANK_BEG; i < CARD_RANK_END; i++)
+    {
+        printf("%d ", count[i]);
+    }
+}
+
 int main(int argc, const char * argv[])
 {
-    /*
     int i = 0;
     deck_t *deck = NULL;
     card_array_t *hands[3];
-    
+    int count[CARD_RANK_END];
+    hand_list_t *hl = NULL;
+
+    srand((unsigned int)12345);
     deck = Deck_Create();
     Deck_Shuffle(deck, NULL);
     
@@ -95,18 +107,28 @@ int main(int argc, const char * argv[])
         hands[i] = CardArray_CreateEmpty();
         Deck_Deal(deck, hands[i], 17);
         CardArray_Sort(hands[i], NULL);
+        Hand_CountRank(hands[i], count, NULL);
         CardArray_Print(hands[i]);
+        Count_Print(count);
+        printf("\n");
+        hl = HandList_StandardAnalyze(hands[i]);
+        HandList_Print(hl);
+        HandList_Destroy(hl);
     }
     
     for (i = 0; i < 3; i++)
         CardArray_Destroy(hands[i]);
     
     Deck_Destroy(deck);
-     */
     
+    hands[1] = CardArray_CreateFromString("♣T ♠K ♦K ♠Q ♥J ♣J ♠T ♣T ♠9 ♦9 ♣8 ♥6 ♦6 ♣6 ♠4 ♣4 ♥3 ");
+    CardArray_Print(hands[1]);
+    CardArray_Destroy(hands[1]);
+    /*
     srand((unsigned int)time(NULL));
     test_hand();
-    
+    */
+     
     memtrack_list_allocations();
     return 0;
 }

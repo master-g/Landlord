@@ -10,8 +10,7 @@
 
 card_array_t *CardArray_CreateEmpty(void)
 {
-    card_array_t *array = (card_array_t *)malloc(sizeof(card_array_t));
-    memset(array, 0, sizeof(card_array_t));
+    card_array_t *array = (card_array_t *)calloc(1, sizeof(card_array_t));
     
     return array;
 }
@@ -27,6 +26,70 @@ card_array_t *CardArray_CreateSet(void)
 void CardArray_Destroy(card_array_t *array)
 {
     free(array);
+}
+
+card_array_t *CardArray_CreateFromString(const char *str)
+{
+    uint8_t card = 0;
+    card_array_t *array = NULL;
+    const char *p = str;
+    
+    array = CardArray_CreateEmpty();
+    
+    while (*p != '\0')
+    {
+        switch ((uint8_t)*p)
+        {
+            case 0xA6:
+                card |= CARD_SUIT_DIAMOND;
+                break;
+            case 0xA3:
+                card |= CARD_SUIT_CLUB;
+                break;
+            case 0xA5:
+                card |= CARD_SUIT_HEART;
+                break;
+            case 0xA0:
+                card |= CARD_SUIT_SPADE;
+                break;
+            case 'T':
+                card |= CARD_RANK_T;
+                break;
+            case 'J':
+                card |= CARD_RANK_J;
+                break;
+            case 'Q':
+                card |= CARD_RANK_Q;
+                break;
+            case 'K':
+                card |= CARD_RANK_K;
+                break;
+            case 'A':
+                card |= CARD_RANK_A;
+                break;
+            case '2':
+                card |= CARD_RANK_2;
+                break;
+            case 'R':
+                card |= CARD_RANK_R;
+                break;
+            default:
+                break;
+        }
+        
+        if (*p <= '9' && *p >= '3')
+            card |= CARD_RANK_3 + (uint8_t)(*p) - '3';
+        
+        if (CARD_RANK(card) != 0 && CARD_SUIT(card) != 0)
+        {
+            CardArray_PushBack(array, card);
+            card = 0;
+        }
+        
+        p++;
+    }
+    
+    return array;
 }
 
 void CardArray_Reset(card_array_t *array)
@@ -68,6 +131,26 @@ int CardArray_Concate(card_array_t *head, card_array_t *tail)
     }
     
     return length;
+}
+
+void CardArray_Subtract(card_array_t *from, card_array_t *sub)
+{
+    int i = 0;
+    int j = 0;
+    uint8_t card = 0;
+    
+    for (i = 0; i < sub->length; i++)
+    {
+        card = sub->cards[i];
+        for (j = 0; j < from->length; j++)
+        {
+            if (from->cards[j] == card)
+            {
+                CardArray_Remove(from, j);
+                break;
+            }
+        }
+    }
 }
 
 uint8_t CardArray_PushBack(card_array_t *array, uint8_t card)
@@ -416,6 +499,21 @@ void CardArray_Test(void)
     Card_ToString(card, str, 10);
     printf("\tremove %s at %d\n", str, i);
     printf("\tafter remove\n");
+    CardArray_Print(arr);
+    
+    printf("\nTesting CardArray_Subtract\n");
+    PRINT_TEST_SEPARATOR;
+    CardArray_Clear(arr);
+    CardArray_Clear(tail);
+    CardArray_FillRandomCards(arr, 13);
+    CardArray_PushBack(tail, arr->cards[rand()%arr->length]);
+    CardArray_PushBack(tail, arr->cards[rand()%arr->length]);
+    CardArray_PushBack(tail, arr->cards[rand()%arr->length]);
+    printf("\tbefore subtract\n");
+    CardArray_Print(arr);
+    CardArray_Print(tail);
+    printf("\tafter subtract\n");
+    CardArray_Subtract(arr, tail);
     CardArray_Print(arr);
     
     CardArray_Destroy(arr);

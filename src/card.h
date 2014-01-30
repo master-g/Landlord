@@ -65,7 +65,7 @@ typedef struct card_array_t
     int     length;
     uint8_t cards[CARD_ARRAY_PRESET_LENGTH];
     
-}card_array_t;
+} card_array_t;
 
 /* sort function */
 typedef int (*CardSortFunc)(void *, void *);
@@ -81,6 +81,11 @@ card_array_t *CardArray_CreateEmpty(void);
 card_array_t *CardArray_CreateSet(void);
 
 /*
+ * parse a string to card array
+ */
+card_array_t *CardArray_CreateFromString(const char *str);
+
+/*
  * destroy a card array
  */
 void CardArray_Destroy(card_array_t *array);
@@ -94,6 +99,11 @@ void CardArray_Reset(card_array_t *array);
  * concate two card arrays
  */
 int CardArray_Concate(card_array_t *head, card_array_t *tail);
+
+/*
+ * subtract two card arrays
+ */
+void CardArray_Subtract(card_array_t *from, card_array_t *sub);
 
 /*
  * push a card to the rear of the array
@@ -136,13 +146,14 @@ void CardArray_Sort(card_array_t *array, int (*comparator)(const void *, const v
 void CardArray_Print(card_array_t *array);
 
 /*
+ * convert a card to string
+ */
+int Card_ToString(uint8_t card, char *buf, int len);
+
+/*
  * test
  */
 void CardArray_Test(void);
 
-/*
- * convert a card to string
- */
-int Card_ToString(uint8_t card, char *buf, int len);
 
 #endif /* LANDLORD_CARD_H_ */
