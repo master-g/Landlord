@@ -264,6 +264,25 @@ uint8_t CardArray_Remove(card_array_t *array, int where)
     return ret;
 }
 
+void CardArray_TransferRank(card_array_t *dst, card_array_t *src, uint8_t rank)
+{
+    int i = 0;
+    
+    do
+    {
+        if (CARD_RANK(src->cards[i]) == rank)
+        {
+            CardArray_PushBack(dst, src->cards[i]);
+            CardArray_Remove(src, i);
+        }
+        else
+        {
+            i++;
+        }
+        
+    } while (i < src->length);
+}
+
 int CardArray_StandardSort(const void *a, const void *b)
 {
     if (CARD_RANK(*(uint8_t *)a) == CARD_RANK(*(uint8_t *)b))

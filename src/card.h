@@ -136,6 +136,11 @@ uint8_t CardArray_Insert(card_array_t *array, int before, uint8_t card);
 uint8_t CardArray_Remove(card_array_t *array, int where);
 
 /*
+ * transfer specific rank cards from array to array
+ */
+void CardArray_TransferRank(card_array_t *dst, card_array_t *src, uint8_t rank);
+
+/*
  * sort cards
  */
 void CardArray_Sort(card_array_t *array, int (*comparator)(const void *, const void *));

@@ -758,6 +758,14 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     hand_list_t *hl = NULL;
     hand_t *hand = NULL;
     
+    card_array_t *arrsolo = NULL;
+    card_array_t *arrpair = NULL;
+    card_array_t *arrtrio = NULL;
+    
+    arrsolo = CardArray_CreateEmpty();
+    arrpair = CardArray_CreateEmpty();
+    arrtrio = CardArray_CreateEmpty();
+    
     Hand_CountRank(array, count, NULL);
     
     /* nuke */
@@ -765,8 +773,7 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     {
         hand = Hand_Create();
         hand->type = HAND_PRIMAL_NUKE | HAND_KICKER_NONE | HAND_CHAIN_NONE;
-        CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_CLUB, CARD_RANK_R));
-        CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_DIAMOND, CARD_RANK_R));
+        CardArray_TransferRank(hand->cards, array, CARD_RANK_R);
         
         HandList_PushFront(&hl, hand);
         
@@ -779,10 +786,7 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
         {
             hand = Hand_Create();
             hand->type = HAND_PRIMAL_BOMB | HAND_KICKER_NONE | HAND_CHAIN_NONE;
-            CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_CLUB, i));
-            CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_DIAMOND, i));
-            CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_HEART, i));
-            CardArray_PushBack(hand->cards, Card_Make(CARD_SUIT_SPADE, i));
+            CardArray_TransferRank(hand->cards, array, i);
             
             HandList_PushFront(&hl, hand);
             
@@ -818,8 +822,31 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     /* chains */
     for (i = CARD_RANK_3; i < CARD_RANK_2; i++)
     {
-        /* TODO */
+        switch (count[i])
+        {
+            case 1:
+                CardArray_TransferRank(arrsolo, array, i);
+                break;
+            case 2:
+                CardArray_TransferRank(arrpair, array, i);
+                break;
+            case 3:
+                CardArray_TransferRank(arrtrio, array, i);
+                break;
+            default:
+                break;
+        }
     }
+    
+    /* TODO */
+    for (i = 0; i < arrsolo->length; i++)
+    {
+        
+    }
+    
+    CardArray_Destroy(arrsolo);
+    CardArray_Destroy(arrpair);
+    CardArray_Destroy(arrtrio);
     
     return hl;
 }

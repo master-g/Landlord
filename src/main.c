@@ -88,6 +88,7 @@ void Count_Print(int *count)
     {
         printf("%d ", count[i]);
     }
+    printf("\n");
 }
 
 int main(int argc, const char * argv[])
@@ -98,7 +99,7 @@ int main(int argc, const char * argv[])
     int count[CARD_RANK_END];
     hand_list_t *hl = NULL;
 
-    srand((unsigned int)12345);
+    srand((unsigned int)12);
     deck = Deck_Create();
     Deck_Shuffle(deck, NULL);
     
@@ -110,20 +111,17 @@ int main(int argc, const char * argv[])
         Hand_CountRank(hands[i], count, NULL);
         CardArray_Print(hands[i]);
         Count_Print(count);
-        printf("\n");
-        hl = HandList_StandardAnalyze(hands[i]);
-        HandList_Print(hl);
-        HandList_Destroy(hl);
     }
+    
+    printf("\n");
+    hl = HandList_StandardAnalyze(hands[2]);
+    HandList_Print(hl);
+    HandList_Destroy(hl);
     
     for (i = 0; i < 3; i++)
         CardArray_Destroy(hands[i]);
     
     Deck_Destroy(deck);
-    
-    hands[1] = CardArray_CreateFromString("♣T ♠K ♦K ♠Q ♥J ♣J ♠T ♣T ♠9 ♦9 ♣8 ♥6 ♦6 ♣6 ♠4 ♣4 ♥3 ");
-    CardArray_Print(hands[1]);
-    CardArray_Destroy(hands[1]);
     /*
     srand((unsigned int)time(NULL));
     test_hand();
