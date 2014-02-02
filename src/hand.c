@@ -751,6 +751,76 @@ void HandList_Destroy(hand_list_t *hl)
     }
 }
 
+void _HandList_ExtractConsecutive_1(hand_list_t *hl, card_array_t *array)
+{
+    int i = 0;
+    int j = 0;
+    int cardnum = 0;
+    uint8_t lastrank = 0;
+    card_array_t *arrtemp = NULL;
+    hand_t *hand = NULL;
+    
+    arrtemp = CardArray_CreateEmpty();
+    
+    cardnum = array->length;
+    lastrank = array->cards[0];
+    i = 1;
+    while (cardnum--)
+    {
+        if ((lastrank + 1) != CARD_RANK(array->cards[i]))
+        {
+            /* chain break */
+            if (i >= HAND_SOLO_CHAIN_MIN_LENGTH)
+            {
+                /* solo chian */
+                hand = Hand_Create();
+                hand->type = HAND_PRIMAL_SOLO | HAND_KICKER_NONE | HAND_CHAIN;
+                for (j = 0; j < i; j++)
+                {
+                    CardArray_PushBack(hand->cards, CardArray_PopFront(array));
+                }
+            }
+            else
+            {
+                /* not a solo chain */
+                for (j = 0; j < i; j++)
+                {
+                    hand = Hand_Create();
+                    hand->type = HAND_PRIMAL_SOLO | HAND_KICKER_NONE | HAND_CHAIN_NONE;
+                    CardArray_PushBack(hand->cards, CardArray_PopFront(array));
+                    HandList_PushFront(&hl, hand);
+                }
+            }
+            
+            lastrank = CARD_RANK(array->cards[0]);
+            i = 1;
+        }
+        else
+        {
+            i++;
+        }
+    }
+    
+    CardArray_Destroy(arrtemp);
+}
+
+void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int duplicate)
+{
+    switch (duplicate)
+    {
+        case 1:
+            _HandList_ExtractConsecutive_1(hl, array);
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+            
+        default:
+            break;
+    }
+}
+
 hand_list_t *HandList_StandardAnalyze(card_array_t *array)
 {
     int i = 0;
@@ -766,6 +836,7 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     arrpair = CardArray_CreateEmpty();
     arrtrio = CardArray_CreateEmpty();
     
+    CardArray_Sort(array, NULL);
     Hand_CountRank(array, count, NULL);
     
     /* nuke */
@@ -838,11 +909,10 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
         }
     }
     
-    /* TODO */
-    for (i = 0; i < arrsolo->length; i++)
-    {
-        
-    }
+    /* chain */
+    _HandList_ExtractConsecutive(hl, arrsolo, 1);
+    _HandList_ExtractConsecutive(hl, arrpair, 2);
+    _HandList_ExtractConsecutive(hl, arrpair, 3);
     
     CardArray_Destroy(arrsolo);
     CardArray_Destroy(arrpair);
