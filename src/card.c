@@ -264,23 +264,15 @@ uint8_t CardArray_Remove(card_array_t *array, int where)
     return ret;
 }
 
-void CardArray_TransferRank(card_array_t *dst, card_array_t *src, uint8_t rank)
+void CardArray_CopyRank(card_array_t *dst, card_array_t *src, uint8_t rank)
 {
     int i = 0;
     
-    do
+    for (i = 0; i < src->length; i++)
     {
         if (CARD_RANK(src->cards[i]) == rank)
-        {
             CardArray_PushBack(dst, src->cards[i]);
-            CardArray_Remove(src, i);
-        }
-        else
-        {
-            i++;
-        }
-        
-    } while (i < src->length);
+    }
 }
 
 int CardArray_StandardSort(const void *a, const void *b)

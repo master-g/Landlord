@@ -99,7 +99,7 @@ int main(int argc, const char * argv[])
     int count[CARD_RANK_END];
     hand_list_t *hl = NULL;
 
-    srand((unsigned int)12);
+    srand((unsigned int)15);
     deck = Deck_Create();
     Deck_Shuffle(deck, NULL);
     
