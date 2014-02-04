@@ -6,6 +6,11 @@
  *  Copyright (c) 2014 MED. All rights reserved.
  */
 
+/*
+ * http://scim.brad.ac.uk/staff/pdf/picowlin/AISB2011.pdf
+ * http://en.wikipedia.org/wiki/Monte-Carlo_tree_search
+ */
+
 #ifndef LANDLORD_HAND_H_
 #define LANDLORD_HAND_H_
 

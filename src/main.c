@@ -117,6 +117,7 @@ int main(int argc, const char * argv[])
     hl = HandList_StandardAnalyze(hands[2]);
     HandList_Print(hl);
     HandList_Destroy(hl);
+    CardArray_Print(hands[2]);
     
     for (i = 0; i < 3; i++)
         CardArray_Destroy(hands[i]);

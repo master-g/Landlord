@@ -882,7 +882,7 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
         HandList_PushFront(&hl, hand);
     }
     /* chains */
-    for (i = CARD_RANK_3; i < CARD_RANK_2; i++)
+    for (i = CARD_RANK_A; i >= CARD_RANK_3; i--)
     {
         switch (count[i])
         {
@@ -901,9 +901,9 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     }
     
     /* chain */
-    _HandList_ExtractConsecutive(&hl, arrsolo, 1);
-    _HandList_ExtractConsecutive(&hl, arrpair, 2);
     _HandList_ExtractConsecutive(&hl, arrtrio, 3);
+    _HandList_ExtractConsecutive(&hl, arrpair, 2);
+    _HandList_ExtractConsecutive(&hl, arrsolo, 1);
     
     CardArray_Destroy(arrsolo);
     CardArray_Destroy(arrpair);
