@@ -7,6 +7,7 @@
  */
 
 #include "deck.h"
+#include "mt19937.h"
 
 deck_t *Deck_Create(void)
 {
@@ -42,7 +43,7 @@ void shuffle(uint8_t arr[], int len, mt19937_t *mt)
 	}
 }
 
-void Deck_Shuffle(deck_t *deck, mt19937_t *mtctx)
+void Deck_Shuffle(deck_t *deck, void *mtctx)
 {
     shuffle(deck->cards->cards, deck->cards->length, mtctx);
 }

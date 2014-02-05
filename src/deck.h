@@ -10,7 +10,6 @@
 #define LANDLORD_DECK_H_
 
 #include "card.h"
-#include "mt19937.h"
 
 typedef struct deck_t
 {
@@ -32,7 +31,7 @@ void Deck_Destroy(deck_t *deck);
 /*
  * shuffle deck
  */
-void Deck_Shuffle(deck_t *deck, mt19937_t *mtctx);
+void Deck_Shuffle(deck_t *deck, void *mtctx);
 
 /*
  * reset deck

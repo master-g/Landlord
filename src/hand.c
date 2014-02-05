@@ -140,11 +140,6 @@ void Hand_Clear(hand_t *hand)
     hand->type = 0;
 }
 
-int Hand_Validate(hand_t *hand)
-{
-    return 0;
-}
-
 /*
  * ************************************************************
  * parser
@@ -749,6 +744,9 @@ void HandList_Destroy(hand_list_t *hl)
     }
 }
 
+/*
+ * extract hands like 34567 / 334455 / 333444555 etc
+ */
 void _HandList_ExtractConsecutive(hand_list_t **hl, card_array_t *array, int duplicate)
 {
     int i = 0;
@@ -910,11 +908,6 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     CardArray_Destroy(arrtrio);
     
     return hl;
-}
-
-hand_list_t *HandList_FindBeat(card_array_t *array, hand_t *beat)
-{
-    return NULL;
 }
 
 void HandList_Print(hand_list_t *hl)

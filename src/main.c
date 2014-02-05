@@ -7,9 +7,7 @@
  */
 
 #include "common.h"
-#include "deck.h"
-#include "hand.h"
-#include "mt19937.h"
+#include "game.h"
 
 void test_hand(void)
 {
@@ -26,9 +24,9 @@ void test_hand(void)
     deck = Deck_Create();
     cards = CardArray_CreateEmpty();
     
-#define shit2
+#define testmode2
     
-#ifdef shit
+#ifdef testmode
     CardArray_PushBack(cards, Card_Make(CARD_SUIT_CLUB, CARD_RANK_3));
     CardArray_PushBack(cards, Card_Make(CARD_SUIT_DIAMOND, CARD_RANK_3));
     CardArray_PushBack(cards, Card_Make(CARD_SUIT_HEART, CARD_RANK_3));
@@ -91,14 +89,14 @@ void Count_Print(int *count)
     printf("\n");
 }
 
-int main(int argc, const char * argv[])
+void test_code(void)
 {
     int i = 0;
     deck_t *deck = NULL;
     card_array_t *hands[3];
     int count[CARD_RANK_END];
     hand_list_t *hl = NULL;
-
+    
     srand((unsigned int)15);
     deck = Deck_Create();
     Deck_Shuffle(deck, NULL);
@@ -124,9 +122,18 @@ int main(int argc, const char * argv[])
     
     Deck_Destroy(deck);
     /*
-    srand((unsigned int)time(NULL));
-    test_hand();
-    */
+     srand((unsigned int)time(NULL));
+     test_hand();
+     */
+}
+
+int main(int argc, const char * argv[])
+{
+    game_t *game = NULL;
+        
+    game = Game_Create();
+    Game_Play(game, 0);
+    Game_Destroy(game);
      
     memtrack_list_allocations();
     return 0;

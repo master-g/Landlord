@@ -81,11 +81,6 @@ void Hand_Clear(hand_t *hand);
 void Hand_CountRank(card_array_t *array, int *count, int *sort);
 
 /*
- * validate a hand
- */
-int Hand_Validate(hand_t *hand);
-
-/*
  * parse a card array to hand
  */
 void Hand_Parse(hand_t *hand, card_array_t *array);
@@ -120,8 +115,6 @@ void HandList_PushFront(hand_list_t **hl, hand_t *hand);
 void HandList_Destroy(hand_list_t *hl);
 
 hand_list_t *HandList_StandardAnalyze(card_array_t *array);
-
-hand_list_t *HandList_FindBeat(card_array_t *array, hand_t *beat);
 
 void HandList_Print(hand_list_t *hl);
 
