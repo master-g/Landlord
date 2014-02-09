@@ -38,16 +38,36 @@ void Player_GetReady(player_t *player)
     CardArray_Print(player->record);
 }
 
-hand_t *Player_Play(player_t *player)
+void Player_Play(player_t *player, hand_t *hand)
 {
     /*
      * TODO
-     *
+     * search longest hand
      */
-    return NULL;
+    hand_list_t *hl = NULL;
+    
+    if (player->handlist == NULL)
+        player->handlist = HandList_StandardAnalyze(player->cards);
+    
+    hl = player->handlist;
+    player->handlist = hl->next;
+    
+    CardArray_Subtract(player->cards, hl->hand->cards);
+    
+    hand = hl->hand;
+    hl->next = NULL;
+    hl->hand = NULL;
+    HandList_Destroy(hl);
+    
+    /*
+    for (hl = player->handlist; hl != NULL; hl = hl->next)
+    {
+        Hand_Print(hl->hand);
+    }
+     */
 }
 
-hand_t *Player_Beat(player_t *player, hand_t *tobeat)
+void Player_Beat(player_t *player, hand_t *tobeat)
 {
-    return NULL;
+    tobeat->type = 0;
 }

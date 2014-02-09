@@ -18,12 +18,34 @@
 #define GAME_HAND_CARDS 17
 #define GAME_REST_CARDS 3
 
+#define IncPlayerIdx(x) (((x) + 1) % GAME_PLAYERS)
+
+typedef enum
+{
+    GameStatus_Halt = 0,
+    GameStatus_Ready,
+    GameStatus_Pause,
+    GameStatus_Over
+    
+} GameStatus;
+
+typedef enum
+{
+    Phase_Play = 0,
+    Phase_Query,
+    Phase_Beat_1,
+    Phase_Beat_2
+    
+} StagePhase;
+
 typedef struct game_t
 {
     player_t    *players[GAME_PLAYERS];     /* player array */
     deck_t      *deck;                      /* deck */
     mt19937_t   *mt;                        /* random context */
     int         landlord;                   /* landlord index */
+    int         status;                     /* game status */
+    int         phase;                      /* game phase */
     
 } game_t;
 

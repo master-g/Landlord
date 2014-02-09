@@ -45,6 +45,9 @@ void Game_Reset(game_t *game)
 void Game_Play(game_t *game, uint32_t seed)
 {
     int i = 0;
+    int playeridx = 0;
+    hand_t *hand = Hand_Create();
+    
     Random_Init(game->mt, seed);
     
     game->landlord = Random_int32(game->mt) % 3;
@@ -55,4 +58,60 @@ void Game_Play(game_t *game, uint32_t seed)
         Deck_Deal(game->deck, game->players[i]->cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
         Player_GetReady(game->players[i]);
     }
+    
+    game->status = GameStatus_Ready;
+    playeridx = game->landlord;
+    game->phase = Phase_Play;
+    
+    while (game->status != GameStatus_Over)
+    {
+        switch (game->phase)
+        {
+            case Phase_Play:
+            {
+                Player_Play(game->players[playeridx], hand);
+                game->phase = Phase_Beat_1;
+                break;
+            }
+            case Phase_Beat_1:
+            {
+                Player_Beat(game->players[playeridx], hand);
+                /* has beat in this phase */
+                if (hand->type == 0)
+                    game->phase = Phase_Beat_2;
+                
+                break;
+            }
+            case Phase_Beat_2:
+            {
+                Player_Beat(game->players[playeridx], hand);
+                /* no beat */
+                if (hand->type == 0)
+                    game->phase = Phase_Play;
+                else
+                    game->phase = Phase_Beat_1;
+                
+                break;
+            }
+            default:
+                break;
+        }
+        
+        printf("Player %d played\n", playeridx);
+        Hand_Print(hand);
+        
+        playeridx = IncPlayerIdx(playeridx);
+        
+        /* check if there is player win */
+        for (i = 0; i < GAME_PLAYERS; i++)
+        {
+            if (game->players[i]->cards->length == 0)
+            {
+                game->status = GameStatus_Over;
+                break;
+            }
+        }
+    }
+    
+    Hand_Destroy(hand);
 }

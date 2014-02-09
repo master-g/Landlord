@@ -50,12 +50,12 @@ void Player_GetReady(player_t *player);
 /*
  * free play
  */
-hand_t *Player_Play(player_t *player);
+void Player_Play(player_t *player, hand_t *hand);
 
 /*
  * player must play a hand that can beat last player
  * if there is no hand can beat last player, return NULL
  */
-hand_t *Player_Beat(player_t *player, hand_t *tobeat);
+void Player_Beat(player_t *player, hand_t *tobeat);
 
 #endif /* LANDLORD_PLAYER_H_ */

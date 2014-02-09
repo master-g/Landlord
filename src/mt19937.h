@@ -1,6 +1,6 @@
 /*
  *  mt19937.h
- *  sanguosha
+ *  kitsune
  *
  *  Created by Master.G on 13-8-19.
  *  Copyright (c) 2013 Master.G. All rights reserved.

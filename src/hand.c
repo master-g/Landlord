@@ -622,6 +622,12 @@ void Hand_Print(hand_t *hand)
     
     printf("hand: %p \n", (void *)hand);
     printf("type: ");
+    if (hand == NULL)
+    {
+        printf("null\n");
+        return;
+    }
+    
     switch (Hand_GetPrimal(hand->type))
     {
         case HAND_PRIMAL_NONE:
@@ -724,6 +730,30 @@ void HandList_PushFront(hand_list_t **hl, hand_t *hand)
     }
 }
 
+void HandList_PushBack(hand_list_t **hl, hand_t *hand)
+{
+    hand_list_t *tail = *hl;
+    if (*hl == NULL)
+    {
+        *hl = (hand_list_t *)calloc(1, sizeof(hand_list_t));
+        (*hl)->hand = hand;
+        (*hl)->next = NULL;
+    }
+    else if ((*hl)->hand == NULL)
+    {
+        (*hl)->hand = hand;
+    }
+    else
+    {
+        hand_list_t *newtail = (hand_list_t *)calloc(1, sizeof(hand_list_t));
+        while (tail->next != NULL)
+            tail = tail->next;
+        
+        newtail->hand = hand;
+        tail->next = newtail;
+    }
+}
+
 void HandList_Destroy(hand_list_t *hl)
 {
     hand_list_t *temp;
@@ -763,11 +793,11 @@ void _HandList_ExtractConsecutive(hand_list_t **hl, card_array_t *array, int dup
         return;
     
     cardnum = array->length / step[duplicate];
-    lastrank = array->cards[0];
+    lastrank = CARD_RANK(array->cards[0]);
     i = step[duplicate];
     while (cardnum--)
     {
-        if ((lastrank + 1) != CARD_RANK(array->cards[i]))
+        if ((lastrank - 1) != CARD_RANK(array->cards[i]))
         {
             /* chain break */
             if (i >= chainlen[duplicate])
@@ -789,6 +819,7 @@ void _HandList_ExtractConsecutive(hand_list_t **hl, card_array_t *array, int dup
                     hand->type = primal[duplicate] | HAND_KICKER_NONE | HAND_CHAIN_NONE;
                     for (k = 0; k < step[duplicate]; k++)
                         CardArray_PushBack(hand->cards, CardArray_PopFront(array));
+                    
                     HandList_PushFront(hl, hand);
                 }
             }
@@ -796,10 +827,23 @@ void _HandList_ExtractConsecutive(hand_list_t **hl, card_array_t *array, int dup
             lastrank = CARD_RANK(array->cards[0]);
             i = step[duplicate];
         }
-        else
+        else /* chain intact */
         {
+            lastrank = CARD_RANK(array->cards[i]);
             i += step[duplicate];
         }
+    }
+    
+    
+    k = i - step[duplicate];            /* step back */
+    if (k != 0 && k == array->length)   /* all chained up */
+    {
+        hand = Hand_Create();
+        hand->type = primal[duplicate] | HAND_KICKER_NONE | HAND_CHAIN;
+        for (j = 0; j < i - step[duplicate]; j++)
+            CardArray_PushBack(hand->cards, CardArray_PopFront(array));
+        
+        HandList_PushFront(hl, hand);
     }
 }
 
