@@ -46,6 +46,8 @@ void Game_Play(game_t *game, uint32_t seed)
 {
     int i = 0;
     int playeridx = 0;
+    int beat = 0;
+    player_t *others[2];
     hand_t *hand = Hand_Create();
     
     Random_Init(game->mt, seed);
@@ -65,28 +67,32 @@ void Game_Play(game_t *game, uint32_t seed)
     
     while (game->status != GameStatus_Over)
     {
+        others[0] = game->players[OtherPlayerIdx1(playeridx)];
+        others[1] = game->players[OtherPlayerIdx2(playeridx)];
+        
         switch (game->phase)
         {
             case Phase_Play:
             {
-                Player_Play(game->players[playeridx], hand);
+                Player_Play(game->players[playeridx], others, hand);
+                CardArray_Subtract(game->players[playeridx]->cards, hand->cards);
                 game->phase = Phase_Beat_1;
                 break;
             }
             case Phase_Beat_1:
             {
-                Player_Beat(game->players[playeridx], hand);
+                beat = Player_Beat(game->players[playeridx], others, hand);
                 /* has beat in this phase */
-                if (hand->type == 0)
+                if (beat == 0)
                     game->phase = Phase_Beat_2;
                 
                 break;
             }
             case Phase_Beat_2:
             {
-                Player_Beat(game->players[playeridx], hand);
+                beat = Player_Beat(game->players[playeridx], others, hand);
                 /* no beat */
-                if (hand->type == 0)
+                if (beat == 0)
                     game->phase = Phase_Play;
                 else
                     game->phase = Phase_Beat_1;
@@ -99,6 +105,7 @@ void Game_Play(game_t *game, uint32_t seed)
         
         printf("Player %d played\n", playeridx);
         Hand_Print(hand);
+        Hand_Clear(hand);
         
         playeridx = IncPlayerIdx(playeridx);
         

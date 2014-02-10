@@ -143,7 +143,7 @@ void memtrack_free(void* ptr, const char* expr, const char* file, int line)
         {
             if (mb->magic == MAGIC2)
             {
-                printf("Memory free more than once\n");
+                printf("Memory free more than once: %p (expr = \"%s\" from %s:%d\n", (void *)ptr, expr, file, line);
                 memblock_print_info(mb);
             }
             else

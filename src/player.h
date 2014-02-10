@@ -48,14 +48,14 @@ void Player_Clear(player_t *player);
 void Player_GetReady(player_t *player);
 
 /*
- * free play
+ * free play, result will return by hand_t *
  */
-void Player_Play(player_t *player, hand_t *hand);
+void Player_Play(player_t *player, player_t *others[], hand_t *hand);
 
 /*
  * player must play a hand that can beat last player
- * if there is no hand can beat last player, return NULL
+ * if there is no hand can beat last player, tobeat->type will be 0
  */
-void Player_Beat(player_t *player, hand_t *tobeat);
+int Player_Beat(player_t *player, player_t *others[], hand_t *tobeat);
 
 #endif /* LANDLORD_PLAYER_H_ */

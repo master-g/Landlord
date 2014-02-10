@@ -76,6 +76,11 @@ void Hand_Destroy(hand_t *hand);
 void Hand_Clear(hand_t *hand);
 
 /*
+ * copy hands
+ */
+void Hand_Copy(hand_t *dst, hand_t *src);
+
+/*
  * count ranks in a card array
  */
 void Hand_CountRank(card_array_t *array, int *count, int *sort);
@@ -101,19 +106,63 @@ void Hand_Print(hand_t *hand);
  * ************************************************************
  */
 
-typedef struct hand_list_t
+typedef struct hand_node_t
 {
     hand_t *hand;
-    struct hand_list_t *next;
+    struct hand_node_t *prev;
+    struct hand_node_t *next;
+    
+} hand_node_t;
+
+typedef struct hand_list_t
+{
+    hand_node_t *first;
     
 } hand_list_t;
 
+/*
+ * create a empty handlist
+ */
 hand_list_t *HandList_Create(void);
 
-void HandList_PushFront(hand_list_t **hl, hand_t *hand);
+/*
+ * push a hand into the front of hand list
+ */
+void HandList_PushFront(hand_list_t *hl, hand_t *hand);
 
+/*
+ * push a hand into the back of hand list
+ */
+void HandList_PushBack(hand_list_t *hl, hand_t *hand);
+
+/*
+ * remove a hand from hand list
+ */
+void HandList_Remove(hand_list_t *hl, hand_node_t *node);
+
+/*
+ * get tail from hand list
+ */
+hand_node_t *HandList_GetTail(hand_list_t *hl);
+
+/*
+ * search a specific hand type from hand list
+ */
+hand_node_t *HandList_Search(hand_list_t *hl, int handtype);
+
+/*
+ * destroy a hand list
+ */
 void HandList_Destroy(hand_list_t *hl);
 
+/*
+ * destroy a hand list node
+ */
+void HandListNode_Destroy(hand_node_t *node);
+
+/*
+ * standard analyze a card array into hand list
+ */
 hand_list_t *HandList_StandardAnalyze(card_array_t *array);
 
 void HandList_Print(hand_list_t *hl);
