@@ -37,7 +37,6 @@ void Player_GetReady(player_t *player)
     CardArray_Copy(player->record, player->cards);
     CardArray_Print(player->record);
     player->handlist = HandList_StandardAnalyze(player->cards);
-    /* HandList_Print(player->handlist); */
 }
 
 void Player_Play(player_t *player, player_t *others[], hand_t *hand)
@@ -66,7 +65,7 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
     }
     
     /* try to find longest hand combination */
-    node = HandList_Search(player->handlist, HAND_PRIMAL_TRIO | HAND_CHAIN);
+    node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN));
     if (node != NULL)
     {
         /* copy hand*/
@@ -84,9 +83,9 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
         countsolo = 0;
         while (temp->next != NULL)
         {
-            if (temp->hand->type == (HAND_PRIMAL_PAIR))
+            if (temp->hand->type == HAND_PRIMAL_PAIR)
                 countpair++;
-            else if (temp->hand->type == (HAND_PRIMAL_SOLO))
+            else if (temp->hand->type == HAND_PRIMAL_SOLO)
                 countsolo++;
         }
         
@@ -123,11 +122,12 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
             }
         }
         
-        hand->type |= kicker;
+        Hand_SetKicker(hand->type, kicker);
         return;
     }
     
-    node = HandList_Search(player->handlist, HAND_PRIMAL_PAIR | HAND_CHAIN);
+    /* pair chain */
+    node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN));
     if (node != NULL)
     {
         Hand_Copy(hand, node->hand);
@@ -135,12 +135,43 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
         return;
     }
     
-    node = HandList_Search(player->handlist, HAND_PRIMAL_SOLO | HAND_CHAIN);
+    /* solo chain */
+    node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN));
     if (node != NULL)
     {
         Hand_Copy(hand, node->hand);
         HandList_Remove(player->handlist, node);
         return;
+    }
+    
+    /* trio */
+    node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN_NONE));
+    if (node != NULL && CARD_RANK(node->hand->cards->cards[0]) != CARD_RANK_2)
+    {
+        Hand_Copy(hand, node->hand);
+        HandList_Remove(player->handlist, node);
+        
+        /* pair */
+        node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN_NONE));
+        if (node != NULL && CARD_RANK(node->hand->cards->cards[0]) != CARD_RANK_2)
+        {
+            kicker = HAND_KICKER_PAIR;
+        }
+        /* solo */
+        else
+        {
+            node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN_NONE));
+            if (node != NULL && CARD_RANK(node->hand->cards->cards[0]) < CARD_RANK_2)
+                kicker = HAND_KICKER_SOLO;
+        }
+        
+        if (node != NULL)
+        {
+            CardArray_Concate(hand->cards, node->hand->cards);
+            Hand_SetKicker(hand->type, kicker);
+            HandList_Remove(player->handlist, node);
+            return;
+        }
     }
     
     /* just play */
@@ -151,7 +182,23 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
 
 int Player_Beat(player_t *player, player_t *others[], hand_t *tobeat)
 {
-    tobeat->type = 0;
+    /* 
+     * HandList_SearchBeats can search for beat in loop mode
+     * but we just simply find a beat here
+     */
+    int canbeat = 0;
+    hand_t *beat = Hand_Create();
     
-    return 0;
+    canbeat = HandList_SearchBeats(player->cards, tobeat, beat);
+    
+    if (canbeat)
+    {
+        HandList_Destroy(player->handlist);
+        player->handlist = HandList_StandardAnalyze(player->cards);
+        Hand_Copy(tobeat, beat);
+    }
+    
+    Hand_Destroy(beat);
+    
+    return canbeat;
 }

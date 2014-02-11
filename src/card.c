@@ -264,6 +264,24 @@ uint8_t CardArray_Remove(card_array_t *array, int where)
     return ret;
 }
 
+uint8_t CardArray_RemoveCard(card_array_t *array, uint8_t card)
+{
+    uint8_t ret = 0;
+    int i = 0;
+    
+    for (i = 0; i < array->length; i++)
+    {
+        if (array->cards[i] == card)
+        {
+            ret = card;
+            CardArray_Remove(array, i);
+            break;
+        }
+    }
+    
+    return ret;
+}
+
 void CardArray_CopyRank(card_array_t *dst, card_array_t *src, uint8_t rank)
 {
     int i = 0;

@@ -55,6 +55,8 @@ void Game_Play(game_t *game, uint32_t seed)
     game->landlord = Random_int32(game->mt) % 3;
     game->players[game->landlord]->identity = PlayerIdentity_Landlord;
     
+    Deck_Shuffle(game->deck, game->mt);
+    
     for (i = 0; i < GAME_PLAYERS; i++)
     {
         Deck_Deal(game->deck, game->players[i]->cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
@@ -67,8 +69,8 @@ void Game_Play(game_t *game, uint32_t seed)
     
     while (game->status != GameStatus_Over)
     {
-        others[0] = game->players[OtherPlayerIdx1(playeridx)];
-        others[1] = game->players[OtherPlayerIdx2(playeridx)];
+        others[0] = game->players[IncPlayerIdx(playeridx)];
+        others[1] = game->players[IncPlayerIdx(playeridx+1)];
         
         switch (game->phase)
         {
@@ -77,6 +79,9 @@ void Game_Play(game_t *game, uint32_t seed)
                 Player_Play(game->players[playeridx], others, hand);
                 CardArray_Subtract(game->players[playeridx]->cards, hand->cards);
                 game->phase = Phase_Beat_1;
+                
+                printf("Player %d played\n", playeridx);
+                Hand_Print(hand);
                 break;
             }
             case Phase_Beat_1:
@@ -84,7 +89,14 @@ void Game_Play(game_t *game, uint32_t seed)
                 beat = Player_Beat(game->players[playeridx], others, hand);
                 /* has beat in this phase */
                 if (beat == 0)
+                {
                     game->phase = Phase_Beat_2;
+                }
+                else
+                {
+                    printf("Player %d played\n", playeridx);
+                    Hand_Print(hand);
+                }
                 
                 break;
             }
@@ -93,19 +105,21 @@ void Game_Play(game_t *game, uint32_t seed)
                 beat = Player_Beat(game->players[playeridx], others, hand);
                 /* no beat */
                 if (beat == 0)
+                {
                     game->phase = Phase_Play;
+                }
                 else
+                {
                     game->phase = Phase_Beat_1;
+                    printf("Player %d played\n", playeridx);
+                    Hand_Print(hand);
+                }
                 
                 break;
             }
             default:
                 break;
         }
-        
-        printf("Player %d played\n", playeridx);
-        Hand_Print(hand);
-        Hand_Clear(hand);
         
         playeridx = IncPlayerIdx(playeridx);
         

@@ -36,9 +36,20 @@
 #define HAND_CHAIN_NONE         0x00
 #define HAND_CHAIN              0x80
 
+#define HAND_NONE               0x00
+
 #define Hand_GetPrimal(h)       ((h)&0x0F)
 #define Hand_GetKicker(h)       ((h)&0x70)
 #define Hand_GetChain(h)        ((h)&0x80)
+
+#define Hand_SetPrimal(h,p)     ((h)|=(p))
+#define Hand_SetKicker(h,k)     Hand_SetPrimal(h,k)
+#define Hand_SetChain(h,c)      Hand_SetPrimal(h,c)
+
+#define Hand_Format(p,k,c)      ((p)|(k)|(c))
+#define Hand_ClearPrimal(h)     ((h)&0xF0)
+#define Hand_ClearKicker(h)     ((h)&0x8F)
+#define Hand_ClearChain(h)      ((h)&0x7F)
 
 typedef enum
 {
@@ -148,7 +159,7 @@ hand_node_t *HandList_GetTail(hand_list_t *hl);
 /*
  * search a specific hand type from hand list
  */
-hand_node_t *HandList_Search(hand_list_t *hl, int handtype);
+hand_node_t *HandList_Find(hand_list_t *hl, int handtype);
 
 /*
  * destroy a hand list
@@ -159,6 +170,11 @@ void HandList_Destroy(hand_list_t *hl);
  * destroy a hand list node
  */
 void HandListNode_Destroy(hand_node_t *node);
+
+/*
+ * search a beat in card array
+ */
+int HandList_SearchBeats(card_array_t *cards, hand_t *tobeat, hand_t *beat);
 
 /*
  * standard analyze a card array into hand list

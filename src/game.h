@@ -19,8 +19,6 @@
 #define GAME_REST_CARDS 3
 
 #define IncPlayerIdx(x)     (((x) + 1) % GAME_PLAYERS)
-#define OtherPlayerIdx1(x)  IncPlayerIdx(x)
-#define OtherPlayerIdx2(x)  IncPlayerIdx(x+1)
 
 typedef enum
 {
