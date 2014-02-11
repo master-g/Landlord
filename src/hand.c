@@ -901,6 +901,7 @@ int _HandList_SearchBeat_Solo(card_array_t *cards, hand_t *tobeat, hand_t *beat)
     CardArray_Copy(&temp, cards);
     CardArray_Sort(&temp, _HandList_SearchBeatSort);
     
+    /* search for solo */
     for (i = 0; i < temp.length; i++)
     {
         if (CARD_RANK(temp.cards[i]) > CARD_RANK(tobeat->cards->cards[0]))
