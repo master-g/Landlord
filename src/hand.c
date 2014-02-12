@@ -898,6 +898,7 @@ int _HandList_SearchBeat_Solo(card_array_t *cards, hand_t *tobeat, hand_t *beat)
     int i = 0;
     int canbeat = 0;
     card_array_t temp;
+    
     CardArray_Copy(&temp, cards);
     CardArray_Sort(&temp, _HandList_SearchBeatSort);
     
@@ -921,14 +922,57 @@ int _HandList_SearchBeat_Solo(card_array_t *cards, hand_t *tobeat, hand_t *beat)
     return canbeat;
 }
 
-int _HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat)
+int _HandList_SearchBeat_Pair(card_array_t *cards, hand_t *tobeat, hand_t *beat)
 {
-    if (tobeat->type == Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN_NONE))
+    int i = 0;
+    int canbeat = 0;
+    int count[CARD_RANK_END];
+    card_array_t temp;
+    
+    CardArray_Copy(&temp, cards);
+    CardArray_Sort(&temp, _HandList_SearchBeatSort);
+    Hand_CountRank(cards, count, NULL);
+    
+    /* search pair */
+    for (i = 0; i < temp.length; i++)
     {
-        return _HandList_SearchBeat_Solo(cards, tobeat, beat);
+        if (CARD_RANK(temp.cards[i]) > CARD_RANK(tobeat->cards->cards[0]) && count[i] >= 2)
+        {
+            beat->type = tobeat->type;
+            CardArray_PushBack(beat->cards, temp.cards[i]);
+            CardArray_PushBack(beat->cards, temp.cards[i+1]);
+            CardArray_RemoveCard(cards, temp.cards[i]);
+            CardArray_RemoveCard(cards, temp.cards[i+1]);
+            canbeat = 1;
+            break;
+        }
     }
     
-    return 0;
+    /* search for bomb or nuke */
+    if (canbeat == 0)
+        canbeat = _HandList_SearchBeat_Bomb(cards, tobeat, beat);
+
+    return canbeat;
+}
+
+typedef void (* HandList_BeatSearcher)(card_array_t *, hand_t *, hand_t *);
+
+int _HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat)
+{
+    int canbeat = 0;
+    switch (tobeat->type)
+    {
+        case Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN_NONE):
+            canbeat = _HandList_SearchBeat_Solo(cards, tobeat, beat);
+            break;
+        case Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN_NONE):
+            canbeat = _HandList_SearchBeat_Pair(cards, tobeat, beat);
+            break;
+        default:
+            break;
+    };
+    
+    return canbeat;
 }
 
 /*

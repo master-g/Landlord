@@ -39,6 +39,10 @@ void Player_GetReady(player_t *player)
     player->handlist = HandList_StandardAnalyze(player->cards);
 }
 
+/* 
+ * FIXME 
+ * strange hands play out...
+ */
 void Player_Play(player_t *player, player_t *others[], hand_t *hand)
 {
     int countpair = 0;
