@@ -805,7 +805,7 @@ hand_node_t *HandList_GetTail(hand_list_t *hl)
 
 hand_node_t *HandList_Find(hand_list_t *hl, int handtype)
 {
-    hand_node_t *ret;
+    hand_node_t *ret = NULL;
     
     for (ret = hl->first; ret != NULL; ret = ret->next)
     {
@@ -955,7 +955,40 @@ int _HandList_SearchBeat_Pair(card_array_t *cards, hand_t *tobeat, hand_t *beat)
     return canbeat;
 }
 
-typedef void (* HandList_BeatSearcher)(card_array_t *, hand_t *, hand_t *);
+int _HandList_SearchBeat_Trio(card_array_t *cards, hand_t *tobeat, hand_t *beat)
+{
+    int i = 0;
+    int j = 0;
+    int canbeat = 0;
+    int count[CARD_RANK_END];
+    card_array_t temp;
+    
+    CardArray_Copy(&temp, cards);
+    CardArray_Sort(&temp, _HandList_SearchBeatSort);
+    Hand_CountRank(cards, count, NULL);
+    
+    /* search pair */
+    for (i = 0; i < temp.length; i++)
+    {
+        if (CARD_RANK(temp.cards[i]) > CARD_RANK(tobeat->cards->cards[0]) && count[i] >= 3)
+        {
+            beat->type = tobeat->type;
+            for (j = 0; j < 3; j++)
+            {
+                CardArray_PushBack(beat->cards, temp.cards[i]);
+                CardArray_Remove(cards, temp.cards[i]);
+            }
+            canbeat = 1;
+            break;
+        }
+    }
+    
+    /* search for bomb or nuke */
+    if (canbeat == 0)
+        canbeat = _HandList_SearchBeat_Bomb(cards, tobeat, beat);
+    
+    return canbeat;
+}
 
 int _HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat)
 {
@@ -967,6 +1000,9 @@ int _HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat)
             break;
         case Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN_NONE):
             canbeat = _HandList_SearchBeat_Pair(cards, tobeat, beat);
+            break;
+        case Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN_NONE):
+            canbeat = _HandList_SearchBeat_Trio(cards, tobeat, beat);
             break;
         default:
             break;
@@ -1022,16 +1058,15 @@ void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int dupl
     int cardnum = 0;
     uint8_t lastrank = 0;
     hand_t *hand = NULL;
-    int step[] = {0, 1, 2, 3};
     int primal[] = {0, HAND_PRIMAL_SOLO, HAND_PRIMAL_PAIR, HAND_PRIMAL_TRIO};
     int chainlen[] = {0, HAND_SOLO_CHAIN_MIN_LENGTH, HAND_PAIR_CHAIN_MIN_LENGTH, HAND_TRIO_CHAIN_MIN_LENGTH};
     
     if (duplicate < 1 || duplicate > 3)
         return;
     
-    cardnum = array->length / step[duplicate];
+    cardnum = array->length / duplicate;
     lastrank = CARD_RANK(array->cards[0]);
-    i = step[duplicate];
+    i = duplicate;
     while (cardnum--)
     {
         if ((lastrank - 1) != CARD_RANK(array->cards[i]))
@@ -1050,11 +1085,11 @@ void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int dupl
             else
             {
                 /* not a chain */
-                for (j = 0; j < i/step[duplicate]; j++)
+                for (j = 0; j < i/duplicate; j++)
                 {
                     hand = Hand_Create();
                     hand->type = Hand_Format(primal[duplicate], HAND_KICKER_NONE, HAND_CHAIN_NONE);
-                    for (k = 0; k < step[duplicate]; k++)
+                    for (k = 0; k < duplicate; k++)
                         CardArray_PushBack(hand->cards, CardArray_PopFront(array));
                     
                     HandList_PushFront(hl, hand);
@@ -1062,16 +1097,16 @@ void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int dupl
             }
             
             lastrank = CARD_RANK(array->cards[0]);
-            i = step[duplicate];
+            i = duplicate;
         }
         else /* chain intact */
         {
             lastrank = CARD_RANK(array->cards[i]);
-            i += step[duplicate];
+            i += duplicate;
         }
     }
     
-    k = i - step[duplicate];            /* step back */
+    k = i - duplicate;                  /* step back */
     if (k != 0 && k == array->length)   /* all chained up */
     {
         /* can chain up */
@@ -1079,18 +1114,20 @@ void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int dupl
         {
             hand = Hand_Create();
             hand->type = Hand_Format(primal[duplicate], HAND_KICKER_NONE, HAND_CHAIN);
-            for (j = 0; j < i - step[duplicate]; j++)
+            for (j = 0; j < i - duplicate; j++)
                 CardArray_PushBack(hand->cards, CardArray_PopFront(array));
             
             HandList_PushFront(hl, hand);
         }
         else
         {
-            for (j = 0; j < k; j++)
+            for (j = 0; j < k/duplicate; j++)
             {
                 hand = Hand_Create();
                 hand->type = Hand_Format(primal[duplicate], HAND_KICKER_NONE, HAND_CHAIN_NONE);
-                CardArray_PushBack(hand->cards, CardArray_PopFront(array));
+                for (i = 0; i < duplicate; i++)
+                    CardArray_PushBack(hand->cards, CardArray_PopFront(array));
+
                 HandList_PushFront(hl, hand);
             }
         }

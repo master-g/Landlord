@@ -129,12 +129,24 @@ void test_code(void)
 
 int main(int argc, const char * argv[])
 {
+    /*
+    const char* cardstr = "♠2 ♦2 ♦A ♦K ♠Q ♥Q ♣J ♠T ♥T ♣T ♠9 ♠8 ♥8 ♣8 ♥5 ♦5 ♠4 ♠3 ♥3 ♦3";
+    card_array_t *cards = CardArray_CreateFromString(cardstr);
+    hand_list_t *hl = HandList_StandardAnalyze(cards);
+    
+    CardArray_Print(cards);
+    HandList_Print(hl);
+    
+    HandList_Destroy(hl);
+    CardArray_Destroy(cards);
+     */
+    
     game_t *game = NULL;
         
     game = Game_Create();
-    Game_Play(game, 9);
+    Game_Play(game, 10);
     Game_Destroy(game);
-     
+
     memtrack_list_allocations();
     return 0;
 }

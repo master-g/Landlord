@@ -57,11 +57,38 @@ void Game_Play(game_t *game, uint32_t seed)
     
     Deck_Shuffle(game->deck, game->mt);
     
+    /* test */
+    {
+        card_array_t *arr1 = NULL;
+        card_array_t *arr2 = NULL;
+        card_array_t *arr3 = NULL;
+        
+        arr1 = CardArray_CreateFromString("♠K ♥K ♥K ♠4 ♦4 ♣4");
+        arr2 = CardArray_CreateFromString("♥A ♣A ♦A ♦9 ♠7 ♦6 ♣5 ♠4");
+        arr3 = CardArray_CreateFromString("♦R ♣R ♦2");
+        
+        CardArray_Copy(game->players[0]->cards, arr1);
+        CardArray_Copy(game->players[1]->cards, arr2);
+        CardArray_Copy(game->players[2]->cards, arr3);
+        
+        CardArray_Destroy(arr1);
+        CardArray_Destroy(arr2);
+        CardArray_Destroy(arr3);
+        
+        game->landlord = 0;
+    }
+    
     for (i = 0; i < GAME_PLAYERS; i++)
     {
+        /*
         Deck_Deal(game->deck, game->players[i]->cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
+         */
+        /* test */
+        
         Player_GetReady(game->players[i]);
     }
+    
+    HandList_Print(game->players[0]->handlist);
     
     game->status = GameStatus_Ready;
     playeridx = game->landlord;
@@ -80,7 +107,7 @@ void Game_Play(game_t *game, uint32_t seed)
                 CardArray_Subtract(game->players[playeridx]->cards, hand->cards);
                 game->phase = Phase_Beat_1;
                 
-                printf("Player %d played\n", playeridx);
+                printf("Player ---- %d ---- played\n", playeridx);
                 Hand_Print(hand);
                 break;
             }
@@ -94,7 +121,7 @@ void Game_Play(game_t *game, uint32_t seed)
                 }
                 else
                 {
-                    printf("Player %d played\n", playeridx);
+                    printf("Player ---- %d ---- played\n", playeridx);
                     Hand_Print(hand);
                 }
                 
@@ -111,7 +138,7 @@ void Game_Play(game_t *game, uint32_t seed)
                 else
                 {
                     game->phase = Phase_Beat_1;
-                    printf("Player %d played\n", playeridx);
+                    printf("Player ---- %d ---- played\n", playeridx);
                     Hand_Print(hand);
                 }
                 

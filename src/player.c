@@ -39,16 +39,12 @@ void Player_GetReady(player_t *player)
     player->handlist = HandList_StandardAnalyze(player->cards);
 }
 
-/* 
- * FIXME 
- * strange hands play out...
- */
 void Player_Play(player_t *player, player_t *others[], hand_t *hand)
 {
     int countpair = 0;
     int countsolo = 0;
-    int count = 0;
     int need = 0;
+    int searchprimal = 0;
     int kicker = 0;
     hand_node_t *node = NULL;
     hand_node_t *temp = NULL;
@@ -91,6 +87,8 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
                 countpair++;
             else if (temp->hand->type == HAND_PRIMAL_SOLO)
                 countsolo++;
+            
+            temp = temp->next;
         }
         
         /* trio-pair-chain then trio-solo-chain */
@@ -98,27 +96,28 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
         {
             return;
         }
-        else if (countpair >= countsolo)
+        else if (countpair >= need)
         {
+            searchprimal = HAND_PRIMAL_PAIR;
             kicker = HAND_KICKER_PAIR;
-            count = countpair;
         }
         else
         {
+            searchprimal = HAND_PRIMAL_SOLO;
             kicker = HAND_KICKER_SOLO;
-            count = countsolo;
         }
         
         /* detach pairs from list */
         temp = player->handlist->first;
-        while (count--)
+        while (need > 0 && temp != NULL)
         {
-            if (temp->hand->type == kicker)
+            if (temp->hand->type == Hand_Format(searchprimal, HAND_KICKER_NONE, HAND_CHAIN_NONE))
             {
                 /* copy cards */
                 CardArray_Concate(hand->cards, temp->hand->cards);
                 HandList_Remove(player->handlist, temp);
                 temp = player->handlist->first;
+                need--;
             }
             else
             {
@@ -176,6 +175,18 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
             HandList_Remove(player->handlist, node);
             return;
         }
+        
+        /* no solo and pair, return with trio */
+        return;
+    }
+    
+    /* pair */
+    node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN_NONE));
+    if (node != NULL && CARD_RANK(node->hand->cards->cards[0]) != CARD_RANK_2)
+    {
+        Hand_Copy(hand, node->hand);
+        HandList_Remove(player->handlist, node);
+        return;
     }
     
     /* just play */
