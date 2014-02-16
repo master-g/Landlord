@@ -137,20 +137,85 @@ void CardArray_Subtract(card_array_t *from, card_array_t *sub)
 {
     int i = 0;
     int j = 0;
+    int removal = 0;
     uint8_t card = 0;
     
+    /* mark matched cards in from with 0 */
     for (i = 0; i < sub->length; i++)
     {
         card = sub->cards[i];
-        for (j = 0; j < from->length; j++)
+        do
         {
-            if (from->cards[j] == card)
+            removal = 0;
+            
+            for (j = 0; j < from->length; j++)
             {
-                CardArray_Remove(from, j);
+                if (from->cards[j] == card)
+                {
+                    removal = 1;
+                    from->length--;
+                    memmove(from->cards + j, from->cards + j + 1, from->length - j);
+                    break;
+                }
+            }
+        } while (removal == 1);
+    }
+}
+
+int CardArray_IsIdentity(card_array_t *a, card_array_t *b)
+{
+    int i = 0;
+    int identity = 0;
+    card_array_t ta, tb;
+    
+    if (a == b)
+        return 0;
+    
+    identity = a->length - b->length;
+    if (identity == 0)
+    {
+        CardArray_Copy(&ta, a);
+        CardArray_Copy(&tb, b);
+        CardArray_Sort(&ta, NULL);
+        CardArray_Sort(&tb, NULL);
+        
+        for (i = 0; i < a->length; i++)
+        {
+            if (ta.cards[i] != tb.cards[i])
+            {
+                identity = -1;
                 break;
             }
         }
     }
+    
+    return identity;
+}
+
+int CardArray_Contain(card_array_t *array, card_array_t *segment)
+{
+    int contain = 0;
+    int i = 0;
+    int j = 0;
+    
+    card_array_t temp;
+    CardArray_Copy(&temp, segment);
+    
+    for (i = 0; i < array->length; i++)
+    {
+        for (j = 0; j < temp.length; j++)
+        {
+            if (array->cards[i] == temp.cards[j])
+            {
+                CardArray_RemoveCard(&temp, temp.cards[j]);
+                break;
+            }
+        }
+    }
+    
+    contain = temp.length == 0 ? 1 : 0;
+    
+    return contain;
 }
 
 uint8_t CardArray_PushBack(card_array_t *array, uint8_t card)
@@ -193,7 +258,7 @@ uint8_t CardArray_PopFront(card_array_t *array)
     {
         card = array->cards[0];
         memmove(array->cards, array->cards + 1, array->length);
-        array->length--;
+        array->cards[array->length--] = 0;
     }
     
     return card;
@@ -258,6 +323,7 @@ uint8_t CardArray_Remove(card_array_t *array, int where)
             ret = array->cards[where];
             array->length--;
             memmove(array->cards + where, array->cards + where + 1, array->length - where);
+            array->cards[array->length] = 0;
         }
     }
     
@@ -385,11 +451,16 @@ void CardArray_Test(void)
     int i = 0;
     int j = 0;
     int card = 0;
+    unsigned int seed = 0;
     char str[10];
     card_array_t *arr = CardArray_CreateSet();
     card_array_t *tail = CardArray_CreateEmpty();
     
-    srand((unsigned int)time(NULL));
+    seed = (unsigned int)time(NULL);
+    seed = 0x52fd9252;
+    srand(seed);
+    
+    printf("CardArray_Test begin with seed: 0x%08x\n", seed);
     
     printf("Testing CardArray_CreateSet\n");
     PRINT_TEST_SEPARATOR;
@@ -547,5 +618,4 @@ void CardArray_Test(void)
     
     CardArray_Destroy(arr);
     CardArray_Destroy(tail);
-    
 }

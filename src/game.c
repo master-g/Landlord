@@ -48,7 +48,8 @@ void Game_Play(game_t *game, uint32_t seed)
     int playeridx = 0;
     int beat = 0;
     player_t *others[2];
-    hand_t *hand = Hand_Create();
+    hand_t hand;
+    Hand_Clear(&hand);
     
     Random_Init(game->mt, seed);
     
@@ -57,15 +58,15 @@ void Game_Play(game_t *game, uint32_t seed)
     
     Deck_Shuffle(game->deck, game->mt);
     
-    /* test */
+    /* test
     {
         card_array_t *arr1 = NULL;
         card_array_t *arr2 = NULL;
         card_array_t *arr3 = NULL;
         
-        arr1 = CardArray_CreateFromString("♠K ♥K ♥K ♠4 ♦4 ♣4");
-        arr2 = CardArray_CreateFromString("♥A ♣A ♦A ♦9 ♠7 ♦6 ♣5 ♠4");
-        arr3 = CardArray_CreateFromString("♦R ♣R ♦2");
+        arr1 = CardArray_CreateFromString("♠7 ♦6 ♣5 ♠4 ♦4 ♣4");
+        arr2 = CardArray_CreateFromString("♥A ♣A ♦A ♠A ♠7 ♣6 ♦6 ♣5 ♠4");
+        arr3 = CardArray_CreateFromString("♠7 ♦6 ♣5 ♠4");
         
         CardArray_Copy(game->players[0]->cards, arr1);
         CardArray_Copy(game->players[1]->cards, arr2);
@@ -77,18 +78,16 @@ void Game_Play(game_t *game, uint32_t seed)
         
         game->landlord = 0;
     }
+     */
     
     for (i = 0; i < GAME_PLAYERS; i++)
     {
         /*
-        Deck_Deal(game->deck, game->players[i]->cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
          */
-        /* test */
+        Deck_Deal(game->deck, game->players[i]->cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
         
         Player_GetReady(game->players[i]);
     }
-    
-    HandList_Print(game->players[0]->handlist);
     
     game->status = GameStatus_Ready;
     playeridx = game->landlord;
@@ -103,17 +102,17 @@ void Game_Play(game_t *game, uint32_t seed)
         {
             case Phase_Play:
             {
-                Player_Play(game->players[playeridx], others, hand);
-                CardArray_Subtract(game->players[playeridx]->cards, hand->cards);
+                Player_Play(game->players[playeridx], others, &hand);
+                CardArray_Subtract(game->players[playeridx]->cards, &hand.cards);
                 game->phase = Phase_Beat_1;
                 
                 printf("Player ---- %d ---- played\n", playeridx);
-                Hand_Print(hand);
+                Hand_Print(&hand);
                 break;
             }
             case Phase_Beat_1:
             {
-                beat = Player_Beat(game->players[playeridx], others, hand);
+                beat = Player_Beat(game->players[playeridx], others, &hand);
                 /* has beat in this phase */
                 if (beat == 0)
                 {
@@ -122,14 +121,14 @@ void Game_Play(game_t *game, uint32_t seed)
                 else
                 {
                     printf("Player ---- %d ---- played\n", playeridx);
-                    Hand_Print(hand);
+                    Hand_Print(&hand);
                 }
                 
                 break;
             }
             case Phase_Beat_2:
             {
-                beat = Player_Beat(game->players[playeridx], others, hand);
+                beat = Player_Beat(game->players[playeridx], others, &hand);
                 /* no beat */
                 if (beat == 0)
                 {
@@ -139,7 +138,7 @@ void Game_Play(game_t *game, uint32_t seed)
                 {
                     game->phase = Phase_Beat_1;
                     printf("Player ---- %d ---- played\n", playeridx);
-                    Hand_Print(hand);
+                    Hand_Print(&hand);
                 }
                 
                 break;
@@ -160,6 +159,4 @@ void Game_Play(game_t *game, uint32_t seed)
             }
         }
     }
-    
-    Hand_Destroy(hand);
 }

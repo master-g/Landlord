@@ -122,7 +122,7 @@ int _hand_pattern[][PATTERN_LENGTH] =
 hand_t *Hand_Create(void)
 {
     hand_t *hand = (hand_t *)calloc(1, sizeof(hand_t));
-    hand->cards = CardArray_CreateEmpty();
+    CardArray_Clear(&hand->cards);
     
     return hand;
 }
@@ -130,20 +130,19 @@ hand_t *Hand_Create(void)
 
 void Hand_Destroy(hand_t *hand)
 {
-    CardArray_Destroy(hand->cards);
     free(hand);
 }
 
 void Hand_Clear(hand_t *hand)
 {
-    CardArray_Clear(hand->cards);
+    CardArray_Clear(&hand->cards);
     hand->type = 0;
 }
 
 void Hand_Copy(hand_t *dst, hand_t *src)
 {
     dst->type = src->type;
-    CardArray_Copy(dst->cards, src->cards);
+    CardArray_Copy(&dst->cards, &src->cards);
 }
 
 /*
@@ -252,13 +251,13 @@ void _Hand_Distribute(hand_t *hand, card_array_t *array, int *count, int d1, int
         num = count[CARD_RANK(card)];
         
         if (num == d1)
-            CardArray_PushBack(hand->cards, card);
+            CardArray_PushBack(&hand->cards, card);
         else if (num == d2)
             CardArray_PushBack(&temp, card);
         
-        if (hand->cards->length + temp.length >= length)
+        if (hand->cards.length + temp.length >= length)
         {
-            CardArray_Concate(hand->cards, &temp);
+            CardArray_Concate(&hand->cards, &temp);
             break;
         }
     }
@@ -267,7 +266,7 @@ void _Hand_Distribute(hand_t *hand, card_array_t *array, int *count, int d1, int
 void _Hand_Parse_1(hand_t *hand, card_array_t *array, int *count, int *sorted)
 {
     /* solo */
-    CardArray_Copy(hand->cards, array);
+    CardArray_Copy(&hand->cards, array);
     hand->type = Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN_NONE);
 }
 
@@ -277,7 +276,7 @@ void _Hand_Parse_2(hand_t *hand, card_array_t *array, int *count, int *sorted)
     if (CARD_RANK(array->cards[0]) == CARD_RANK(array->cards[1]))
     {
         hand->type = CARD_RANK(array->cards[0]) == CARD_RANK_R ? HAND_PRIMAL_NUKE : HAND_PRIMAL_PAIR;
-        CardArray_Copy(hand->cards, array);
+        CardArray_Copy(&hand->cards, array);
     }
 }
 
@@ -288,7 +287,7 @@ void _Hand_Parse_3(hand_t *hand, card_array_t *array, int *count, int *sorted)
     if (CARD_RANK(array->cards[1]) == rank &&
         CARD_RANK(array->cards[2]) == rank)
     {
-        CardArray_Copy(hand->cards, array);
+        CardArray_Copy(&hand->cards, array);
         hand->type = HAND_PRIMAL_TRIO;
     }
 }
@@ -306,7 +305,7 @@ void _Hand_Parse_4(hand_t *hand, card_array_t *array, int *count, int *sorted)
         CARD_RANK(array->cards[2]) == rank &&
         CARD_RANK(array->cards[3]) == rank)
     {
-        CardArray_Copy(hand->cards, array);
+        CardArray_Copy(&hand->cards, array);
         hand->type = HAND_PRIMAL_BOMB;
     }
     else
@@ -327,12 +326,12 @@ void _Hand_Parse_4(hand_t *hand, card_array_t *array, int *count, int *sorted)
             for (i = 0; i < array->length; i++)
             {
                 if (CARD_RANK(array->cards[i]) == trio)
-                    CardArray_PushBack(hand->cards, array->cards[i]);
+                    CardArray_PushBack(&hand->cards, array->cards[i]);
                 else
                     kicker = array->cards[i];
             }
             
-            CardArray_PushBack(hand->cards, kicker);
+            CardArray_PushBack(&hand->cards, kicker);
             hand->type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_SOLO, HAND_CHAIN_NONE);
         }
     }
@@ -370,12 +369,12 @@ void _Hand_Parse_5(hand_t *hand, card_array_t *array, int *count, int *sorted)
             for (j = 0; j < array->length; j++)
             {
                 if (CARD_RANK(array->cards[j]) == trio)
-                    CardArray_PushBack(hand->cards, array->cards[j]);
+                    CardArray_PushBack(&hand->cards, array->cards[j]);
                 else
                     CardArray_PushBack(&pairArray, array->cards[j]);
             }
             
-            CardArray_Concate(hand->cards, &pairArray);
+            CardArray_Concate(&hand->cards, &pairArray);
             hand->type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_PAIR, HAND_CHAIN_NONE);
             
             break;
@@ -390,7 +389,7 @@ void _Hand_Parse_5(hand_t *hand, card_array_t *array, int *count, int *sorted)
     {
         if (_Hand_CheckChain(count, 1, 5))
         {
-            CardArray_Copy(hand->cards, array);
+            CardArray_Copy(&hand->cards, array);
             hand->type = Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN);
         }
     }
@@ -536,19 +535,19 @@ void Hand_Parse(hand_t *hand, card_array_t *array)
     else if (array->length >= HAND_SOLO_CHAIN_MIN_LENGTH && _Hand_CheckChain(count, 1, array->length))
     {
         hand->type = Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN);
-        CardArray_Copy(hand->cards, array);
+        CardArray_Copy(&hand->cards, array);
     }
     /* pair chain */
     else if (array->length >= HAND_PAIR_CHAIN_MIN_LENGTH && array->length % 2 == 0 && _Hand_CheckChain(count, 2, array->length / 2))
     {
         hand->type = Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN);
-        CardArray_Copy(hand->cards, array);
+        CardArray_Copy(&hand->cards, array);
     }
     /* trio chain */
     else if (array->length >= HAND_TRIO_CHAIN_MIN_LENGTH && array->length % 3 == 0 && _Hand_CheckChain(count, 3, array->length / 3))
     {
         hand->type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN);
-        CardArray_Copy(hand->cards, array);
+        CardArray_Copy(&hand->cards, array);
     }
     /* other type */
     else
@@ -569,11 +568,11 @@ int _Hand_CompareBomb(hand_t *a, hand_t *b)
     int ret = HAND_CMP_ILLEGAL;
     
     /* same type same cards, equal */
-    if ((a->type == b->type) && (a->cards->cards[0] == b->cards->cards[0]))
+    if ((a->type == b->type) && (a->cards.cards[0] == b->cards.cards[0]))
         ret = HAND_CMP_EQUAL;
     /* both are bombs, compare by card rank */
     else if (a->type == HAND_PRIMAL_BOMB && b->type == HAND_PRIMAL_BOMB)
-        ret = CARD_RANK(a->cards->cards[0]) > CARD_RANK(b->cards->cards[0]) ? HAND_CMP_GREATER : HAND_CMP_LESS;
+        ret = CARD_RANK(a->cards.cards[0]) > CARD_RANK(b->cards.cards[0]) ? HAND_CMP_GREATER : HAND_CMP_LESS;
     else
         ret = Hand_GetPrimal(a->type) > Hand_GetPrimal(b->type) ? HAND_CMP_GREATER : HAND_CMP_LESS;
     
@@ -605,16 +604,16 @@ int Hand_Compare(hand_t *a, hand_t *b)
     else /* same hand type and with no bombs */
     {
         /* same hand type but different length */
-        if (a->cards->length != b->cards->length)
+        if (a->cards.length != b->cards.length)
         {
             result = HAND_CMP_ILLEGAL;
         }
         else /* same hand type and same length */
         {
-            if (CARD_RANK(a->cards->cards[0]) == CARD_RANK(b->cards->cards[0]))
+            if (CARD_RANK(a->cards.cards[0]) == CARD_RANK(b->cards.cards[0]))
                 result = HAND_CMP_EQUAL;
             else
-                result = CARD_RANK(a->cards->cards[0]) > CARD_RANK(b->cards->cards[0]) ? HAND_CMP_GREATER : HAND_CMP_LESS;
+                result = CARD_RANK(a->cards.cards[0]) > CARD_RANK(b->cards.cards[0]) ? HAND_CMP_GREATER : HAND_CMP_LESS;
         }
     }
     
@@ -693,11 +692,11 @@ void Hand_Print(hand_t *hand)
     printf("\n");
     
     memset(str, 0, 10);
-    printf("Cards: %d | ", hand->cards->length);
+    printf("Cards: %d | ", hand->cards.length);
     
-    for (i = 0; i < hand->cards->length; i++)
+    for (i = 0; i < hand->cards.length; i++)
     {
-        Card_ToString(hand->cards->cards[i], str, 10);
+        Card_ToString(hand->cards.cards[i], str, 10);
         printf("%s ", str);
     }
     printf("\n");
@@ -849,6 +848,16 @@ void HandListNode_Destroy(hand_node_t *node)
  * ************************************************************
  */
 
+/* beat search context */
+typedef struct beat_search_ctx_t
+{
+    int count[CARD_RANK_END];   /* rank count */
+    card_array_t rcards;        /* reverse sorted cards */
+    
+} beat_search_ctx_t;
+
+#define BeatSearchCtx_Clear(ctx) memset((ctx), 0, sizeof(beat_search_ctx_t));
+
 int _HandList_SearchBeatSort(const void *a, const void *b)
 {
     if (CARD_RANK(*(uint8_t *)a) == CARD_RANK(*(uint8_t *)b))
@@ -857,22 +866,35 @@ int _HandList_SearchBeatSort(const void *a, const void *b)
         return CARD_RANK(*(uint8_t *)a) - CARD_RANK(*(uint8_t *)b);
 }
 
-int _HandList_SearchBeat_Bomb(card_array_t *cards, hand_t *tobeat, hand_t *beat)
+int _HandList_SearchBeat_Bomb(beat_search_ctx_t *ctx, card_array_t *cards, hand_t *tobeat, hand_t *beat)
 {
     int canbeat = 0;
     int i = 0;
-    int count[CARD_RANK_END];
+    int *count = NULL;
     
-    Hand_CountRank(cards, count, NULL);
+    count = ctx->count;
+    
     for (i = CARD_RANK_2; i >= CARD_RANK_3; i--)
     {
-        if (count[i] == 4 && CARD_RANK(i) > tobeat->cards->cards[0])
+        if (count[i] == 4)
         {
             canbeat = 1;
+            
+            /* bomb vs bomb */
+            if (tobeat->type == HAND_PRIMAL_BOMB)
+            {
+                if (i > CARD_RANK(tobeat->cards.cards[0]))
+                    canbeat = 1;
+                else
+                    canbeat = 0;
+            }
+            
+            if (canbeat == 0)
+                break;
+            
             Hand_Clear(beat);
             beat->type = Hand_Format(HAND_PRIMAL_BOMB, 0, 0);
-            CardArray_CopyRank(beat->cards, cards, i);
-            CardArray_Subtract(cards, beat->cards);
+            CardArray_CopyRank(&beat->cards, cards, i);
             break;
         }
     }
@@ -885,107 +907,300 @@ int _HandList_SearchBeat_Bomb(card_array_t *cards, hand_t *tobeat, hand_t *beat)
             canbeat = 1;
             Hand_Clear(beat);
             beat->type = Hand_Format(HAND_PRIMAL_NUKE, 0, 0);
-            CardArray_CopyRank(beat->cards, cards, CARD_RANK_R);
-            CardArray_Subtract(cards, beat->cards);
+            CardArray_CopyRank(&beat->cards, cards, CARD_RANK_R);
         }
     }
     
     return canbeat;
 }
 
-int _HandList_SearchBeat_Solo(card_array_t *cards, hand_t *tobeat, hand_t *beat)
+int _HandList_SearchBeat_Solo(beat_search_ctx_t *ctx, card_array_t *cards, hand_t *tobeat, hand_t *beat)
 {
     int i = 0;
     int canbeat = 0;
-    card_array_t temp;
+    card_array_t *temp = NULL;
     
-    CardArray_Copy(&temp, cards);
-    CardArray_Sort(&temp, _HandList_SearchBeatSort);
+    temp = &ctx->rcards;
     
     /* search for solo */
-    for (i = 0; i < temp.length; i++)
+    for (i = 0; i < temp->length; i++)
     {
-        if (CARD_RANK(temp.cards[i]) > CARD_RANK(tobeat->cards->cards[0]))
+        if (CARD_RANK(temp->cards[i]) > CARD_RANK(tobeat->cards.cards[0]))
         {
             beat->type = tobeat->type;
-            CardArray_PushBack(beat->cards, temp.cards[i]);
-            CardArray_RemoveCard(cards, temp.cards[i]);
+            CardArray_PushBack(&beat->cards, temp->cards[i]);
             canbeat = 1;
             break;
         }
     }
     
-    /* search bomb or nuke */
-    if (canbeat == 0)
-        canbeat = _HandList_SearchBeat_Bomb(cards, tobeat, beat);
-    
     return canbeat;
 }
 
-int _HandList_SearchBeat_Pair(card_array_t *cards, hand_t *tobeat, hand_t *beat)
+int _HandList_SearchBeat_Pair(beat_search_ctx_t *ctx, card_array_t *cards, hand_t *tobeat, hand_t *beat)
 {
     int i = 0;
     int canbeat = 0;
-    int count[CARD_RANK_END];
-    card_array_t temp;
+    int *count = NULL;
+    card_array_t *temp = NULL;
     
-    CardArray_Copy(&temp, cards);
-    CardArray_Sort(&temp, _HandList_SearchBeatSort);
-    Hand_CountRank(cards, count, NULL);
+    count = ctx->count;
+    temp = &ctx->rcards;
     
     /* search pair */
-    for (i = 0; i < temp.length; i++)
+    for (i = 0; i < temp->length; i++)
     {
-        if (CARD_RANK(temp.cards[i]) > CARD_RANK(tobeat->cards->cards[0]) && count[i] >= 2)
+        if (CARD_RANK(temp->cards[i]) > CARD_RANK(tobeat->cards.cards[0]) && count[CARD_RANK(temp->cards[i])] >= 2)
         {
             beat->type = tobeat->type;
-            CardArray_PushBack(beat->cards, temp.cards[i]);
-            CardArray_PushBack(beat->cards, temp.cards[i+1]);
-            CardArray_RemoveCard(cards, temp.cards[i]);
-            CardArray_RemoveCard(cards, temp.cards[i+1]);
+            CardArray_PushBack(&beat->cards, temp->cards[i]);
+            CardArray_PushBack(&beat->cards, temp->cards[i+1]);
             canbeat = 1;
             break;
         }
     }
-    
-    /* search for bomb or nuke */
-    if (canbeat == 0)
-        canbeat = _HandList_SearchBeat_Bomb(cards, tobeat, beat);
 
     return canbeat;
 }
 
-int _HandList_SearchBeat_Trio(card_array_t *cards, hand_t *tobeat, hand_t *beat)
+int _HandList_SearchBeat_Trio(beat_search_ctx_t *ctx, card_array_t *cards, hand_t *tobeat, hand_t *beat)
 {
     int i = 0;
     int j = 0;
     int canbeat = 0;
-    int count[CARD_RANK_END];
-    card_array_t temp;
+    int *count = NULL;
+    card_array_t *temp = NULL;
     
-    CardArray_Copy(&temp, cards);
-    CardArray_Sort(&temp, _HandList_SearchBeatSort);
-    Hand_CountRank(cards, count, NULL);
+    count = ctx->count;
+    temp = &ctx->rcards;
     
-    /* search pair */
-    for (i = 0; i < temp.length; i++)
+    /* search trio */
+    for (i = 0; i < temp->length; i++)
     {
-        if (CARD_RANK(temp.cards[i]) > CARD_RANK(tobeat->cards->cards[0]) && count[i] >= 3)
+        if (CARD_RANK(temp->cards[i]) > CARD_RANK(tobeat->cards.cards[0]) && count[CARD_RANK(temp->cards[i])] >= 3)
         {
             beat->type = tobeat->type;
             for (j = 0; j < 3; j++)
-            {
-                CardArray_PushBack(beat->cards, temp.cards[i]);
-                CardArray_Remove(cards, temp.cards[i]);
-            }
+                CardArray_PushBack(&beat->cards, temp->cards[i+j]);
+
             canbeat = 1;
             break;
         }
     }
     
-    /* search for bomb or nuke */
-    if (canbeat == 0)
-        canbeat = _HandList_SearchBeat_Bomb(cards, tobeat, beat);
+    return canbeat;
+}
+
+int _HandList_SearchBeat_TrioPair(beat_search_ctx_t *ctx, card_array_t *cards, hand_t *tobeat, hand_t *beat)
+{
+    int i = 0;
+    int j = 0;
+    int canbeat = 0;
+    int canpairbeat = 0;
+    int cantriobeat = 0;
+    int sameranktrio = 0;
+    int *count = NULL;
+    card_array_t *temp = NULL;
+    hand_t trio, pair, pairbeat, triobeat;
+    
+    Hand_Clear(&trio);
+    Hand_Clear(&pair);
+    Hand_Clear(&pairbeat);
+    Hand_Clear(&triobeat);
+    
+    count =ctx->count;
+    temp = &ctx->rcards;
+    
+    /* copy hands */
+    for (i = 0; i < 3; i++)
+        CardArray_PushBack(&trio.cards, tobeat->cards.cards[i]);
+    
+    CardArray_PushBack(&pair.cards, tobeat->cards.cards[3]);
+    CardArray_PushBack(&pair.cards, tobeat->cards.cards[4]);
+    
+    trio.type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN_NONE);
+    pair.type = Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN_NONE);
+    /*
+     * for a standard 54 card set, each rank has four cards
+     * so it is impossible for two trio of the same rank at the same time
+     *
+     * player_1 SEARCH_BEAT player_2 : impossible for 333 vs 333
+     *
+     * BUT
+     *
+     * player_1 SEARCH_BEAT_LOOP player_1_prev_beat : possible for 333 vs 333
+     *
+     */
+    
+    canpairbeat = _HandList_SearchBeat_Pair(ctx, cards, &pair, &pairbeat);
+    cantriobeat = _HandList_SearchBeat_Trio(ctx, cards, &trio, &triobeat);
+    
+    /* trio can't beat, search same rank trio */
+    if (cantriobeat == 0)
+    {
+        /* search trio */
+        for (i = 0; i < temp->length; i++)
+        {
+            if (CARD_RANK(temp->cards[i]) == CARD_RANK(trio.cards.cards[0]) && count[CARD_RANK(temp->cards[i])] >= 3)
+            {
+                triobeat.type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN_NONE);
+                for (j = 0; j < 3; j++)
+                {
+                    CardArray_PushBack(&triobeat.cards, temp->cards[i+j]);
+                    temp->cards[i+j] = 0; /* set used card to 0, otherwise search pair will cause reuse problem */
+                }
+                
+                /* for further use */
+                sameranktrio = 1;
+                break;
+            }
+        }
+    }
+    /* trio can beat, find a pair */
+    else
+    {
+        /* search pair */
+        for (i = 0; i < temp->length; i++)
+        {
+            if (count[CARD_RANK(temp->cards[i])] >= 2 && CARD_RANK(temp->cards[i]) != CARD_RANK_R)
+            {
+                CardArray_Clear(&pairbeat);
+                CardArray_PushBack(&pairbeat.cards, temp->cards[i]);
+                CardArray_PushBack(&pairbeat.cards, temp->cards[i+1]);
+                canbeat = 1;
+                break;
+            }
+        }
+    }
+    
+    /* same rank trio found, find a higher pair */
+    if (canbeat == 0 && sameranktrio == 1)
+    {
+        /* search a higher pair */
+        for (i = 0; i < cards->length; i++)
+        {
+            if (count[CARD_RANK(temp->cards[i])] >= 2 && CARD_RANK(temp->cards[i]) > CARD_RANK(pair.cards.cards[0]) && CARD_RANK(temp->cards[i]) != CARD_RANK_R)
+            {
+                CardArray_Clear(&pairbeat);
+                CardArray_PushBack(&pairbeat.cards, temp->cards[i]);
+                CardArray_PushBack(&pairbeat.cards, temp->cards[i+1]);
+                canbeat = 1;
+                break;
+            }
+        }
+    }
+    
+    if (canbeat == 1)
+    {
+        CardArray_Clear(&beat->cards);
+        CardArray_Concate(&beat->cards, &triobeat.cards);
+        CardArray_Concate(&beat->cards, &pairbeat.cards);
+        beat->type = tobeat->type;
+    }
+    
+    return canbeat;
+}
+
+/* almost the same as TrioPair */
+int _HandList_SearchBeat_TrioSolo(beat_search_ctx_t *ctx, card_array_t *cards, hand_t *tobeat, hand_t *beat)
+{
+    int i = 0;
+    int j = 0;
+    int canbeat = 0;
+    int cansolobeat = 0;
+    int cantriobeat = 0;
+    int sameranktrio = 0;
+    int *count = NULL;
+    card_array_t *temp = NULL;
+    hand_t trio, solo, solobeat, triobeat;
+    
+    Hand_Clear(&trio);
+    Hand_Clear(&solo);
+    Hand_Clear(&solobeat);
+    Hand_Clear(&triobeat);
+    
+    count =ctx->count;
+    temp = &ctx->rcards;
+    
+    /* copy hands */
+    for (i = 0; i < 3; i++)
+        CardArray_PushBack(&trio.cards, tobeat->cards.cards[i]);
+    
+    CardArray_PushBack(&solo.cards, tobeat->cards.cards[3]);
+    
+    trio.type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN_NONE);
+    solo.type = Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN_NONE);
+    
+    cansolobeat = _HandList_SearchBeat_Solo(ctx, cards, &solo, &solobeat);
+    cantriobeat = _HandList_SearchBeat_Trio(ctx, cards, &trio, &triobeat);
+    
+    /* sorry, but RANK_R can't be trio-solo's kicker */
+    if (cansolobeat && CARD_RANK(solobeat.cards.cards[0]) == CARD_RANK_R)
+    {
+        cansolobeat = 0;
+        Hand_Clear(&solobeat);
+    }
+    
+    /* trio can't beat, search same rank trio */
+    if (cantriobeat == 0)
+    {
+        /* search trio */
+        for (i = 0; i < temp->length; i++)
+        {
+            if (CARD_RANK(temp->cards[i]) == CARD_RANK(trio.cards.cards[0]) && count[CARD_RANK(temp->cards[i])] >= 3)
+            {
+                triobeat.type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN_NONE);
+                for (j = 0; j < 3; j++)
+                {
+                    CardArray_PushBack(&triobeat.cards, temp->cards[i+j]);
+                    temp->cards[i+j] = 0;
+                }
+                
+                /* for further use */
+                sameranktrio = 1;
+                break;
+            }
+        }
+    }
+    /* trio can beat, find a solo */
+    else
+    {
+        /* search solo */
+        for (i = 0; i < temp->length; i++)
+        {
+            if (CARD_RANK(temp->cards[i]) != CARD_RANK_R)
+            {
+                CardArray_Clear(&solobeat);
+                CardArray_PushBack(&solobeat.cards, temp->cards[i]);
+                canbeat = 1;
+                break;
+            }
+        }
+    }
+    
+    /* same rank trio found, find a higher solo */
+    if (canbeat == 0 && sameranktrio == 1)
+    {
+        /* search a higher solo */
+        for (i = 0; i < cards->length; i++)
+        {
+            if (CARD_RANK(cards->cards[i]) > CARD_RANK(solo.cards.cards[0]) && CARD_RANK(cards->cards[i]) != CARD_RANK_R)
+            {
+                CardArray_Clear(&solobeat);
+                CardArray_PushBack(&solobeat.cards, cards->cards[i]);
+                canbeat = 1;
+                break;
+            }
+        }
+    }
+    
+    if (canbeat == 1)
+    {
+        CardArray_Clear(&beat->cards);
+        CardArray_Concate(&beat->cards, &triobeat.cards);
+        CardArray_Concate(&beat->cards, &solobeat.cards);
+        beat->type = tobeat->type;
+    }
     
     return canbeat;
 }
@@ -993,20 +1208,42 @@ int _HandList_SearchBeat_Trio(card_array_t *cards, hand_t *tobeat, hand_t *beat)
 int _HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat)
 {
     int canbeat = 0;
+    
+    beat_search_ctx_t ctx;
+    BeatSearchCtx_Clear(&ctx);
+    
+    Hand_CountRank(cards, ctx.count, NULL);
+    CardArray_Copy(&ctx.rcards, cards);
+    CardArray_Sort(&ctx.rcards, _HandList_SearchBeatSort);
+    
     switch (tobeat->type)
     {
         case Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN_NONE):
-            canbeat = _HandList_SearchBeat_Solo(cards, tobeat, beat);
+            canbeat = _HandList_SearchBeat_Solo(&ctx, cards, tobeat, beat);
             break;
         case Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN_NONE):
-            canbeat = _HandList_SearchBeat_Pair(cards, tobeat, beat);
+            canbeat = _HandList_SearchBeat_Pair(&ctx, cards, tobeat, beat);
             break;
         case Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN_NONE):
-            canbeat = _HandList_SearchBeat_Trio(cards, tobeat, beat);
+            canbeat = _HandList_SearchBeat_Trio(&ctx, cards, tobeat, beat);
             break;
+        case Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_PAIR, HAND_CHAIN_NONE):
+            canbeat = _HandList_SearchBeat_TrioPair(&ctx, cards, tobeat, beat);
+            break;
+        case Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_SOLO, HAND_CHAIN_NONE):
+            canbeat = _HandList_SearchBeat_TrioSolo(&ctx, cards, tobeat, beat);
+            break;
+            
+        case Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAIN_NONE):
+            /* _HandList_SearchBeat_Bomb(&ctx, cards, tobeat, beat) */
+            return canbeat;
         default:
             break;
     };
+    
+    /* search for bomb/nuke */
+    if (canbeat == 0)
+        canbeat = _HandList_SearchBeat_Bomb(&ctx, cards, tobeat, beat);
     
     return canbeat;
 }
@@ -1078,7 +1315,7 @@ void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int dupl
                 hand = Hand_Create();
                 hand->type = Hand_Format(primal[duplicate], HAND_KICKER_NONE, HAND_CHAIN);
                 for (j = 0; j < i; j++)
-                    CardArray_PushBack(hand->cards, CardArray_PopFront(array));
+                    CardArray_PushBack(&hand->cards, CardArray_PopFront(array));
                 
                 HandList_PushFront(hl, hand);
             }
@@ -1090,7 +1327,7 @@ void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int dupl
                     hand = Hand_Create();
                     hand->type = Hand_Format(primal[duplicate], HAND_KICKER_NONE, HAND_CHAIN_NONE);
                     for (k = 0; k < duplicate; k++)
-                        CardArray_PushBack(hand->cards, CardArray_PopFront(array));
+                        CardArray_PushBack(&hand->cards, CardArray_PopFront(array));
                     
                     HandList_PushFront(hl, hand);
                 }
@@ -1115,7 +1352,7 @@ void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int dupl
             hand = Hand_Create();
             hand->type = Hand_Format(primal[duplicate], HAND_KICKER_NONE, HAND_CHAIN);
             for (j = 0; j < i - duplicate; j++)
-                CardArray_PushBack(hand->cards, CardArray_PopFront(array));
+                CardArray_PushBack(&hand->cards, CardArray_PopFront(array));
             
             HandList_PushFront(hl, hand);
         }
@@ -1126,7 +1363,7 @@ void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int dupl
                 hand = Hand_Create();
                 hand->type = Hand_Format(primal[duplicate], HAND_KICKER_NONE, HAND_CHAIN_NONE);
                 for (i = 0; i < duplicate; i++)
-                    CardArray_PushBack(hand->cards, CardArray_PopFront(array));
+                    CardArray_PushBack(&hand->cards, CardArray_PopFront(array));
 
                 HandList_PushFront(hl, hand);
             }
@@ -1159,7 +1396,7 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     {
         hand = Hand_Create();
         hand->type = Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE);
-        CardArray_CopyRank(hand->cards, array, CARD_RANK_R);
+        CardArray_CopyRank(&hand->cards, array, CARD_RANK_R);
         
         HandList_PushFront(hl, hand);
         
@@ -1172,7 +1409,7 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
         {
             hand = Hand_Create();
             hand->type = Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAIN_NONE);
-            CardArray_CopyRank(hand->cards, array, i);
+            CardArray_CopyRank(&hand->cards, array, i);
             
             HandList_PushFront(hl, hand);
             
@@ -1183,7 +1420,7 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     if (count[CARD_RANK_R] != 0)
     {
         hand = Hand_Create();
-        CardArray_CopyRank(hand->cards, array, CARD_RANK_R);
+        CardArray_CopyRank(&hand->cards, array, CARD_RANK_R);
         hand->type = Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN_NONE);
         
         HandList_PushFront(hl, hand);
@@ -1194,7 +1431,7 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     if (count[CARD_RANK_2] != 0)
     {
         hand = Hand_Create();
-        CardArray_CopyRank(hand->cards, array, CARD_RANK_2);
+        CardArray_CopyRank(&hand->cards, array, CARD_RANK_2);
         
         switch (count[CARD_RANK_2])
         {
@@ -1206,6 +1443,7 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
                 break;
             case 3:
                 hand->type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN_NONE);
+                break;
             default:
                 break;
         }

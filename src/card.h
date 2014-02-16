@@ -106,6 +106,16 @@ int CardArray_Concate(card_array_t *head, card_array_t *tail);
 void CardArray_Subtract(card_array_t *from, card_array_t *sub);
 
 /*
+ * check for identity, 0: identity otherwise: not identity
+ */
+int CardArray_IsIdentity(card_array_t *a, card_array_t *b);
+
+/*
+ * check for contain
+ */
+int CardArray_Contain(card_array_t *array, card_array_t *segment);
+
+/*
  * push a card to the rear of the array
  */
 uint8_t CardArray_PushBack(card_array_t *array, uint8_t card);

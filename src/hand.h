@@ -62,12 +62,12 @@ typedef enum
 
 /*
  * hand is a valid card set that can play.
- * most of the time Hand_XXX won't check
+ * cards format must be like 12345/112233/111222/1112223344/11122234 etc
  */
 typedef struct hand_t
 {
     uint8_t         type;
-    card_array_t    *cards;
+    card_array_t    cards;
     
 } hand_t;
 
