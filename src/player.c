@@ -204,7 +204,7 @@ int Player_Beat(player_t *player, player_t *others[], hand_t *tobeat)
     int canbeat = 0;
     hand_t *beat = Hand_Create();
     
-    canbeat = HandList_SearchBeats(player->cards, tobeat, beat);
+    canbeat = HandList_SearchBeat(player->cards, tobeat, beat);
     
     if (canbeat)
     {

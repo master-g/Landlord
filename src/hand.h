@@ -174,7 +174,7 @@ void HandListNode_Destroy(hand_node_t *node);
 /*
  * search a beat in card array
  */
-int HandList_SearchBeats(card_array_t *cards, hand_t *tobeat, hand_t *beat);
+int HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat);
 
 /*
  * standard analyze a card array into hand list

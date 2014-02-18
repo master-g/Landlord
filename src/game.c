@@ -64,9 +64,14 @@ void Game_Play(game_t *game, uint32_t seed)
         card_array_t *arr2 = NULL;
         card_array_t *arr3 = NULL;
         
-        arr1 = CardArray_CreateFromString("♠7 ♦6 ♣5 ♠4 ♦4 ♣4");
-        arr2 = CardArray_CreateFromString("♦R ♣R ♥A ♣A ♦A ♠A ♠7 ♣6 ♦6 ♣5 ♠4");
-        arr3 = CardArray_CreateFromString("♠7 ♦6 ♣5 ♠4");
+        hand_t hand;
+        
+        arr1 = CardArray_CreateFromString("♦J ♥T ♠5 ♦5 ♥5 ♠4 ♠4 ♦4");
+        arr2 = CardArray_CreateFromString("♥A ♥A ♦5 ♠5 ♠4 ♦4 ♥4");
+        arr3 = CardArray_CreateFromString("♥A ♥A ♦5 ♠5 ♠4 ♦4 ♥4");
+        
+        Hand_Parse(&hand, arr1);
+        Hand_Print(&hand);
         
         CardArray_Copy(game->players[0]->cards, arr1);
         CardArray_Copy(game->players[1]->cards, arr2);
