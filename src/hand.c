@@ -53,35 +53,32 @@
 #define HANDS_PATTERN_6_2   9   /* pair chain */
 #define HANDS_PATTERN_6_3   10  /* trio chain */
 #define HANDS_PATTERN_6_4   11  /* four dual solo */
-#define HANDS_PATTERN_7     12  /* solo chain */
-#define HANDS_PATTERN_8_1   13  /* solo chain */
-#define HANDS_PATTERN_8_2   14  /* pair chain */
-#define HANDS_PATTERN_8_3   15  /* trio solo chain */
-#define HANDS_PATTERN_8_4   16  /* four dual pair */
-#define HANDS_PATTERN_8_5   17  /* four chain */
-#define HANDS_PATTERN_9_1   18  /* solo chain */
-#define HANDS_PATTERN_9_2   19  /* trio chain */
-#define HANDS_PATTERN_10_1  20  /* solo chain */
-#define HANDS_PATTERN_10_2  21  /* pair chain */
-#define HANDS_PATTERN_10_3  22  /* trio pair chain */
-#define HANDS_PATTERN_11    23  /* solo chain */
-#define HANDS_PATTERN_12_1  24  /* solo chain */
-#define HANDS_PATTERN_12_2  25  /* pair chain */
-#define HANDS_PATTERN_12_3  26  /* trio chain */
-#define HANDS_PATTERN_12_4  27  /* trio solo chain */
-#define HANDS_PATTERN_12_5  28  /* four chain */
-#define HANDS_PATTERN_12_6  29  /* four dual solo chain */
-#define HANDS_PATTERN_14    30  /* pair chain */
-#define HANDS_PATTERN_16_1  31  /* pair chain */
-#define HANDS_PATTERN_16_2  32  /* trio solo chain */
-#define HANDS_PATTERN_16_3  33  /* four chain */
-#define HANDS_PATTERN_16_4  34  /* four dual pair chain */
-#define HANDS_PATTERN_18_1  35  /* pair chain */
-#define HANDS_PATTERN_18_2  36  /* trio chain */
-#define HANDS_PATTERN_18_3  37  /* four dual solo chain */
-#define HANDS_PATTERN_20_1  38  /* pair chain */
-#define HANDS_PATTERN_20_2  39  /* trio solo chain */
-#define HANDS_PATTERN_20_3  40  /* four chain */
+#define HANDS_PATTERN_8_1   12  /* solo chain */
+#define HANDS_PATTERN_8_2   13  /* pair chain */
+#define HANDS_PATTERN_8_3   14  /* trio solo chain */
+#define HANDS_PATTERN_8_4   15  /* four dual pair */
+#define HANDS_PATTERN_8_5   16  /* four chain */
+#define HANDS_PATTERN_9_1   17  /* solo chain */
+#define HANDS_PATTERN_9_2   18  /* trio chain */
+#define HANDS_PATTERN_10_1  19  /* solo chain */
+#define HANDS_PATTERN_10_2  20  /* pair chain */
+#define HANDS_PATTERN_10_3  21  /* trio pair chain */
+#define HANDS_PATTERN_12_1  22  /* solo chain */
+#define HANDS_PATTERN_12_2  23  /* pair chain */
+#define HANDS_PATTERN_12_3  24  /* trio chain */
+#define HANDS_PATTERN_12_4  25  /* trio solo chain */
+#define HANDS_PATTERN_12_5  26  /* four chain */
+#define HANDS_PATTERN_12_6  27  /* four dual solo chain */
+#define HANDS_PATTERN_16_1  28  /* pair chain */
+#define HANDS_PATTERN_16_2  29  /* trio solo chain */
+#define HANDS_PATTERN_16_3  30  /* four chain */
+#define HANDS_PATTERN_16_4  31  /* four dual pair chain */
+#define HANDS_PATTERN_18_1  32  /* pair chain */
+#define HANDS_PATTERN_18_2  33  /* trio chain */
+#define HANDS_PATTERN_18_3  34  /* four dual solo chain */
+#define HANDS_PATTERN_20_1  35  /* pair chain */
+#define HANDS_PATTERN_20_2  36  /* trio solo chain */
+#define HANDS_PATTERN_20_3  37  /* four chain */
 #define HANDS_PATTERN_END   HANDS_PATTERN_20_3
 
 
@@ -99,7 +96,6 @@ int _hand_pattern[][PATTERN_LENGTH] =
     { 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 },     /* 6, pair chain */
     { 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },     /* 6, trio chain */
     { 4, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 },     /* 6, four dual solo */
-    { 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 },     /* 7, solo chain */
     { 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },     /* 8, solo chain */
     { 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0 },     /* 8, pair chain */
     { 3, 3, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 },     /* 8, trio solo chain */
@@ -110,14 +106,12 @@ int _hand_pattern[][PATTERN_LENGTH] =
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0 },     /* 10, solo chain */
     { 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0 },     /* 10, pair chain */
     { 3, 3, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0 },     /* 10, trio pair chain */
-    { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0 },     /* 11, solo chain */
     { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },     /* 12, solo chain */
     { 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0 },     /* 12, pair chain */
     { 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 0 },     /* 12, trio chain */
     { 3, 3, 3, 1, 1, 1, 0, 0, 0, 0, 0, 0 },     /* 12, trio solo chain */
     { 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0 },     /* 12, four chain */
     { 4, 4, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },     /* 12, four dual solo chain */
-    { 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0 },     /* 14, pair chain */
     { 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0 },     /* 16, pair chain */
     { 3, 3, 3, 3, 1, 1, 1, 1, 0, 0, 0, 0 },     /* 16, trio solo chain */
     { 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0 },     /* 16, four chain */
@@ -655,13 +649,10 @@ int Hand_Compare(hand_t *a, hand_t *b)
             a->type != HAND_PRIMAL_BOMB &&
             b->type != HAND_PRIMAL_NUKE &&
             b->type != HAND_PRIMAL_BOMB)
-        {
+            
             result = HAND_CMP_ILLEGAL;
-        }
         else
-        {
             result = _Hand_CompareBomb(a, b);
-        }
     }
     else /* same hand type and with no bombs */
     {
