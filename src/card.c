@@ -192,7 +192,7 @@ int CardArray_IsIdentity(card_array_t *a, card_array_t *b)
     return identity;
 }
 
-int CardArray_Contain(card_array_t *array, card_array_t *segment)
+int CardArray_IsContain(card_array_t *array, card_array_t *segment)
 {
     int contain = 0;
     int i = 0;
