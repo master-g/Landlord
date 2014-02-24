@@ -201,19 +201,22 @@ int CardArray_IsContain(card_array_t *array, card_array_t *segment)
     card_array_t temp;
     CardArray_Copy(&temp, segment);
     
-    for (i = 0; i < array->length; i++)
+    if (array->length >= segment->length)
     {
-        for (j = 0; j < temp.length; j++)
+        for (i = 0; i < array->length; i++)
         {
-            if (array->cards[i] == temp.cards[j])
+            for (j = 0; j < temp.length; j++)
             {
-                CardArray_RemoveCard(&temp, temp.cards[j]);
-                break;
+                if (array->cards[i] == temp.cards[j])
+                {
+                    CardArray_RemoveCard(&temp, temp.cards[j]);
+                    break;
+                }
             }
         }
+        
+        contain = temp.length == 0 ? 1 : 0;
     }
-    
-    contain = temp.length == 0 ? 1 : 0;
     
     return contain;
 }
@@ -348,6 +351,20 @@ uint8_t CardArray_RemoveCard(card_array_t *array, uint8_t card)
     return ret;
 }
 
+int CardArray_PushBackCards(card_array_t *array, card_array_t *from, int where, int count)
+{
+    int cards = 0;
+    int i = 0;
+    
+    for (i = 0; i < count; i++)
+    {
+        CardArray_PushBack(array, from->cards[where + i]);
+        cards++;
+    }
+    
+    return cards;
+}
+
 void CardArray_CopyRank(card_array_t *dst, card_array_t *src, uint8_t rank)
 {
     int i = 0;
@@ -357,6 +374,22 @@ void CardArray_CopyRank(card_array_t *dst, card_array_t *src, uint8_t rank)
         if (CARD_RANK(src->cards[i]) == rank)
             CardArray_PushBack(dst, src->cards[i]);
     }
+}
+
+void CardArray_RemoveRank(card_array_t *array, uint8_t rank)
+{
+    int i = 0;
+    
+    card_array_t temp;
+    CardArray_Clear(&temp);
+    
+    for (i = 0; i < array->length; i++)
+    {
+        if (CARD_RANK(array->cards[i]) != rank)
+            CardArray_PushBack(&temp, array->cards[i]);
+    }
+    
+    CardArray_Copy(array, &temp);
 }
 
 int CardArray_StandardSort(const void *a, const void *b)

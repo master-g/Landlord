@@ -59,6 +59,7 @@
 #define CardArray_IsFull(a)     ((a)->length >= CARD_SET_LENGTH)
 #define CardArray_IsEmpty(a)    ((a)->length == 0)
 #define CardArray_Capacity(a)   (CARD_ARRAY_PRESET_LENGTH - (a)->length)
+#define CardArray_Set(array, where, what, count)    (memset((array->cards + where), (what), (count) * sizeof(uint8_t)))
 
 typedef struct card_array_t
 {
@@ -151,9 +152,19 @@ uint8_t CardArray_Remove(card_array_t *array, int where);
 uint8_t CardArray_RemoveCard(card_array_t *array, uint8_t card);
 
 /*
+ * push back multiple cards from array
+ */
+int CardArray_PushBackCards(card_array_t *array, card_array_t *from, int where, int count);
+
+/*
  * transfer specific rank cards from array to array
  */
 void CardArray_CopyRank(card_array_t *dst, card_array_t *src, uint8_t rank);
+
+/*
+ * remove specific rank cards from array
+ */
+void CardArray_RemoveRank(card_array_t *array, uint8_t rank);
 
 /*
  * sort cards

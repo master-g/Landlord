@@ -66,9 +66,9 @@ void Game_Play(game_t *game, uint32_t seed)
         
         hand_t hand;
         
-        arr1 = CardArray_CreateFromString("♦J ♥T ♠5 ♦5 ♥5 ♠4 ♠4 ♦4");
-        arr2 = CardArray_CreateFromString("♥A ♥A ♦5 ♠5 ♠4 ♦4 ♥4");
-        arr3 = CardArray_CreateFromString("♥A ♥A ♦5 ♠5 ♠4 ♦4 ♥4");
+        arr1 = CardArray_CreateFromString("♦J ♥7 ♠7 ♦4 ♥4 ♦4");
+        arr2 = CardArray_CreateFromString("♥A ♥T ♦T ♦4 ♥4 ♦4");
+        arr3 = CardArray_CreateFromString("♥A ♥A ♦5 ♠5 ♠7 ♦7 ♥6");
         
         Hand_Parse(&hand, arr1);
         Hand_Print(&hand);
