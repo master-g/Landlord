@@ -70,6 +70,9 @@ card_array_t *CardArray_CreateFromString(const char *str)
             case '2':
                 card |= CARD_RANK_2;
                 break;
+            case 'r':
+                card |= CARD_RANK_r;
+                break;
             case 'R':
                 card |= CARD_RANK_R;
                 break;
@@ -97,7 +100,7 @@ void CardArray_Reset(card_array_t *array)
     int rank = 0;
     
     /* 52 standard cards */
-    for (rank = CARD_RANK_3; rank < CARD_RANK_R; rank++)
+    for (rank = CARD_RANK_3; rank < CARD_RANK_r; rank++)
     {
         array->cards[rank - CARD_RANK_3 + 13 * 0] = Card_Make(CARD_SUIT_CLUB, rank);
         array->cards[rank - CARD_RANK_3 + 13 * 1] = Card_Make(CARD_SUIT_DIAMOND, rank);
@@ -106,7 +109,7 @@ void CardArray_Reset(card_array_t *array)
     }
     
     /* jokers */
-    array->cards[CARD_SET_LENGTH - 2] = Card_Make(CARD_SUIT_CLUB, CARD_RANK_R);
+    array->cards[CARD_SET_LENGTH - 2] = Card_Make(CARD_SUIT_CLUB, CARD_RANK_r);
     array->cards[CARD_SET_LENGTH - 1] = Card_Make(CARD_SUIT_DIAMOND, CARD_RANK_R);
     
     array->length = CARD_SET_LENGTH;
@@ -415,7 +418,7 @@ char szDIAMOND[] = { 0xE2, 0x99, 0xA6, 0};
 char szCLUB[]    = { 0xE2, 0x99, 0xA3, 0};
 char szHEART[]   = { 0xE2, 0x99, 0xA5, 0};
 char szSPADE[]   = { 0xE2, 0x99, 0xA0, 0};
-char szRank[]    = { '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'R' };
+char szRank[]    = { '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'r', 'R' };
 
 int Card_ToString(uint8_t card, char *buf, int len)
 {
@@ -470,7 +473,7 @@ void CardArray_Print(card_array_t *array)
 /*
  * test functions
  */
-#define MAKE_RANDOM_CARD Card_Make((rand() % 4 + 1) << 4, rand() % 13 + 1)
+#define MAKE_RANDOM_CARD Card_Make((rand() % 4 + 1) << 4, rand() % 14 + 1)
 
 void CardArray_FillRandomCards(card_array_t *array, int length)
 {

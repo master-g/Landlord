@@ -37,6 +37,7 @@
 #define HAND_CHAIN              0x80
 
 #define HAND_NONE               0x00
+#define HAND_SEARCHER_MASK      0xFF
 
 #define Hand_GetPrimal(h)       ((h)&0x0F)
 #define Hand_GetKicker(h)       ((h)&0x70)
@@ -135,6 +136,11 @@ typedef struct hand_list_t
  * create a empty handlist
  */
 hand_list_t *HandList_Create(void);
+
+/*
+ * count handlist length
+ */
+int HandList_Length(hand_list_t *hl);
 
 /*
  * push a hand into the front of hand list
