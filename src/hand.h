@@ -120,7 +120,7 @@ void Hand_Print(hand_t *hand);
 
 typedef struct hand_node_t
 {
-    hand_t *hand;
+    hand_t hand;
     struct hand_node_t *prev;
     struct hand_node_t *next;
     
@@ -183,6 +183,11 @@ void HandListNode_Destroy(hand_node_t *node);
 int HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat);
 
 /*
+ * search all the beats
+ */
+hand_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat);
+
+/*
  * standard analyze a card array into hand list
  */
 hand_list_t *HandList_StandardAnalyze(card_array_t *array);
@@ -190,8 +195,16 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array);
 /*
  * count how many primal hands in array
  */
-int HandList_CalculatePrimalCount(card_array_t *array);
+int HandList_EvaluatePrimalCount(card_array_t *array);
 
+/*
+ * search best beat from given cards
+ */
+int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat);
+
+/*
+ * print hand_list_t
+ */
 void HandList_Print(hand_list_t *hl);
 
 #endif /* LANDLORD_HAND_H_ */

@@ -58,20 +58,15 @@ void Game_Play(game_t *game, uint32_t seed)
     
     Deck_Shuffle(game->deck, game->mt);
     
-    /* test */
+    /* test
     {
         card_array_t *arr1 = NULL;
         card_array_t *arr2 = NULL;
         card_array_t *arr3 = NULL;
         
-        hand_t hand;
-        
-        arr1 = CardArray_CreateFromString("♦J ♥T ♦3 ♥3 ♦3");
-        arr2 = CardArray_CreateFromString("♦J ♥T ♦3 ♥3 ♦3");
+        arr1 = CardArray_CreateFromString("♦R ♦2 ♠A ♣A ♠Q ♠T ♦T ♠9 ♥9 ♣9 ♠8 ♥8 ♣8 ♠6 ♣6 ♦5 ♣4 ♥3 ♦3 ♣3");
+        arr2 = CardArray_CreateFromString("♦J ♦5 ♥6 ♦6 ♥6 ♦6");
         arr3 = CardArray_CreateFromString("♦7 ♥6 ♠6 ♦4 ♥4 ♦4");
-        
-        Hand_Parse(&hand, arr1);
-        Hand_Print(&hand);
         
         CardArray_Copy(&game->players[0]->cards, arr1);
         CardArray_Copy(&game->players[1]->cards, arr2);
@@ -83,12 +78,11 @@ void Game_Play(game_t *game, uint32_t seed)
         
         game->landlord = 0;
     }
+     */
     
     for (i = 0; i < GAME_PLAYERS; i++)
     {
-        /*
         Deck_Deal(game->deck, &game->players[i]->cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
-         */
         Player_GetReady(game->players[i]);
     }
     
@@ -125,6 +119,7 @@ void Game_Play(game_t *game, uint32_t seed)
             }
             else
             {
+                game->phase = Phase_Query;
                 printf("\nPlayer ---- %d ---- beat\n", playeridx);
                 Hand_Print(&hand);
             }

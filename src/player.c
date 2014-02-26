@@ -35,6 +35,8 @@ void Player_GetReady(player_t *player)
     CardArray_Copy(&player->record, &player->cards);
     CardArray_Print(&player->record);
     player->handlist = HandList_StandardAnalyze(&player->cards);
+    
+    printf("%d %d\n", HandList_Length(player->handlist), HandList_EvaluatePrimalCount(&player->cards));
 }
 
 void Player_Play(player_t *player, player_t *others[], hand_t *hand)
@@ -59,7 +61,7 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
         /* last hand */
         if (player->handlist->first->next == NULL)
         {
-            Hand_Copy(hand, player->handlist->first->hand);
+            Hand_Copy(hand, &player->handlist->first->hand);
             HandList_Remove(player->handlist, player->handlist->first);
             break;
         }
@@ -69,10 +71,10 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
         if (node != NULL)
         {
             /* copy hand*/
-            Hand_Copy(hand, node->hand);
+            Hand_Copy(hand, &node->hand);
             
             /* how many kickers do we need */
-            need = node->hand->cards.length / 3;
+            need = node->hand.cards.length / 3;
             
             /* remove hand node from hand list */
             HandList_Remove(player->handlist, node);
@@ -83,9 +85,9 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
             countsolo = 0;
             while (temp->next != NULL)
             {
-                if (temp->hand->type == HAND_PRIMAL_PAIR)
+                if (temp->hand.type == HAND_PRIMAL_PAIR)
                     countpair++;
-                else if (temp->hand->type == HAND_PRIMAL_SOLO)
+                else if (temp->hand.type == HAND_PRIMAL_SOLO)
                     countsolo++;
                 
                 temp = temp->next;
@@ -111,10 +113,10 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
             temp = player->handlist->first;
             while (need > 0 && temp != NULL)
             {
-                if (temp->hand->type == Hand_Format(searchprimal, HAND_KICKER_NONE, HAND_CHAIN_NONE))
+                if (temp->hand.type == Hand_Format(searchprimal, HAND_KICKER_NONE, HAND_CHAIN_NONE))
                 {
                     /* copy cards */
-                    CardArray_Concate(&hand->cards, &temp->hand->cards);
+                    CardArray_Concate(&hand->cards, &temp->hand.cards);
                     HandList_Remove(player->handlist, temp);
                     temp = player->handlist->first;
                     need--;
@@ -133,7 +135,7 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
         node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN));
         if (node != NULL)
         {
-            Hand_Copy(hand, node->hand);
+            Hand_Copy(hand, &node->hand);
             HandList_Remove(player->handlist, node);
             break;
         }
@@ -142,21 +144,21 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
         node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN));
         if (node != NULL)
         {
-            Hand_Copy(hand, node->hand);
+            Hand_Copy(hand, &node->hand);
             HandList_Remove(player->handlist, node);
             break;
         }
         
         /* trio */
         node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN_NONE));
-        if (node != NULL && CARD_RANK(node->hand->cards.cards[0]) != CARD_RANK_2)
+        if (node != NULL && CARD_RANK(node->hand.cards.cards[0]) != CARD_RANK_2)
         {
-            Hand_Copy(hand, node->hand);
+            Hand_Copy(hand, &node->hand);
             HandList_Remove(player->handlist, node);
             
             /* pair */
             node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN_NONE));
-            if (node != NULL && CARD_RANK(node->hand->cards.cards[0]) != CARD_RANK_2)
+            if (node != NULL && CARD_RANK(node->hand.cards.cards[0]) != CARD_RANK_2)
             {
                 kicker = HAND_KICKER_PAIR;
             }
@@ -164,13 +166,13 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
             else
             {
                 node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN_NONE));
-                if (node != NULL && CARD_RANK(node->hand->cards.cards[0]) < CARD_RANK_2)
+                if (node != NULL && CARD_RANK(node->hand.cards.cards[0]) < CARD_RANK_2)
                     kicker = HAND_KICKER_SOLO;
             }
             
             if (node != NULL)
             {
-                CardArray_Concate(&hand->cards, &node->hand->cards);
+                CardArray_Concate(&hand->cards, &node->hand.cards);
                 Hand_SetKicker(hand->type, kicker);
                 HandList_Remove(player->handlist, node);
                 break;
@@ -182,16 +184,16 @@ void Player_Play(player_t *player, player_t *others[], hand_t *hand)
         
         /* pair */
         node = HandList_Find(player->handlist, Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN_NONE));
-        if (node != NULL && CARD_RANK(node->hand->cards.cards[0]) != CARD_RANK_2)
+        if (node != NULL && CARD_RANK(node->hand.cards.cards[0]) != CARD_RANK_2)
         {
-            Hand_Copy(hand, node->hand);
+            Hand_Copy(hand, &node->hand);
             HandList_Remove(player->handlist, node);
             break;
         }
         
         /* just play */
         node = player->handlist->first;
-        Hand_Copy(hand, node->hand);
+        Hand_Copy(hand, &node->hand);
         HandList_Remove(player->handlist, node);
         
     } while (0);
@@ -209,8 +211,11 @@ int Player_Beat(player_t *player, player_t *others[], hand_t *tobeat)
     hand_t beat;
     Hand_Clear(&beat);
     
+    canbeat = HandList_BestBeat(&player->cards, tobeat, &beat);
+    /*
     canbeat = HandList_SearchBeat(&player->cards, tobeat, &beat);
-    
+     */
+     
     if (canbeat)
     {
         CardArray_Subtract(&player->cards, &beat.cards);
