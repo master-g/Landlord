@@ -140,10 +140,37 @@ void CardArray_Subtract(card_array_t *from, card_array_t *sub)
 {
     int i = 0;
     int j = 0;
+    uint8_t card = 0;
+    card_array_t temp;
+    CardArray_Clear(&temp);
+    
+    for (i = 0; i < from->length; i++)
+    {
+        card = from->cards[i];
+        for (j = 0; j < sub->length; j++)
+        {
+            if (card == sub->cards[j])
+            {
+                card = 0;
+                break;
+            }
+        }
+        
+        if (card != 0)
+            CardArray_PushBack(&temp, card);
+    }
+    
+    CardArray_Copy(from, &temp);
+}
+
+/*
+void CardArray_Subtract(card_array_t *from, card_array_t *sub)
+{
+    int i = 0;
+    int j = 0;
     int removal = 0;
     uint8_t card = 0;
-    
-    /* mark matched cards in from with 0 */
+ 
     for (i = 0; i < sub->length; i++)
     {
         card = sub->cards[i];
@@ -164,6 +191,7 @@ void CardArray_Subtract(card_array_t *from, card_array_t *sub)
         } while (removal == 1);
     }
 }
+*/
 
 int CardArray_IsIdentity(card_array_t *a, card_array_t *b)
 {
@@ -200,8 +228,11 @@ int CardArray_IsContain(card_array_t *array, card_array_t *segment)
     int contain = 0;
     int i = 0;
     int j = 0;
-    
     card_array_t temp;
+    
+    if (array->length == 0 || segment->length == 0)
+        return contain;
+    
     CardArray_Copy(&temp, segment);
     
     if (array->length >= segment->length)
@@ -459,7 +490,11 @@ void CardArray_Print(card_array_t *array)
     int i = 0;
     char str[10];
     memset(str, 0, 10);
-    printf("CardArray: %p\nLength: %d\nCards: ", (void *)array, array->length);
+#ifdef PRINT_ADDRESS
+    printf("Cards: %p (%d): ", (void *)array, array->length);
+#else
+    printf("Cards: (%d): ", array->length);
+#endif
     
     for (i = 0; i < array->length; i++)
     {

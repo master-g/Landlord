@@ -16,5 +16,6 @@
 #include "memtracker.h"
 
 #define PRINT_TEST_SEPARATOR printf("------------------------------\n")
+/* #define PRINT_ADDRESS */
 
 #endif /* LANDLORD_COMMON_H_ */

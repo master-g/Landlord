@@ -33,8 +33,7 @@ typedef enum
 {
     Phase_Play = 0,
     Phase_Query,
-    Phase_Beat_1,
-    Phase_Beat_2
+    Phase_Pass
     
 } StagePhase;
 

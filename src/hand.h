@@ -187,6 +187,11 @@ int HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat);
  */
 hand_list_t *HandList_StandardAnalyze(card_array_t *array);
 
+/*
+ * count how many primal hands in array
+ */
+int HandList_CalculatePrimalCount(card_array_t *array);
+
 void HandList_Print(hand_list_t *hl);
 
 #endif /* LANDLORD_HAND_H_ */

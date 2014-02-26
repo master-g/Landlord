@@ -58,7 +58,7 @@ void Game_Play(game_t *game, uint32_t seed)
     
     Deck_Shuffle(game->deck, game->mt);
     
-    /* test
+    /* test */
     {
         card_array_t *arr1 = NULL;
         card_array_t *arr2 = NULL;
@@ -66,27 +66,29 @@ void Game_Play(game_t *game, uint32_t seed)
         
         hand_t hand;
         
-        arr1 = CardArray_CreateFromString("♦7 ♥6 ♠5 ♦3 ♥3 ♦3");
-        arr2 = CardArray_CreateFromString("♦7 ♥6 ♠6 ♦4 ♥4 ♦4");
+        arr1 = CardArray_CreateFromString("♦J ♥T ♦3 ♥3 ♦3");
+        arr2 = CardArray_CreateFromString("♦J ♥T ♦3 ♥3 ♦3");
         arr3 = CardArray_CreateFromString("♦7 ♥6 ♠6 ♦4 ♥4 ♦4");
         
         Hand_Parse(&hand, arr1);
         Hand_Print(&hand);
         
-        CardArray_Copy(game->players[0]->cards, arr1);
-        CardArray_Copy(game->players[1]->cards, arr2);
-        CardArray_Copy(game->players[2]->cards, arr3);
+        CardArray_Copy(&game->players[0]->cards, arr1);
+        CardArray_Copy(&game->players[1]->cards, arr2);
+        CardArray_Copy(&game->players[2]->cards, arr3);
         
         CardArray_Destroy(arr1);
         CardArray_Destroy(arr2);
         CardArray_Destroy(arr3);
         
         game->landlord = 0;
-    }*/
+    }
     
     for (i = 0; i < GAME_PLAYERS; i++)
     {
-        Deck_Deal(game->deck, game->players[i]->cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
+        /*
+        Deck_Deal(game->deck, &game->players[i]->cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
+         */
         Player_GetReady(game->players[i]);
     }
     
@@ -99,53 +101,33 @@ void Game_Play(game_t *game, uint32_t seed)
         others[0] = game->players[IncPlayerIdx(playeridx)];
         others[1] = game->players[IncPlayerIdx(playeridx+1)];
         
-        switch (game->phase)
+        if (game->phase == Phase_Play)
         {
-            case Phase_Play:
+            Player_Play(game->players[playeridx], others, &hand);
+            game->phase = Phase_Query;
+            
+            printf("\nPlayer ---- %d ---- played\n", playeridx);
+            Hand_Print(&hand);
+        }
+        else if (game->phase == Phase_Query || game->phase == Phase_Pass)
+        {
+            beat = Player_Beat(game->players[playeridx], others, &hand);
+            /* has beat in this phase */
+            if (beat == 0)
             {
-                Player_Play(game->players[playeridx], others, &hand);
-                CardArray_Subtract(game->players[playeridx]->cards, &hand.cards);
-                game->phase = Phase_Beat_1;
-                
-                printf("\nPlayer ---- %d ---- played\n", playeridx);
-                Hand_Print(&hand);
-                break;
-            }
-            case Phase_Beat_1:
-            {
-                beat = Player_Beat(game->players[playeridx], others, &hand);
-                /* has beat in this phase */
-                if (beat == 0)
-                {
-                    game->phase = Phase_Beat_2;
-                }
-                else
-                {
-                    printf("\nPlayer ---- %d ---- played\n", playeridx);
-                    Hand_Print(&hand);
-                }
-                
-                break;
-            }
-            case Phase_Beat_2:
-            {
-                beat = Player_Beat(game->players[playeridx], others, &hand);
-                /* no beat */
-                if (beat == 0)
-                {
+                /* two player pass */
+                if (game->phase == Phase_Pass)
                     game->phase = Phase_Play;
-                }
                 else
-                {
-                    game->phase = Phase_Beat_1;
-                    printf("\nPlayer ---- %d ---- played\n", playeridx);
-                    Hand_Print(&hand);
-                }
+                    game->phase = Phase_Pass;
                 
-                break;
+                printf("\nPlayer ---- %d ---- passed\n", playeridx);
             }
-            default:
-                break;
+            else
+            {
+                printf("\nPlayer ---- %d ---- beat\n", playeridx);
+                Hand_Print(&hand);
+            }
         }
         
         playeridx = IncPlayerIdx(playeridx);
@@ -153,7 +135,7 @@ void Game_Play(game_t *game, uint32_t seed)
         /* check if there is player win */
         for (i = 0; i < GAME_PLAYERS; i++)
         {
-            if (game->players[i]->cards->length == 0)
+            if (game->players[i]->cards.length == 0)
             {
                 game->status = GameStatus_Over;
                 printf("\nPlayer ++++ %d ++++ wins!\n", i);

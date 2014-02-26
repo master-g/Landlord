@@ -606,11 +606,13 @@ int Hand_Compare(hand_t *a, hand_t *b)
 
 void Hand_Print(hand_t *hand)
 {
-    int i = 0;
-    char str[10];
+#ifdef PRINT_ADDRESS
+    printf("Hand: %p ", (void *)hand);
+#else
+    printf("Hand ");
+#endif
     
-    printf("hand: %p \n", (void *)hand);
-    printf("type: ");
+    printf("type: [");
     if (hand == NULL)
     {
         printf("null\n");
@@ -647,19 +649,19 @@ void Hand_Print(hand_t *hand)
     switch (Hand_GetKicker(hand->type))
     {
         case HAND_KICKER_NONE:
-            printf("none ");
+            printf("none");
             break;
         case HAND_KICKER_SOLO:
-            printf("solo ");
+            printf("solo");
             break;
         case HAND_KICKER_PAIR:
-            printf("pair ");
+            printf("pair");
             break;
         case HAND_KICKER_DUAL_SOLO:
-            printf("dual solo ");
+            printf("dual solo");
             break;
         case HAND_KICKER_DUAL_PAIR:
-            printf("dual pair ");
+            printf("dual pair");
             break;
         default:
             break;
@@ -668,22 +670,14 @@ void Hand_Print(hand_t *hand)
     switch (Hand_GetChain(hand->type))
     {
         case HAND_CHAIN:
-            printf("chain ");
+            printf(" chain");
             break;
         default:
             break;
     }
-    printf("\n");
+    printf("]\n");
     
-    memset(str, 0, 10);
-    printf("Cards: %d | ", hand->cards.length);
-    
-    for (i = 0; i < hand->cards.length; i++)
-    {
-        Card_ToString(hand->cards.cards[i], str, 10);
-        printf("%s ", str);
-    }
-    printf("\n");
+    CardArray_Print(&hand->cards);
 }
 
 /*
@@ -856,6 +850,38 @@ typedef struct beat_search_ctx_t
 } beat_search_ctx_t;
 
 #define BeatSearchCtx_Clear(ctx) memset((ctx), 0, sizeof(beat_search_ctx_t))
+
+/*
+ next_comb(int comb[], int k, int n)
+ Generates the next combination of n elements as k after comb
+ 
+ comb => the previous combination ( use (0, 1, 2, ..., k) for first)
+ k => the size of the subsets to generate
+ n => the size of the original set
+ 
+ Returns: 1 if a valid combination was found
+ 0, otherwise
+ */
+int next_comb(int comb[], int k, int n)
+{
+	int i = k - 1;
+	++comb[i];
+	while ((i > 0) && (comb[i] >= n - k + 1 + i))
+    {
+		--i;
+		++comb[i];
+	}
+    
+	if (comb[0] > n - k) /* Combination (n-k, n-k+1, ..., n) reached */
+		return 0; /* No more combinations can be generated */
+    
+	/* comb now looks like (..., x, n, n, n, ..., n).
+     Turn it into (..., x, x + 1, x + 2, ...) */
+	for (i = i + 1; i < k; ++i)
+		comb[i] = comb[i - 1] + 1;
+    
+	return 1;
+}
 
 int _HandList_SearchBeatSort(const void *a, const void *b)
 {
@@ -1116,13 +1142,139 @@ int _HandList_SearchBeat_Chain(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *b
 int _HandList_SearchBeat_TrioKickerChain(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int kc)
 {
     int canbeat = 0;
-    int duplicate = 0;
+    int i = 0;
+    int j = 0;
+    int chainlength = 0;
+    int cantriobeat = 0;
+    int count[CARD_RANK_END];
+    int kickcount[CARD_RANK_END];
+    int combrankmap[CARD_RANK_END];
+    int rankcombmap[CARD_RANK_END];
+    int comb[CARD_RANK_END];
     card_array_t temp;
+    hand_t htrio, hkick, htriobeat, hkickbeat;
+    
+    /* setup variables */
+    memcpy(count, ctx->count, sizeof(int) * CARD_RANK_END);
+    
+    Hand_Clear(&htrio);
+    Hand_Clear(&hkick);
+    Hand_Clear(&htriobeat);
+    Hand_Clear(&hkickbeat);
     
     CardArray_Copy(&temp, &ctx->rcards);
+    chainlength = tobeat->cards.length / (HAND_PRIMAL_TRIO + kc);
     
-    duplicate = temp.length / (HAND_PRIMAL_TRIO + kc);
+    /* copy tobeat cards */
+    CardArray_PushBackCards(&htrio.cards, &tobeat->cards, 0, 3 * chainlength);
+    CardArray_PushBackCards(&hkick.cards, &tobeat->cards, 3 * chainlength + 1, chainlength * kc);
     
+    htrio.type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN);
+    
+    /* self beat, see _HandList_SearchBeat_TrioKicker */
+    if (CardArray_IsContain(&temp, &htrio.cards))
+    {
+        int n = 0;                  /* combination total */
+        
+        /* remove trio from kickount */
+        memcpy(kickcount, count, sizeof(int) * CARD_RANK_END);
+        for (i = 0; i < htrio.cards.length; i+=3)
+            kickcount[CARD_RANK(htrio.cards.cards[i])] = 0;
+        
+        /* remove count < kc and calculate n */
+        for (i = CARD_RANK_3; i < CARD_RANK_END; i++)
+        {
+            if (kickcount[i] < kc)
+                kickcount[i] = 0;
+            else
+                n++;
+        }
+        
+        /* setup comb-rank and rank-comb map */
+        j = 0;
+        memset(combrankmap, -1, sizeof(int) * CARD_RANK_END);
+        memset(rankcombmap, -1, sizeof(int) * CARD_RANK_END);
+        for (i = CARD_RANK_3; i < CARD_RANK_END; i++)
+        {
+            if (kickcount[i] != 0)
+            {
+                combrankmap[j] = i;
+                rankcombmap[i] = j;
+                j++;
+            }
+        }
+        
+        /* setup combination */
+        j = 0;
+        memset(comb, -1, sizeof(int) * CARD_RANK_END);
+        for (i = 0; i < hkick.cards.length; i+=kc)
+            comb[j] = rankcombmap[CARD_RANK(hkick.cards.cards[i])];
+        
+        /* find next combination */
+        if (next_comb(comb, chainlength, n))
+        {
+            /* next combination found, copy kickers */
+            for (i = 0; i < chainlength; i++)
+            {
+                int rank = combrankmap[comb[i]];
+                for (j = 0; j < temp.length; j++)
+                {
+                    if (CARD_RANK(temp.cards[j]) == rank)
+                    {
+                        CardArray_PushBackCards(&hkickbeat.cards, &temp, j, kc);
+                        break;
+                    }
+                }
+            }
+            
+            canbeat = 1;
+        }
+    }
+    
+    /* can't find same rank trio chain, search for higher rank trio */
+    if (canbeat == 0)
+    {
+        /* restore rank count */
+        memcpy(count, ctx->count, sizeof(int) * CARD_RANK_END);
+        
+        cantriobeat = _HandList_SearchBeat_Chain(ctx, &htrio, &htriobeat, 3);
+        /* higher rank trio chain found, search for kickers */
+        if (cantriobeat)
+        {
+            /* remove trio from temp */
+            for (i = 0; i < htriobeat.cards.length; i+=3)
+            {
+                CardArray_RemoveRank(&temp, CARD_RANK(htriobeat.cards.cards[i]));
+                count[CARD_RANK(htriobeat.cards.cards[0])] = 0;
+            }
+            
+            for (j = 0; j < chainlength; j++)
+            {
+                for (i = 0; i < temp.length; i++)
+                {
+                    if (count[CARD_RANK(temp.cards[i])] >= kc)
+                    {
+                        CardArray_PushBackCards(&hkickbeat.cards, &temp, i, kc);
+                        CardArray_RemoveRank(&temp, CARD_RANK(temp.cards[i]));
+                        break;
+                    }
+                }
+            }
+            
+            if (hkickbeat.cards.length == kc * chainlength)
+                canbeat = 1;
+        }
+    }
+    
+    /* final */
+    if (canbeat)
+    {
+        Hand_Clear(beat);
+        CardArray_Concate(&beat->cards, &htriobeat.cards);
+        CardArray_Concate(&beat->cards, &hkickbeat.cards);
+        beat->type = tobeat->type;
+    }
+
     return canbeat;
 }
 
@@ -1420,6 +1572,11 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     CardArray_Destroy(arrtrio);
     
     return hl;
+}
+
+int HandList_CalculatePrimalCount(card_array_t *array)
+{
+    return 0;
 }
 
 void HandList_Print(hand_list_t *hl)
