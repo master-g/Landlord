@@ -1366,7 +1366,7 @@ hand_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat)
         if (canbeat)
         {
             Hand_Copy(&htobeat, &beat);
-            HandList_PushBack(hl, &beat);
+            HandList_PushFront(hl, &beat);
         }
         
     } while (canbeat);
@@ -1737,6 +1737,8 @@ int HandList_EvaluatePrimalCount(card_array_t *array)
     return hands;
 }
 
+#define BEAT_VALUE_FACTOR 10
+
 typedef struct beat_node_t
 {
     hand_node_t *node;
@@ -1751,9 +1753,9 @@ beat_node_t *_BeatNode_Create(void)
 
 #define _BeatNode_Destroy(n) free((n))
 
-int _BeatNode_SortFunc(const void *a, const void *b)
+int _BeatNode_ValueSort(const void *a, const void *b)
 {
-    return ((beat_node_t *)a)->value - ((beat_node_t *)b)->value;
+    return ((beat_node_t *)b)->value - ((beat_node_t *)a)->value;
 }
 
 int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
@@ -1795,52 +1797,57 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
     }
     
     /* calculate value */
-    for (i = 0; i < nodei; i++)
-    {
-        CardArray_Copy(&temp, array);
-        /* evaluate the value of cards left after hand was played */
-        CardArray_Subtract(&temp, &hnodes[i]->node->hand.cards);
-        hnodes[i]->value = HandList_EvaluatePrimalCount(&temp);
-    }
-    
-    /* sort primal hands */
     if (nodei > 1)
-        qsort(hnodes, nodei, sizeof(beat_node_t *), _BeatNode_SortFunc);
+    {
+        for (i = 0; i < nodei; i++)
+        {
+            CardArray_Copy(&temp, array);
+            /* evaluate the value of cards left after hand was played */
+            CardArray_Subtract(&temp, &hnodes[i]->node->hand.cards);
+            hnodes[i]->value = HandList_EvaluatePrimalCount(&temp) *
+            BEAT_VALUE_FACTOR +
+            CARD_RANK(hnodes[i]->node->hand.cards.cards[0]);
+        }
+        
+        /* sort primal hands */
+        qsort(hnodes, nodei, sizeof(beat_node_t *), _BeatNode_ValueSort);
+    }
     
     /* re-build hand list */
-    /* TODO */
     hl->first = NULL;
-    for (i = bombi; i >= 0; i++)
+    for (i = bombi; i >= 0; i--)
     {
         if (hbombs[i])
-            _HandList_PushFronRaw(hl, hbombs[i]);
-    }
-    
-    for (i = nodei; i >= 0; i++)
-    {
-        if (hnodes[i])
         {
-            if (hl->first == NULL)
-            {
-                hl->first = hnodes[i]->node;
-            }
-            else
-            {
-                hnodes[i]->node->next = hl->first;
-                hl->first->prev = hnodes[i]->node;
-                hl->first = hnodes[i]->node;
-            }
+            hbombs[i]->next = NULL;
+            hbombs[i]->prev = NULL;
+            _HandList_PushFronRaw(hl, hbombs[i]);
         }
     }
     
+    for (i = nodei; i >= 0; i--)
+    {
+        if (hnodes[i])
+        {
+            hnodes[i]->node->next = NULL;
+            hnodes[i]->node->prev = NULL;
+            _HandList_PushFronRaw(hl, hnodes[i]->node);
+        }
+    }
+    
+    /* select beat */
     if (hl->first != NULL)
     {
         Hand_Copy(beat, &hl->first->hand);
         canbeat = 1;
     }
     
-    HandList_Destroy(hl);
+    /* clean up */
+    for (i = 0; i < nodei; i++)
+        _BeatNode_Destroy(hnodes[i]);
     
+    HandList_Destroy(hl);
+     
     return canbeat;
 }
 

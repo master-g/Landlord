@@ -144,7 +144,7 @@ int main(int argc, const char * argv[])
     game_t *game = NULL;
         
     game = Game_Create();
-    Game_Play(game, 9);
+    Game_Play(game, 10);
     Game_Destroy(game);
 
     memtrack_list_allocations();

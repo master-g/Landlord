@@ -35,8 +35,6 @@ void Player_GetReady(player_t *player)
     CardArray_Copy(&player->record, &player->cards);
     CardArray_Print(&player->record);
     player->handlist = HandList_StandardAnalyze(&player->cards);
-    
-    printf("%d %d\n", HandList_Length(player->handlist), HandList_EvaluatePrimalCount(&player->cards));
 }
 
 void Player_Play(player_t *player, player_t *others[], hand_t *hand)
