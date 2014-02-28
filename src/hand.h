@@ -202,6 +202,4 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat);
  */
 void HandList_Print(hand_list_t *hl);
 
-extern int shit;
-
 #endif /* LANDLORD_HAND_H_ */

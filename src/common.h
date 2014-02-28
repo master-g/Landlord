@@ -22,6 +22,6 @@
 #define PRINT_TEST_SEPARATOR printf("------------------------------\n")
 /* #define PRINT_ADDRESS */
 
-#define PRINT_GAME_LOG
+#define PRINT_GAME_LOG_
 
 #endif /* LANDLORD_COMMON_H_ */

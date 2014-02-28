@@ -139,7 +139,7 @@ int main(int argc, const char * argv[])
         
     game = Game_Create();
     
-    for (i = 1000000; i < 1000001; i++)
+    for (i = 0; i < 1000000; i++)
     {
         Game_Play(game, i);
         
@@ -153,7 +153,6 @@ int main(int argc, const char * argv[])
     
     printf("peasant : %d\n", peasantwon);
     printf("landlord : %d\n", landlordwon);
-    printf("shit : %d\n", shit);
     
     Game_Destroy(game);
     

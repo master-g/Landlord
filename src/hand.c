@@ -1755,8 +1755,6 @@ int _BeatNode_ValueSort(const void *a, const void *b)
     return ((beat_node_t *)b)->value - ((beat_node_t *)a)->value;
 }
 
-int shit = 0;
-
 int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
 {
     int i = 0;
@@ -1846,9 +1844,6 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
         _BeatNode_Destroy(hnodes[i]);
     
     HandList_Destroy(hl);
-    
-    if (nodei > shit)
-        shit = nodei;
      
     return canbeat;
 }
