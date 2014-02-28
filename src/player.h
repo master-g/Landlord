@@ -13,10 +13,22 @@
 
 typedef enum
 {
+    Player_Event_GetReady = 0,
+    Player_Event_Play,
+    Player_Event_Beat,
+    
+    Player_Event_Count
+    
+} PlayerEvent;
+
+typedef enum
+{
     PlayerIdentity_Peasant = 0,
     PlayerIdentity_Landlord
     
 } PlayerIdentity;
+
+typedef int (*PlayerEventHandler)(void *player, void *context);
 
 typedef struct player_t
 {
@@ -25,12 +37,19 @@ typedef struct player_t
     hand_list_t     *handlist;  /* the analyze result of cards */
     int             identity;   /* 0: peasant, 1: landlord */
     
+    PlayerEventHandler  eventHandlers[Player_Event_Count];
+    
 } player_t;
 
 /*
  * create a player context
  */
 player_t *Player_Create(void);
+
+/*
+ * create standard AI player
+ */
+player_t *Player_CreateStandardAI(void);
 
 /*
  * destroy a player context
@@ -42,20 +61,27 @@ void Player_Destroy(player_t *player);
  */
 void Player_Clear(player_t *player);
 
+/* 
+ * handle event 
+ */
+int Player_HandleEvent(int event, void *player, void *game);
+
 /*
  * sort cards, analyze hands etc.
+ *
+ * int Player_GetReady(void *player, void *game);
  */
-void Player_GetReady(player_t *player);
 
 /*
  * free play, result will return by hand_t *
+ * int Player_Play(void *player, void *game);
  */
-void Player_Play(player_t *player, player_t *others[], hand_t *hand);
 
 /*
  * player must play a hand that can beat last player
  * if there is no hand can beat last player, tobeat->type will be 0
+ *
+ * int Player_Beat(void *player, void *game);
  */
-int Player_Beat(player_t *player, player_t *others[], hand_t *tobeat);
 
 #endif /* LANDLORD_PLAYER_H_ */

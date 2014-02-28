@@ -18,7 +18,9 @@
 #define GAME_HAND_CARDS 17
 #define GAME_REST_CARDS 3
 
-#define IncPlayerIdx(x)     (((x) + 1) % GAME_PLAYERS)
+#define IncPlayerIdx(x)             (((x) + 1) % GAME_PLAYERS)
+#define Game_GetCurrentPlayer(g)    ((g)->players[(g)->playerIndex])
+#define Game_IncPlayerIndex(g)      ((g)->playerIndex = IncPlayerIdx((g)->playerIndex))
 
 typedef enum
 {
@@ -39,12 +41,15 @@ typedef enum
 
 typedef struct game_t
 {
-    player_t    *players[GAME_PLAYERS];     /* player array */
-    deck_t      *deck;                      /* deck */
-    mt19937_t   *mt;                        /* random context */
-    int         landlord;                   /* landlord index */
-    int         status;                     /* game status */
-    int         phase;                      /* game phase */
+    player_t        *players[GAME_PLAYERS];     /* player array */
+    deck_t          *deck;                      /* deck */
+    mt19937_t       *mt;                        /* random context */
+    hand_t          lastHand;                   /* last played hand */
+    card_array_t    cardRecord;                 /* card record */
+    int             playerIndex;                /* current player index */
+    int             landlord;                   /* landlord index */
+    int             status;                     /* game status */
+    int             phase;                      /* game phase */
     
 } game_t;
 

@@ -1325,28 +1325,16 @@ int _HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat)
 
 /*
  * search for beat, result will be store in beat
- * 1, search [beat] > [tobeat], then store in [beat]
- * 2, if [beat->type] != 0, then search [new beat] > [beat]
- * 3, if [beat->type] != 0 and [new beat] < [beat], then goto 1
+ * 1, if [beat->type] != 0, then search [new beat] > [beat]
+ * 2, search [beat] > [tobeat], then store in [beat]
  */
 int HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat)
 {
-    int canbeat = 0;
     /* already in search loop, continue */
     if (beat->type != 0)
-    {
-        /* search new beat */
-        canbeat = _HandList_SearchBeat(cards, beat, beat);
-        if (canbeat == 0)
-            /* loop back to tobeat */
-            return _HandList_SearchBeat(cards, tobeat, beat);
-        else
-            return canbeat;
-    }
+        return _HandList_SearchBeat(cards, beat, beat);
     else
-    {
         return _HandList_SearchBeat(cards, tobeat, beat);
-    }
 }
 
 hand_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat)

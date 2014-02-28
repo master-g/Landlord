@@ -13,7 +13,7 @@ game_t *Game_Create(void)
     int i = 0;
     game_t *game = (game_t *)calloc(1, sizeof(game_t));
     for (i = 0; i < GAME_PLAYERS; i++)
-        game->players[i] = Player_Create();
+        game->players[i] = Player_CreateStandardAI();
     
     game->deck = Deck_Create();
     game->mt = (mt19937_t *)calloc(1, sizeof(mt19937_t));
@@ -39,17 +39,19 @@ void Game_Reset(game_t *game)
     for (i = 0; i < GAME_PLAYERS; i++)
         Player_Clear(game->players[i]);
     
+    Hand_Clear(&game->lastHand);
+    game->playerIndex = 0;
+    
     Deck_Reset(game->deck);
+    
+    CardArray_Clear(&game->cardRecord);
 }
 
 void Game_Play(game_t *game, uint32_t seed)
 {
     int i = 0;
-    int playeridx = 0;
     int beat = 0;
     player_t *others[2];
-    hand_t hand;
-    Hand_Clear(&hand);
     
     Random_Init(game->mt, seed);
     
@@ -83,29 +85,31 @@ void Game_Play(game_t *game, uint32_t seed)
     for (i = 0; i < GAME_PLAYERS; i++)
     {
         Deck_Deal(game->deck, &game->players[i]->cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
-        Player_GetReady(game->players[i]);
+        Player_HandleEvent(Player_Event_GetReady, game->players[i], game);
     }
     
     game->status = GameStatus_Ready;
-    playeridx = game->landlord;
+    game->playerIndex = game->landlord;
     game->phase = Phase_Play;
     
     while (game->status != GameStatus_Over)
     {
-        others[0] = game->players[IncPlayerIdx(playeridx)];
-        others[1] = game->players[IncPlayerIdx(playeridx+1)];
+        others[0] = game->players[IncPlayerIdx(game->playerIndex)];
+        others[1] = game->players[IncPlayerIdx(game->playerIndex+1)];
         
         if (game->phase == Phase_Play)
         {
-            Player_Play(game->players[playeridx], others, &hand);
+            Player_HandleEvent(Player_Event_Play, Game_GetCurrentPlayer(game), game);
             game->phase = Phase_Query;
             
-            printf("\nPlayer ---- %d ---- played\n", playeridx);
-            Hand_Print(&hand);
+            CardArray_Concate(&game->cardRecord, &game->lastHand.cards);
+            
+            printf("\nPlayer ---- %d ---- played\n", game->playerIndex);
+            Hand_Print(&game->lastHand);
         }
         else if (game->phase == Phase_Query || game->phase == Phase_Pass)
         {
-            beat = Player_Beat(game->players[playeridx], others, &hand);
+            beat = Player_HandleEvent(Player_Event_Beat, Game_GetCurrentPlayer(game), game);
             /* has beat in this phase */
             if (beat == 0)
             {
@@ -115,17 +119,18 @@ void Game_Play(game_t *game, uint32_t seed)
                 else
                     game->phase = Phase_Pass;
                 
-                printf("\nPlayer ---- %d ---- passed\n", playeridx);
+                printf("\nPlayer ---- %d ---- passed\n", game->playerIndex);
             }
             else
             {
                 game->phase = Phase_Query;
-                printf("\nPlayer ---- %d ---- beat\n", playeridx);
-                Hand_Print(&hand);
+                CardArray_Concate(&game->cardRecord, &game->lastHand.cards);
+                printf("\nPlayer ---- %d ---- beat\n", game->playerIndex);
+                Hand_Print(&game->lastHand);
             }
         }
         
-        playeridx = IncPlayerIdx(playeridx);
+        Game_IncPlayerIndex(game);
         
         /* check if there is player win */
         for (i = 0; i < GAME_PLAYERS; i++)
