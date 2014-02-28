@@ -27,7 +27,7 @@
 #include "hand.h"
 
 #define HAND_MIN_LENGTH             1
-#define HAND_MAX_LENGTH             20
+#define HAND_MAX_LENGTH             56
 #define HAND_SOLO_CHAIN_MIN_LENGTH  5
 #define HAND_PAIR_CHAIN_MIN_LENGTH  6
 #define HAND_TRIO_CHAIN_MIN_LENGTH  6
@@ -817,7 +817,7 @@ void HandList_Destroy(hand_list_t *hl)
     hand_node_t *temp;
     hand_node_t *prev;
     
-    if (hl->first != NULL)
+    if (hl != NULL && hl->first != NULL)
     {
         for (temp = hl->first; temp != NULL; )
         {
@@ -902,6 +902,10 @@ int _HandList_SearchBeat_Bomb(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *be
     card_array_t *cards = &ctx->cards;
     
     count = ctx->count;
+    
+    /* can't beat nuke */
+    if (tobeat->type != Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE))
+        return 0;
     
     canbeat = _HandList_SearchBeat_Primal(ctx, tobeat, beat, 4);
     
@@ -1746,6 +1750,8 @@ int _BeatNode_ValueSort(const void *a, const void *b)
     return ((beat_node_t *)b)->value - ((beat_node_t *)a)->value;
 }
 
+int ass = 0;
+
 int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
 {
     int i = 0;
@@ -1782,6 +1788,11 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
         }
         
         node = node->next;
+    }
+    
+    if (nodei > ass)
+    {
+        ass = nodei;
     }
     
     /* calculate value */

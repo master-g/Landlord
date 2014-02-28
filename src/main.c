@@ -129,23 +129,40 @@ void test_code(void)
 
 int main(int argc, const char * argv[])
 {
-    /*
-    const char* cardstr = "♠2 ♦2 ♦A ♦K ♠Q ♥Q ♣J ♠T ♥T ♣T ♠9 ♠8 ♥8 ♣8 ♥5 ♦5 ♠4 ♠3 ♥3 ♦3";
-    card_array_t *cards = CardArray_CreateFromString(cardstr);
-    hand_list_t *hl = HandList_StandardAnalyze(cards);
-    
-    CardArray_Print(cards);
-    HandList_Print(hl);
-    
-    HandList_Destroy(hl);
-    CardArray_Destroy(cards);
-     */
+    int peasantwon = 0;
+    int landlordwon = 0;
+    int i = 0;
     
     game_t *game = NULL;
+    
+    printf("start at %ld\n", time(NULL));
         
     game = Game_Create();
-    Game_Play(game, 10);
+    
+    Game_Play(game, 123);
+    
+    for (i = 0; i < 1000; i++)
+    {
+        Game_Play(game, i);
+        
+        if (game->winner == game->landlord)
+            landlordwon++;
+        else
+            peasantwon++;
+        
+        printf("%d\n", i);
+        
+        Game_Reset(game);
+    }
+    
+    printf("peasant : %d\n", peasantwon);
+    printf("landlord : %d\n", landlordwon);
+    
+    printf("ass %d\n", ass);
+    
     Game_Destroy(game);
+    
+    printf("ended at %ld\n", time(NULL));
 
     memtrack_list_allocations();
     return 0;

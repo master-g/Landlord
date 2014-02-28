@@ -48,6 +48,7 @@ typedef struct game_t
     card_array_t    cardRecord;                 /* card record */
     int             playerIndex;                /* current player index */
     int             landlord;                   /* landlord index */
+    int             winner;                     /* winner index */
     int             status;                     /* game status */
     int             phase;                      /* game phase */
     
