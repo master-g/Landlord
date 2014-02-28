@@ -10,6 +10,12 @@
 #define LANDLORD_STANDARD_AI_H_
 
 /*
+ * http://scim.brad.ac.uk/staff/pdf/picowlin/AISB2011.pdf
+ * http://en.wikipedia.org/wiki/Monte-Carlo_tree_search
+ * http://mcts.ai/about/index.html
+ */
+
+/*
  * sort cards, analyze hands etc.
  */
 int StandardAI_GetReady(void *player, void *game);
