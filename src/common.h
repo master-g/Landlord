@@ -9,11 +9,15 @@
 #ifndef LANDLORD_COMMON_H_
 #define LANDLORD_COMMON_H_
 
+#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include <time.h>
 
+/*
 #include "memtracker.h"
+ */
 
 #define PRINT_TEST_SEPARATOR printf("------------------------------\n")
 /* #define PRINT_ADDRESS */

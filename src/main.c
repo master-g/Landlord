@@ -139,9 +139,7 @@ int main(int argc, const char * argv[])
         
     game = Game_Create();
     
-    Game_Play(game, 123);
-    
-    for (i = 0; i < 1000; i++)
+    for (i = 1000000; i < 1000001; i++)
     {
         Game_Play(game, i);
         
@@ -150,20 +148,19 @@ int main(int argc, const char * argv[])
         else
             peasantwon++;
         
-        printf("%d\n", i);
-        
         Game_Reset(game);
     }
     
     printf("peasant : %d\n", peasantwon);
     printf("landlord : %d\n", landlordwon);
-    
-    printf("ass %d\n", ass);
+    printf("shit : %d\n", shit);
     
     Game_Destroy(game);
     
     printf("ended at %ld\n", time(NULL));
 
+    /*
     memtrack_list_allocations();
+     */
     return 0;
 }

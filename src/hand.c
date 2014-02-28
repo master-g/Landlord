@@ -33,6 +33,8 @@
 #define HAND_TRIO_CHAIN_MIN_LENGTH  6
 #define HAND_FOUR_CHAIN_MIN_LENGTH  8
 
+#define BEAT_NODE_CAPACITY          255
+
 /*
  * ************************************************************
  * pattern
@@ -1156,7 +1158,7 @@ int _HandList_SearchBeat_TrioKickerChain(beat_search_ctx_t *ctx, hand_t *tobeat,
     
     /* copy tobeat cards */
     CardArray_PushBackCards(&htrio.cards, &tobeat->cards, 0, 3 * chainlength);
-    CardArray_PushBackCards(&hkick.cards, &tobeat->cards, 3 * chainlength + 1, chainlength * kc);
+    CardArray_PushBackCards(&hkick.cards, &tobeat->cards, 3 * chainlength, chainlength * kc);
     
     htrio.type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN);
     
@@ -1197,7 +1199,7 @@ int _HandList_SearchBeat_TrioKickerChain(beat_search_ctx_t *ctx, hand_t *tobeat,
         j = 0;
         memset(comb, -1, sizeof(int) * CARD_RANK_END);
         for (i = 0; i < hkick.cards.length; i+=kc)
-            comb[j] = rankcombmap[CARD_RANK(hkick.cards.cards[i])];
+            comb[j++] = rankcombmap[CARD_RANK(hkick.cards.cards[i])];
         
         /* find next combination */
         if (next_comb(comb, chainlength, n))
@@ -1217,6 +1219,9 @@ int _HandList_SearchBeat_TrioKickerChain(beat_search_ctx_t *ctx, hand_t *tobeat,
             }
             
             canbeat = 1;
+            /* copy trio to beat */
+            CardArray_Concate(&htriobeat.cards, &htrio.cards);
+            CardArray_Sort(&hkickbeat.cards, NULL);
         }
     }
     
@@ -1750,7 +1755,7 @@ int _BeatNode_ValueSort(const void *a, const void *b)
     return ((beat_node_t *)b)->value - ((beat_node_t *)a)->value;
 }
 
-int ass = 0;
+int shit = 0;
 
 int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
 {
@@ -1761,11 +1766,11 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
     hand_list_t *hl = NULL;
     hand_node_t *node = NULL;
     card_array_t temp;
-    beat_node_t *hnodes[HAND_MAX_LENGTH];
-    hand_node_t *hbombs[HAND_MAX_LENGTH];
+    beat_node_t *hnodes[BEAT_NODE_CAPACITY];
+    hand_node_t *hbombs[BEAT_NODE_CAPACITY];
     
-    memset(hnodes, 0, sizeof(beat_node_t *) * HAND_MAX_LENGTH);
-    memset(hbombs, 0, sizeof(hand_node_t *) * HAND_MAX_LENGTH);
+    memset(hnodes, 0, sizeof(beat_node_t *) * BEAT_NODE_CAPACITY);
+    memset(hbombs, 0, sizeof(hand_node_t *) * BEAT_NODE_CAPACITY);
     
     /* search beat list */
     hl = HandList_SearchBeatList(array, tobeat);
@@ -1788,11 +1793,6 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
         }
         
         node = node->next;
-    }
-    
-    if (nodei > ass)
-    {
-        ass = nodei;
     }
     
     /* calculate value */
@@ -1846,6 +1846,9 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
         _BeatNode_Destroy(hnodes[i]);
     
     HandList_Destroy(hl);
+    
+    if (nodei > shit)
+        shit = nodei;
      
     return canbeat;
 }

@@ -267,7 +267,7 @@ uint8_t CardArray_PushBack(card_array_t *array, uint8_t card)
         ret = card;
     }
     
-    return 0;
+    return ret;
 }
 
 uint8_t CardArray_PushFront(card_array_t *array, uint8_t card)

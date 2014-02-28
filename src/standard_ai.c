@@ -14,9 +14,9 @@ int StandardAI_GetReady(void *p, void *game)
     player_t *player = p;
     CardArray_Sort(&player->cards, NULL);
     CardArray_Copy(&player->record, &player->cards);
-    /*
+#ifdef PRINT_GAME_LOG
     CardArray_Print(&player->record);
-     */
+#endif
     player->handlist = HandList_StandardAnalyze(&player->cards);
     
     return 0;
