@@ -189,16 +189,21 @@ int StandardAI_Play(void *p, void *game)
     return 0;
 }
 
-int StandardAI_Beat(void *p, void *game)
+int StandardAI_Beat(void *p, void *g)
 {
     /*
      * HandList_SearchBeats can search for beat in loop mode
      * but we just simply find a beat here
      */
     int canbeat = 0;
+    int i = 0;
     hand_t *tobeat;
     hand_t beat;
     player_t *player = p;
+    player_t *prevplayer = NULL;
+    player_t *teammate = NULL;
+    player_t *landlord = NULL;
+    game_t *game = g;
     Hand_Clear(&beat);
     
     tobeat = &((game_t *)game)->lastHand;
@@ -207,6 +212,35 @@ int StandardAI_Beat(void *p, void *game)
     /*
      canbeat = HandList_SearchBeat(&player->cards, tobeat, &beat);
      */
+    
+    /* peasant cooperation */
+    /* 
+     * TODO: teammate might not beat landlord
+     * make sure that tobeat is played by teammate
+     */
+    prevplayer = game->players[(game->playerIndex + GAME_PLAYERS - 1) % GAME_PLAYERS];
+    if (canbeat &&
+        player->identity == PlayerIdentity_Peasant &&
+        prevplayer->identity == PlayerIdentity_Peasant)
+    {
+        /* find teammate and landlord */
+        for (i = 0; i < GAME_PLAYERS; i++)
+        {
+            if (game->players[i]->identity == PlayerIdentity_Landlord)
+                landlord = game->players[i];
+            
+            if (game->players[i]->identity == PlayerIdentity_Peasant && game->players[i] != player)
+                teammate = game->players[i];
+        }
+        
+        /* don't bomb/nuke teammate */
+        if (canbeat && (beat.type == Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAIN_NONE) ||
+                        beat.type == Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE)))
+            canbeat = 0;
+        
+        if (canbeat && teammate->cards.length < landlord->cards.length)
+            canbeat = 0;
+    }
     
     if (canbeat)
     {

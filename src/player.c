@@ -39,6 +39,7 @@ void Player_Clear(player_t *player)
 {
     HandList_Destroy(player->handlist);
     player->handlist = NULL;
+    player->identity = PlayerIdentity_Peasant;
     CardArray_Clear(&player->cards);
     CardArray_Clear(&player->record);
 }

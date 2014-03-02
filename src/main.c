@@ -139,7 +139,7 @@ int main(int argc, const char * argv[])
         
     game = Game_Create();
     
-    for (i = 0; i < 1000000; i++)
+    for (i = 100000; i < 200000; i++)
     {
         Game_Play(game, i);
         

@@ -13,7 +13,10 @@ game_t *Game_Create(void)
     int i = 0;
     game_t *game = (game_t *)calloc(1, sizeof(game_t));
     for (i = 0; i < GAME_PLAYERS; i++)
+    {
         game->players[i] = Player_CreateStandardAI();
+        game->players[i]->identity = PlayerIdentity_Peasant;
+    }
     
     game->deck = Deck_Create();
     game->mt = (mt19937_t *)calloc(1, sizeof(mt19937_t));
@@ -52,7 +55,6 @@ void Game_Play(game_t *game, uint32_t seed)
 {
     int i = 0;
     int beat = 0;
-    player_t *others[2];
     
     Random_Init(game->mt, seed);
     
@@ -95,9 +97,6 @@ void Game_Play(game_t *game, uint32_t seed)
     
     while (game->status != GameStatus_Over)
     {
-        others[0] = game->players[IncPlayerIdx(game->playerIndex)];
-        others[1] = game->players[IncPlayerIdx(game->playerIndex+1)];
-        
         if (game->phase == Phase_Play)
         {
             Player_HandleEvent(Player_Event_Play, Game_GetCurrentPlayer(game), game);
