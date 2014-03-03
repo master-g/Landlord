@@ -182,10 +182,4 @@ void CardArray_Print(card_array_t *array);
  */
 int Card_ToString(uint8_t card, char *buf, int len);
 
-/*
- * test
- */
-void CardArray_Test(void);
-
-
 #endif /* LANDLORD_CARD_H_ */

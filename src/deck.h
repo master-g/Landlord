@@ -58,9 +58,4 @@ int Deck_Deal(deck_t *deck, card_array_t *array, int count);
  */
 int Deck_Recycle(deck_t *deck, card_array_t *array);
 
-/*
- * test deck
- */
-void Deck_Test(void);
-
 #endif /* LANDLORD_DECK_H_ */
