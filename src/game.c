@@ -45,6 +45,7 @@ void Game_Reset(game_t *game)
     Hand_Clear(&game->lastHand);
     game->playerIndex = 0;
     game->winner = 0;
+    game->lastplay = 0;
     
     Deck_Reset(game->deck);
     
@@ -100,13 +101,13 @@ void Game_Play(game_t *game, uint32_t seed)
         if (game->phase == Phase_Play)
         {
             Player_HandleEvent(Player_Event_Play, Game_GetCurrentPlayer(game), game);
+            game->lastplay = game->playerIndex;
             game->phase = Phase_Query;
             
             CardArray_Concate(&game->cardRecord, &game->lastHand.cards);
-#ifdef PRINT_GAME_LOG
-            printf("\nPlayer ---- %d ---- played\n", game->playerIndex);
+            
+            DBGLog("\nPlayer ---- %d ---- played\n", game->playerIndex);
             Hand_Print(&game->lastHand);
-#endif
         }
         else if (game->phase == Phase_Query || game->phase == Phase_Pass)
         {
@@ -119,18 +120,17 @@ void Game_Play(game_t *game, uint32_t seed)
                     game->phase = Phase_Play;
                 else
                     game->phase = Phase_Pass;
-#ifdef PRINT_GAME_LOG
-                printf("\nPlayer ---- %d ---- passed\n", game->playerIndex);
-#endif
+                
+                DBGLog("\nPlayer ---- %d ---- passed\n", game->playerIndex);
             }
             else
             {
+                game->lastplay = game->playerIndex;
                 game->phase = Phase_Query;
                 CardArray_Concate(&game->cardRecord, &game->lastHand.cards);
-#ifdef PRINT_GAME_LOG
-                printf("\nPlayer ---- %d ---- beat\n", game->playerIndex);
+                
+                DBGLog("\nPlayer ---- %d ---- beat\n", game->playerIndex);
                 Hand_Print(&game->lastHand);
-#endif
             }
         }
         
@@ -143,9 +143,8 @@ void Game_Play(game_t *game, uint32_t seed)
             {
                 game->status = GameStatus_Over;
                 game->winner = i;
-#ifdef PRINT_GAME_LOG
-                printf("\nPlayer ++++ %d ++++ wins!\n", i);
-#endif
+                
+                DBGLog("\nPlayer ++++ %d ++++ wins!\n", i);
                 break;
             }
         }

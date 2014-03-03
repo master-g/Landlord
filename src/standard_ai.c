@@ -214,11 +214,7 @@ int StandardAI_Beat(void *p, void *g)
      */
     
     /* peasant cooperation */
-    /* 
-     * TODO: teammate might not beat landlord
-     * make sure that tobeat is played by teammate
-     */
-    prevplayer = game->players[(game->playerIndex + GAME_PLAYERS - 1) % GAME_PLAYERS];
+    prevplayer = game->players[game->lastplay];
     if (canbeat &&
         player->identity == PlayerIdentity_Peasant &&
         prevplayer->identity == PlayerIdentity_Peasant)

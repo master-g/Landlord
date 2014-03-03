@@ -19,9 +19,19 @@
 #include "memtracker.h"
  */
 
-#define PRINT_TEST_SEPARATOR printf("------------------------------\n")
-/* #define PRINT_ADDRESS */
+static void silent_printf(const char *fmt, ...)
+{
+}
 
 #define PRINT_GAME_LOG_
+
+#ifdef PRINT_GAME_LOG
+#define DBGLog printf
+#else
+#define DBGLog  silent_printf
+#endif
+
+#define PRINT_TEST_SEPARATOR printf("------------------------------\n")
+/* #define PRINT_ADDRESS */
 
 #endif /* LANDLORD_COMMON_H_ */

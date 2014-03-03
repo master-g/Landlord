@@ -608,62 +608,65 @@ int Hand_Compare(hand_t *a, hand_t *b)
 
 void Hand_Print(hand_t *hand)
 {
+    const char *toprint = "";
 #ifdef PRINT_ADDRESS
-    printf("Hand: %p ", (void *)hand);
+    DBGLog("Hand: %p ", (void *)hand);
 #else
-    printf("Hand ");
+    DBGLog("Hand ");
 #endif
     
-    printf("type: [");
+    DBGLog("type: [");
     if (hand == NULL)
     {
-        printf("null\n");
+        DBGLog("null\n");
         return;
     }
     
     switch (Hand_GetPrimal(hand->type))
     {
         case HAND_PRIMAL_NONE:
-            printf("none ");
+            toprint = "none ";
             break;
         case HAND_PRIMAL_SOLO:
-            printf("solo ");
+            toprint = "solo ";
             break;
         case HAND_PRIMAL_PAIR:
-            printf("pair ");
+            toprint = "pair ";
             break;
         case HAND_PRIMAL_TRIO:
-            printf("trio ");
+            toprint = "trio ";
             break;
         case HAND_PRIMAL_FOUR:
-            printf("four ");
+            toprint = "four ";
             break;
         case HAND_PRIMAL_BOMB:
-            printf("bomb ");
+            toprint = "bomb ";
             break;
         case HAND_PRIMAL_NUKE:
-            printf("nuke ");
+            toprint = "nuke ";
             break;
         default:
             break;
     }
     
+    DBGLog("%s", toprint);
+    
     switch (Hand_GetKicker(hand->type))
     {
         case HAND_KICKER_NONE:
-            printf("none");
+            toprint = "none";
             break;
         case HAND_KICKER_SOLO:
-            printf("solo");
+            toprint = "solo";
             break;
         case HAND_KICKER_PAIR:
-            printf("pair");
+            toprint = "pair";
             break;
         case HAND_KICKER_DUAL_SOLO:
-            printf("dual solo");
+            toprint = "dual solo";
             break;
         case HAND_KICKER_DUAL_PAIR:
-            printf("dual pair");
+            toprint = "dual pair";
             break;
         default:
             break;
@@ -672,12 +675,13 @@ void Hand_Print(hand_t *hand)
     switch (Hand_GetChain(hand->type))
     {
         case HAND_CHAIN:
-            printf(" chain");
+            toprint = " chain";
             break;
         default:
             break;
     }
-    printf("]\n");
+    DBGLog("%s", toprint);
+    DBGLog("]\n");
     
     CardArray_Print(&hand->cards);
 }
@@ -1855,10 +1859,10 @@ void HandList_Print(hand_list_t *hl)
     if (node == NULL || node->hand.type == 0)
         return;
     
-    printf("-----hand_list_t begin---------\n");
+    DBGLog("-----hand_list_t begin---------\n");
     for (node = hl->first; node != NULL; node = node->next)
     {
         Hand_Print(&node->hand);
     }
-    printf("-----hand_list_t ended---------\n");
+    DBGLog("-----hand_list_t ended---------\n");
 }

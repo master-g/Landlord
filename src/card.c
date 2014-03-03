@@ -491,18 +491,18 @@ void CardArray_Print(card_array_t *array)
     char str[10];
     memset(str, 0, 10);
 #ifdef PRINT_ADDRESS
-    printf("Cards: %p (%d): ", (void *)array, array->length);
+    DBGLog("Cards: %p (%d): ", (void *)array, array->length);
 #else
-    printf("Cards: (%d): ", array->length);
+    DBGLog("Cards: (%d): ", array->length);
 #endif
     
     for (i = 0; i < array->length; i++)
     {
         Card_ToString(array->cards[i], str, 10);
-        printf("%s ", str);
+        DBGLog("%s ", str);
     }
     
-    printf("\n");
+    DBGLog("\n");
 }
 
 /*
