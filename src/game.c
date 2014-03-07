@@ -64,28 +64,6 @@ void Game_Play(game_t *game, uint32_t seed)
     
     Deck_Shuffle(game->deck, game->mt);
     
-    /* test
-    {
-        card_array_t *arr1 = NULL;
-        card_array_t *arr2 = NULL;
-        card_array_t *arr3 = NULL;
-        
-        arr1 = CardArray_CreateFromString("♣2 ♦3 ♣3");
-        arr2 = CardArray_CreateFromString("♦R ♥A ♣A ♥5 ♣5 ♠4 ♥4 ♣4");
-        arr3 = CardArray_CreateFromString("♦3");
-        
-        CardArray_Copy(&game->players[0]->cards, arr1);
-        CardArray_Copy(&game->players[1]->cards, arr2);
-        CardArray_Copy(&game->players[2]->cards, arr3);
-        
-        CardArray_Destroy(arr1);
-        CardArray_Destroy(arr2);
-        CardArray_Destroy(arr3);
-        
-        game->landlord = 0;
-    }
-    */
-    
     for (i = 0; i < GAME_PLAYERS; i++)
     {
         Deck_Deal(game->deck, &game->players[i]->cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);

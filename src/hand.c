@@ -901,6 +901,35 @@ int _HandList_SearchBeatSort(const void *a, const void *b)
         return CARD_RANK(*(uint8_t *)a) - CARD_RANK(*(uint8_t *)b);
 }
 
+int _HandList_SearchBeat_Primal(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int primal)
+{
+    int i = 0;
+    int canbeat = 0;
+    int *count = NULL;
+    int rank = 0;
+    card_array_t *temp = NULL;
+    
+    count = ctx->count;
+    temp = &ctx->rcards;
+    
+    rank = CARD_RANK(tobeat->cards.cards[0]);
+    
+    /* search for primal */
+    for (i = 0; i < temp->length; i++)
+    {
+        if (CARD_RANK(temp->cards[i]) > rank && count[CARD_RANK(temp->cards[i])] >= primal)
+        {
+            Hand_Clear(beat);
+            beat->type = tobeat->type;
+            CardArray_PushBackCards(&beat->cards, temp, i, primal);
+            canbeat = 1;
+            break;
+        }
+    }
+    
+    return canbeat;
+}
+
 int _HandList_SearchBeat_Bomb(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *beat)
 {
     int canbeat = 0;
@@ -930,35 +959,6 @@ int _HandList_SearchBeat_Bomb(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *be
     else
     {
         beat->type = Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAIN_NONE);
-    }
-    
-    return canbeat;
-}
-
-int _HandList_SearchBeat_Primal(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int primal)
-{
-    int i = 0;
-    int canbeat = 0;
-    int *count = NULL;
-    int rank = 0;
-    card_array_t *temp = NULL;
-    
-    count = ctx->count;
-    temp = &ctx->rcards;
-    
-    rank = CARD_RANK(tobeat->cards.cards[0]);
-    
-    /* search for primal */
-    for (i = 0; i < temp->length; i++)
-    {
-        if (CARD_RANK(temp->cards[i]) > rank && count[CARD_RANK(temp->cards[i])] >= primal)
-        {
-            Hand_Clear(beat);
-            beat->type = tobeat->type;
-            CardArray_PushBackCards(&beat->cards, temp, i, primal);
-            canbeat = 1;
-            break;
-        }
     }
     
     return canbeat;

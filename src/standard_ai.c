@@ -234,7 +234,7 @@ int StandardAI_Beat(void *p, void *g)
                         beat.type == Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE)))
             canbeat = 0;
         
-        if (canbeat && teammate->cards.length < landlord->cards.length)
+        if (canbeat && teammate->cards.length < player->cards.length)
             canbeat = 0;
     }
     
