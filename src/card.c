@@ -163,36 +163,6 @@ void CardArray_Subtract(card_array_t *from, card_array_t *sub)
     CardArray_Copy(from, &temp);
 }
 
-/*
-void CardArray_Subtract(card_array_t *from, card_array_t *sub)
-{
-    int i = 0;
-    int j = 0;
-    int removal = 0;
-    uint8_t card = 0;
- 
-    for (i = 0; i < sub->length; i++)
-    {
-        card = sub->cards[i];
-        do
-        {
-            removal = 0;
-            
-            for (j = 0; j < from->length; j++)
-            {
-                if (from->cards[j] == card)
-                {
-                    removal = 1;
-                    from->length--;
-                    memmove(from->cards + j, from->cards + j + 1, from->length - j);
-                    break;
-                }
-            }
-        } while (removal == 1);
-    }
-}
-*/
-
 int CardArray_IsIdentity(card_array_t *a, card_array_t *b)
 {
     int i = 0;
