@@ -9,22 +9,6 @@
 #include "deck.h"
 #include "mt19937.h"
 
-deck_t *Deck_Create(void)
-{
-    deck_t *deck = (deck_t *)calloc(1, sizeof(deck_t));
-    deck->cards = CardArray_CreateSet();
-    deck->used = CardArray_CreateEmpty();
-    
-    return deck;
-}
-
-void Deck_Destroy(deck_t *deck)
-{
-    CardArray_Destroy(deck->cards);
-    CardArray_Destroy(deck->used);
-    free(deck);
-}
-
 void shuffle(uint8_t arr[], int len, mt19937_t *mt)
 {
 	int i = len, j;
@@ -45,23 +29,23 @@ void shuffle(uint8_t arr[], int len, mt19937_t *mt)
 
 void Deck_Shuffle(deck_t *deck, void *mtctx)
 {
-    shuffle(deck->cards->cards, deck->cards->length, mtctx);
+    shuffle(deck->cards.cards, deck->cards.length, mtctx);
 }
 
 void Deck_Reset(deck_t *deck)
 {
-    CardArray_Reset(deck->cards);
-    CardArray_Clear(deck->used);
+    CardArray_Reset(&deck->cards);
+    CardArray_Clear(&deck->used);
 }
 
 uint8_t Deck_DealSingle(deck_t *deck)
 {
-    return CardArray_PopBack(deck->cards);
+    return CardArray_PopBack(&deck->cards);
 }
 
 void Deck_RecycleSingle(deck_t *deck, uint8_t card)
 {
-    CardArray_PushBack(deck->used, card);
+    CardArray_PushBack(&deck->used, card);
 }
 
 int Deck_Deal(deck_t *deck, card_array_t *array, int count)
@@ -87,10 +71,10 @@ int Deck_Deal(deck_t *deck, card_array_t *array, int count)
     
     CardArray_Clear(array);
     
-    actualDealt = deck->cards->length >= count ? count : deck->cards->length;
+    actualDealt = deck->cards.length >= count ? count : deck->cards.length;
 
-    deck->cards->length -= actualDealt;
-    memcpy(array->cards, &deck->cards->cards[deck->cards->length], actualDealt);
+    deck->cards.length -= actualDealt;
+    memcpy(array->cards, &deck->cards.cards[deck->cards.length], actualDealt);
     array->length = actualDealt;
     
     return actualDealt;
@@ -116,10 +100,10 @@ int Deck_Recycle(deck_t *deck, card_array_t *array)
 #else
     int actualRecycled = 0;
     
-    actualRecycled = CardArray_Capacity(deck->used) < array->length ? CardArray_Capacity(deck->used) : array->length;
+    actualRecycled = CardArray_Capacity(&deck->used) < array->length ? CardArray_Capacity(&deck->used) : array->length;
     
-    memcpy(&deck->used->cards[deck->used->length], array->cards, actualRecycled);
-    deck->used->length += actualRecycled;
+    memcpy(&deck->used.cards[deck->used.length], array->cards, actualRecycled);
+    deck->used.length += actualRecycled;
     
     return actualRecycled;
 #endif /* DECK_PEDANTIC */

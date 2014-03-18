@@ -8,33 +8,12 @@
 
 #include "card.h"
 
-card_array_t *CardArray_CreateEmpty(void)
-{
-    card_array_t *array = (card_array_t *)calloc(1, sizeof(card_array_t));
-    
-    return array;
-}
-
-card_array_t *CardArray_CreateSet(void)
-{
-    card_array_t *array = CardArray_CreateEmpty();
-    CardArray_Reset(array);
-    
-    return array;
-}
-
-void CardArray_Destroy(card_array_t *array)
-{
-    free(array);
-}
-
-card_array_t *CardArray_CreateFromString(const char *str)
+void *CardArray_InitFromString(card_array_t *array, const char *str)
 {
     uint8_t card = 0;
-    card_array_t *array = NULL;
     const char *p = str;
     
-    array = CardArray_CreateEmpty();
+    CardArray_Clear(array);
     
     while (*p != '\0')
     {

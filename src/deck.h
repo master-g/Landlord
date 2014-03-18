@@ -13,20 +13,10 @@
 
 typedef struct deck_t
 {
-    card_array_t *cards;
-    card_array_t *used;
+    card_array_t cards;
+    card_array_t used;
     
 } deck_t;
-
-/*
- * create a new deck
- */
-deck_t *Deck_Create(void);
-
-/*
- * destroy a deck
- */
-void Deck_Destroy(deck_t *deck);
 
 /*
  * shuffle deck

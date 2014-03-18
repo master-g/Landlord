@@ -19,7 +19,7 @@
 #define GAME_REST_CARDS 3
 
 #define IncPlayerIdx(x)             (((x) + 1) % GAME_PLAYERS)
-#define Game_GetCurrentPlayer(g)    ((g)->players[(g)->playerIndex])
+#define Game_GetCurrentPlayer(g)    (&(g)->players[(g)->playerIndex])
 #define Game_IncPlayerIndex(g)      ((g)->playerIndex = IncPlayerIdx((g)->playerIndex))
 
 typedef enum
@@ -41,9 +41,9 @@ typedef enum
 
 typedef struct game_t
 {
-    player_t        *players[GAME_PLAYERS];     /* player array */
-    deck_t          *deck;                      /* deck */
-    mt19937_t       *mt;                        /* random context */
+    player_t        players[GAME_PLAYERS];      /* player array */
+    deck_t          deck;                       /* deck */
+    mt19937_t       mt;                         /* random context */
     hand_t          lastHand;                   /* last played hand */
     card_array_t    cardRecord;                 /* card record */
     int             playerIndex;                /* current player index */
@@ -55,7 +55,9 @@ typedef struct game_t
     
 } game_t;
 
-game_t *Game_Create(void);
+void Game_Init(game_t *game);
+
+void Game_Clear(game_t *game);
 
 void Game_Destroy(game_t *game);
 

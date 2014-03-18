@@ -68,16 +68,6 @@ typedef struct hand_t
 } hand_t;
 
 /* 
- * create an empty hand
- */
-hand_t *Hand_Create(void);
-
-/*
- * destroy a hand
- */
-void Hand_Destroy(hand_t *hand);
-
-/* 
  * clear a hand 
  */
 void Hand_Clear(hand_t *hand);

@@ -133,20 +133,6 @@ int _hand_pattern[][PATTERN_LENGTH] =
  * ************************************************************
  */
 
-hand_t *Hand_Create(void)
-{
-    hand_t *hand = (hand_t *)calloc(1, sizeof(hand_t));
-    CardArray_Clear(&hand->cards);
-    
-    return hand;
-}
-
-
-void Hand_Destroy(hand_t *hand)
-{
-    free(hand);
-}
-
 void Hand_Clear(hand_t *hand)
 {
     CardArray_Clear(&hand->cards);

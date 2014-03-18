@@ -32,24 +32,20 @@ typedef int (*PlayerEventHandler)(void *player, void *context);
 
 typedef struct player_t
 {
-    card_array_t    cards;     /* card array, will change during game play */
-    card_array_t    record;    /* card record */
+    card_array_t    cards;      /* card array, will change during game play */
+    card_array_t    record;     /* card record */
     hand_list_t     *handlist;  /* the analyze result of cards */
     int             identity;   /* 0: peasant, 1: landlord */
+    int             seatId;     /* 0, 1, 2 */
     
     PlayerEventHandler  eventHandlers[Player_Event_Count];
     
 } player_t;
 
 /*
- * create a player context
+ * setup standard AI player
  */
-player_t *Player_Create(void);
-
-/*
- * create standard AI player
- */
-player_t *Player_CreateStandardAI(void);
+void Player_SetupStandardAI(player_t *player);
 
 /*
  * destroy a player context

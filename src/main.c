@@ -37,35 +37,34 @@ int main(int argc, const char * argv[])
     int landlordwon = 0;
     int i = 0;
     
-    game_t *game = NULL;
+    game_t game;
     
-    silent_printf("wtf", i);
+    silent_printf("warning suppressor", i);
     
     printf("start at %ld\n", time(NULL));
         
-    game = Game_Create();
+    Game_Init(&game);
     
-    for (i = 100000; i < 200000; i++)
+    for (i = 10000; i < 20000; i++)
     {
-        Game_Play(game, i);
+        Game_Play(&game, i);
         
-        if (game->winner == game->landlord)
+        if (game.winner == game.landlord)
             landlordwon++;
         else
             peasantwon++;
         
-        Game_Reset(game);
+        Game_Reset(&game);
     }
     
     printf("peasant : %d\n", peasantwon);
     printf("landlord : %d\n", landlordwon);
     
-    Game_Destroy(game);
+    Game_Clear(&game);
     
     printf("ended at %ld\n", time(NULL));
 
-    /*
     memtrack_list_allocations();
-     */
+
     return 0;
 }

@@ -73,19 +73,9 @@ typedef struct card_array_t
 typedef int (*CardSortFunc)(void *, void *);
 
 /*
- * creat a empty card array
- */
-card_array_t *CardArray_CreateEmpty(void);
-
-/*
- * create a card array with 54 poker cards
- */
-card_array_t *CardArray_CreateSet(void);
-
-/*
  * parse a string to card array
  */
-card_array_t *CardArray_CreateFromString(const char *str);
+void *CardArray_InitFromString(card_array_t *array, const char *str);
 
 /*
  * destroy a card array

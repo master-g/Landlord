@@ -214,24 +214,24 @@ int StandardAI_Beat(void *p, void *g)
      */
     
     /* peasant cooperation */
-    prevplayer = game->players[game->lastplay];
+    prevplayer = &game->players[game->lastplay];
     if (canbeat &&
-        player->identity == PlayerIdentity_Peasant &&
-        prevplayer->identity == PlayerIdentity_Peasant)
+        (player->identity == PlayerIdentity_Peasant) &&
+        (prevplayer->identity == PlayerIdentity_Peasant))
     {
         /* find teammate and landlord */
         for (i = 0; i < GAME_PLAYERS; i++)
         {
-            if (game->players[i]->identity == PlayerIdentity_Landlord)
-                landlord = game->players[i];
+            if (game->players[i].identity == PlayerIdentity_Landlord)
+                landlord = &game->players[i];
             
-            if (game->players[i]->identity == PlayerIdentity_Peasant && game->players[i] != player)
-                teammate = game->players[i];
+            if ((game->players[i].identity == PlayerIdentity_Peasant) && (game->players[i].seatId != player->seatId))
+                teammate = &game->players[i];
         }
         
         /* don't bomb/nuke teammate */
-        if (canbeat && (beat.type == Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAIN_NONE) ||
-                        beat.type == Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE)))
+        if (canbeat && ((beat.type == Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAIN_NONE) ||
+                        beat.type == Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE))))
             canbeat = 0;
         
         if (canbeat && teammate->cards.length < player->cards.length)
