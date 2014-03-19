@@ -117,6 +117,8 @@ typedef struct hand_list_t
     
 } hand_list_t;
 
+typedef int (*HandList_EvaluateFunc)(card_array_t *);
+
 /*
  * create a empty handlist
  */
@@ -180,12 +182,22 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array);
 /*
  * count how many primal hands in array
  */
-int HandList_EvaluatePrimalCount(card_array_t *array);
+int HandList_StandardEvaluator(card_array_t *array);
+
+/*
+ * advanced hand analyze
+ */
+hand_list_t *HandList_AdvancedAnalyze(card_array_t *array);
+
+/*
+ * advanced hand evaluator
+ */
+int HandList_AdvancedEvaluator(card_array_t *array);
 
 /*
  * search best beat from given cards
  */
-int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat);
+int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandList_EvaluateFunc func);
 
 /*
  * print hand_list_t

@@ -45,7 +45,7 @@ int main(int argc, const char * argv[])
         
     Game_Init(&game);
     
-    for (i = 10000; i < 20000; i++)
+    for (i = 100000; i < 200000; i++)
     {
         Game_Play(&game, i);
         

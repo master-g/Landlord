@@ -50,7 +50,7 @@
  * ************************************************************
  */
 
-#define CARD_ARRAY_PRESET_LENGTH    54
+#define CARD_ARRAY_PRESET_LENGTH    CARD_SET_LENGTH
 
 #define CardArray_GetFront(a)   ((a)->cards[0])
 #define CardArray_GetBack(a)    ((a)->cards[(a)->lenth])

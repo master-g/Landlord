@@ -208,7 +208,7 @@ int StandardAI_Beat(void *p, void *g)
     
     tobeat = &((game_t *)game)->lastHand;
     
-    canbeat = HandList_BestBeat(&player->cards, tobeat, &beat);
+    canbeat = HandList_BestBeat(&player->cards, tobeat, &beat, NULL);
     /*
      canbeat = HandList_SearchBeat(&player->cards, tobeat, &beat);
      */

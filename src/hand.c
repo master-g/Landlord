@@ -858,7 +858,7 @@ typedef struct beat_search_ctx_t
  Returns: 1 if a valid combination was found
  0, otherwise
  */
-int next_comb(int comb[], int k, int n)
+int _hl_next_comb(int comb[], int k, int n)
 {
 	int i = k - 1;
 	++comb[i];
@@ -1192,7 +1192,7 @@ int _HandList_SearchBeat_TrioKickerChain(beat_search_ctx_t *ctx, hand_t *tobeat,
             comb[j++] = rankcombmap[CARD_RANK(hkick.cards.cards[i])];
         
         /* find next combination */
-        if (next_comb(comb, chainlength, n))
+        if (_hl_next_comb(comb, chainlength, n))
         {
             /* next combination found, copy kickers */
             for (i = 0; i < chainlength; i++)
@@ -1649,7 +1649,7 @@ int _HandList_CalculateConsecutive(card_array_t *array, int duplicate)
     return hands;
 }
 
-int HandList_EvaluatePrimalCount(card_array_t *array)
+int HandList_StandardEvaluator(card_array_t *array)
 {
     int i = 0;
     int hands = 0;
@@ -1724,8 +1724,107 @@ int HandList_EvaluatePrimalCount(card_array_t *array)
     return hands;
 }
 
+/*
+ * ************************************************************
+ * advanced hand analyze
+ * ************************************************************
+ */
+
+/*
+ * search solo chain (from longest to shortest)
+ * search pair chain
+ * search trio chain
+ * search trio pair chain
+ * search trio solo chain
+ * search trio
+ * search pair
+ * search solo
+ */
+void _HandList_SearchLongestConsecutive(beat_search_ctx_t *ctx, hand_t *hand, int duplicate)
+{
+    /* context */
+    int i = 0;
+    int j = 0;
+    int k = 0;
+    int cardnum = 0;
+    uint8_t lastrank = 0;
+    int primal[] = {0, HAND_PRIMAL_SOLO, HAND_PRIMAL_PAIR, HAND_PRIMAL_TRIO};
+    int chainlen[] = {0, HAND_SOLO_CHAIN_MIN_LENGTH, HAND_PAIR_CHAIN_MIN_LENGTH, HAND_TRIO_CHAIN_MIN_LENGTH};
+    int *count = ctx->count;
+    card_array_t *cards = &ctx->cards;
+    
+    if (duplicate < 1 || duplicate > 3)
+        return;
+    
+    /* early break */
+    switch (duplicate)
+    {
+        case 1:
+            if (cards->length < HAND_SOLO_CHAIN_MIN_LENGTH)
+                return;
+        case 2:
+            if (cards->length < HAND_PAIR_CHAIN_MIN_LENGTH)
+                return;
+        case 3:
+            if (cards->length < HAND_TRIO_CHAIN_MIN_LENGTH)
+                return;
+            
+        default:
+            break;
+    }
+    
+    Hand_Clear(hand);
+    
+    for (i = CARD_RANK_3; i < CARD_RANK_2; i++)
+    {
+        
+    }
+}
+
+/*
+ * pass a empty hand to start traverse
+ * result stores in hand
+ * return 0 when stop
+ */
+int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
+{
+    /* init search */
+    if (hand->type == 0)
+    {
+        /* start from solo chain */
+    }
+    
+    return 0;
+}
+
+hand_list_t *HandList_AdvancedAnalyze(card_array_t *array)
+{
+    beat_search_ctx_t ctx;
+    /* setup search context */
+    BeatSearchCtx_Clear(&ctx);
+    
+    Hand_CountRank(array, ctx.count, NULL);
+    CardArray_Copy(&ctx.cards, array);
+    CardArray_Copy(&ctx.rcards, array);
+    CardArray_Sort(&ctx.rcards, _HandList_SearchBeatSort);
+    
+    return NULL;
+}
+
+int HandList_AdvancedEvaluator(card_array_t *array)
+{
+    return 0;
+}
+
+/*
+ * ************************************************************
+ * best beat
+ * ************************************************************
+ */
+
 #define BEAT_VALUE_FACTOR 10
 
+/* nodes for beat list sort */
 typedef struct beat_node_t
 {
     hand_node_t *node;
@@ -1740,12 +1839,13 @@ beat_node_t *_BeatNode_Create(void)
 
 #define _BeatNode_Destroy(n) free((n))
 
+/* sort function */
 int _BeatNode_ValueSort(const void *a, const void *b)
 {
     return ((beat_node_t *)b)->value - ((beat_node_t *)a)->value;
 }
 
-int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
+int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandList_EvaluateFunc func)
 {
     int i = 0;
     int nodei = 0;
@@ -1756,6 +1856,8 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
     card_array_t temp;
     beat_node_t *hnodes[BEAT_NODE_CAPACITY];
     hand_node_t *hbombs[BEAT_NODE_CAPACITY];
+    HandList_EvaluateFunc evalFunc;
+    evalFunc = (func == NULL) ? HandList_StandardEvaluator : func;
     
     memset(hnodes, 0, sizeof(beat_node_t *) * BEAT_NODE_CAPACITY);
     memset(hbombs, 0, sizeof(hand_node_t *) * BEAT_NODE_CAPACITY);
@@ -1791,7 +1893,7 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat)
             CardArray_Copy(&temp, array);
             /* evaluate the value of cards left after hand was played */
             CardArray_Subtract(&temp, &hnodes[i]->node->hand.cards);
-            hnodes[i]->value = HandList_EvaluatePrimalCount(&temp) *
+            hnodes[i]->value = evalFunc(&temp) *
             BEAT_VALUE_FACTOR +
             CARD_RANK(hnodes[i]->node->hand.cards.cards[0]);
         }
