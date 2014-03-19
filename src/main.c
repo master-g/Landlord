@@ -26,6 +26,17 @@ void Count_Print(int *count)
     printf("\n");
 }
 
+void test_advanced_hand_analyzer()
+{
+    const char* str = "♣3 ♣4 ♠5 ♦6 ♠6 ♥7 ♠7 ♦7 ♦8 ♣8 ♣9 ♦9 ♦T";
+    card_array_t cards;
+    CardArray_InitFromString(&cards, str);
+    
+    CardArray_Print(&cards);
+    
+    HandList_AdvancedAnalyze(&cards);
+}
+
 void silent_printf(const char *fmt, ...)
 {
     
@@ -39,13 +50,17 @@ int main(int argc, const char * argv[])
     
     game_t game;
     
+    test_advanced_hand_analyzer();
+    
     silent_printf("warning suppressor", i);
+    
+    /*
     
     printf("start at %ld\n", time(NULL));
         
     Game_Init(&game);
     
-    for (i = 100000; i < 200000; i++)
+    for (i = 100000; i < 100001; i++)
     {
         Game_Play(&game, i);
         
@@ -63,6 +78,8 @@ int main(int argc, const char * argv[])
     Game_Clear(&game);
     
     printf("ended at %ld\n", time(NULL));
+     
+     */
 
     memtrack_list_allocations();
 

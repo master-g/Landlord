@@ -33,6 +33,12 @@
 #define HAND_TRIO_CHAIN_MIN_LENGTH  6
 #define HAND_FOUR_CHAIN_MIN_LENGTH  8
 
+/* 
+ * minimun chain size is 5, like 34567
+ * landlord has 20 cards most, 20/5 = 4
+ */
+#define HAND_MAX_CHAIN_NUM          4
+
 #define BEAT_NODE_CAPACITY          255
 
 /*
@@ -1369,6 +1375,8 @@ hand_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat)
 
 /*
  * extract hands like 34567 / 334455 / 333444555 etc
+ * array is a processed card array holds count[rank] == duplicate
+ * TODO: optimize this function, see _HandList_SearchLongestConsecutive
  */
 void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int duplicate)
 {
@@ -1745,13 +1753,15 @@ void _HandList_SearchLongestConsecutive(beat_search_ctx_t *ctx, hand_t *hand, in
     /* context */
     int i = 0;
     int j = 0;
-    int k = 0;
-    int cardnum = 0;
+    int rankstart = 0;
+    int rankend = 0;
     uint8_t lastrank = 0;
     int primal[] = {0, HAND_PRIMAL_SOLO, HAND_PRIMAL_PAIR, HAND_PRIMAL_TRIO};
     int chainlen[] = {0, HAND_SOLO_CHAIN_MIN_LENGTH, HAND_PAIR_CHAIN_MIN_LENGTH, HAND_TRIO_CHAIN_MIN_LENGTH};
+    card_array_t chains[HAND_MAX_CHAIN_NUM];
+    int chaincount = 0;
     int *count = ctx->count;
-    card_array_t *cards = &ctx->cards;
+    card_array_t *cards = &ctx->rcards;
     
     if (duplicate < 1 || duplicate > 3)
         return;
@@ -1773,12 +1783,50 @@ void _HandList_SearchLongestConsecutive(beat_search_ctx_t *ctx, hand_t *hand, in
             break;
     }
     
-    Hand_Clear(hand);
+    /* setup */
+    for (i = 0; i < HAND_MAX_CHAIN_NUM; i++)
+        CardArray_Clear(&chains[i]);
     
-    for (i = CARD_RANK_3; i < CARD_RANK_2; i++)
+    Hand_Clear(hand);
+    rankstart = 0;
+    lastrank = CARD_RANK(cards->cards[0]);
+    
+    /* 
+     * i <= CARD_RANK_2
+     * but count[CARD_RANK_2] must be 0
+     * for 2/bomb/nuke has been removed before calling this function 
+     */
+    for (i = lastrank; i <= CARD_RANK_2; i++)
     {
+        /* find start of a possible chain */
+        if (rankstart == 0)
+        {
+            if (count[i] >= duplicate)
+                rankstart = i;
+            
+            continue;
+        }
         
+        /* chain break */
+        if (count[i] < duplicate)
+        {
+            /* chain break, extract chain and set new possible start */
+            if (((i - rankstart) * duplicate) >= chainlen[duplicate])
+            {
+                /* valid chain, store rank in card_array_t */
+                for (j = rankstart; j < i; j++)
+                    CardArray_PushBack(&chains[chaincount], (uint8_t)j);
+                
+                chaincount++;
+            }
+            
+            rankstart = 0;
+        }
     }
+    
+    /* find out the longest and return */
+    
+    printf("dup:%d %d found\n", duplicate, chaincount);
 }
 
 /*
@@ -1799,6 +1847,7 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
 
 hand_list_t *HandList_AdvancedAnalyze(card_array_t *array)
 {
+    hand_t hand;
     beat_search_ctx_t ctx;
     /* setup search context */
     BeatSearchCtx_Clear(&ctx);
@@ -1807,6 +1856,11 @@ hand_list_t *HandList_AdvancedAnalyze(card_array_t *array)
     CardArray_Copy(&ctx.cards, array);
     CardArray_Copy(&ctx.rcards, array);
     CardArray_Sort(&ctx.rcards, _HandList_SearchBeatSort);
+    
+    Hand_Clear(&hand);
+    _HandList_SearchLongestConsecutive(&ctx, &hand, HAND_PRIMAL_SOLO);
+    _HandList_SearchLongestConsecutive(&ctx, &hand, HAND_PRIMAL_PAIR);
+    _HandList_SearchLongestConsecutive(&ctx, &hand, HAND_PRIMAL_TRIO);
     
     return NULL;
 }
