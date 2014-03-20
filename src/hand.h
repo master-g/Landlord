@@ -162,7 +162,7 @@ void HandList_Destroy(hand_list_t *hl);
 /*
  * destroy a hand list node
  */
-void HandListNode_Destroy(hand_node_t *node);
+#define HandListNode_Destroy(n) (free((n)))
 
 /*
  * search a beat in card array

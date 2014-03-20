@@ -190,10 +190,7 @@ int _Hand_PatternMatch(int *sorted, int pattern)
     for (i = 0; i < PATTERN_LENGTH; i++)
     {
         if (sorted[i] != _hand_pattern[pattern][i])
-        {
-            ret = 0;
-            break;
-        }
+            return 0;
     }
     
     return ret;
@@ -321,7 +318,6 @@ void _Hand_Parse_5(hand_t *hand, card_array_t *array, int *count, int *sorted)
         /* trio pair, 3-2 */
         _Hand_Distribute(hand, array, count, 3, 2, 5);
         hand->type = Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_PAIR, HAND_CHAIN_NONE);
-            
     }
 }
 
@@ -595,13 +591,8 @@ int Hand_Compare(hand_t *a, hand_t *b)
 void Hand_Print(hand_t *hand)
 {
     const char *toprint = "";
-#ifdef PRINT_ADDRESS
-    DBGLog("Hand: %p ", (void *)hand);
-#else
-    DBGLog("Hand ");
-#endif
-    
-    DBGLog("type: [");
+    DBGLog("Hand type: [");
+
     if (hand == NULL)
     {
         DBGLog("null\n");
@@ -657,16 +648,10 @@ void Hand_Print(hand_t *hand)
         default:
             break;
     }
+
+    if (Hand_GetChain(hand->type) == HAND_CHAIN)
+        DBGLog(" chain");
     
-    switch (Hand_GetChain(hand->type))
-    {
-        case HAND_CHAIN:
-            toprint = " chain";
-            break;
-        default:
-            break;
-    }
-    DBGLog("%s", toprint);
     DBGLog("]\n");
     
     CardArray_Print(&hand->cards);
@@ -680,8 +665,7 @@ void Hand_Print(hand_t *hand)
 
 hand_list_t *HandList_Create(void)
 {
-    hand_list_t *hl = (hand_list_t *)calloc(1, sizeof(hand_list_t));
-    return hl;
+    return (hand_list_t *)calloc(1, sizeof(hand_list_t));
 }
 
 int HandList_Length(hand_list_t *hl)
@@ -820,14 +804,6 @@ void HandList_Destroy(hand_list_t *hl)
     }
     
     free(hl);
-}
-
-void HandListNode_Destroy(hand_node_t *node)
-{
-    if (node == NULL)
-        return;
-    
-    free(node);
 }
 
 /*
