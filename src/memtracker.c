@@ -185,7 +185,7 @@ void memtrack_list_allocations(void)
 			memblock_print_info(mb);
 		}
         
-        printf(">>>Total %ld Bytes %ld KB %ld MB<<<\n", total, total/1024, total/1024/1024);
+        printf(">>>Total %ld Bytes %ld KB %ld MB<<<\n", (long int)total, (long int)(total/1024), (long int)(total/1024/1024));
 	}
 	printf("*** Allocation list end ***\n");
 }

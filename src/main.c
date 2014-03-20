@@ -30,11 +30,15 @@ void test_advanced_hand_analyzer()
 {
     const char* str = "♣3 ♣4 ♠5 ♦6 ♠6 ♥7 ♠7 ♦7 ♦8 ♣8 ♣9 ♦9 ♦T";
     card_array_t cards;
+    hand_list_t *hl;
     CardArray_InitFromString(&cards, str);
     
     CardArray_Print(&cards);
     
     HandList_AdvancedAnalyze(&cards);
+    
+    hl = HandList_StandardAnalyze(&cards);
+    HandList_Print(hl);
 }
 
 void silent_printf(const char *fmt, ...)
@@ -49,18 +53,16 @@ int main(int argc, const char * argv[])
     int i = 0;
     
     game_t game;
-    
+
     test_advanced_hand_analyzer();
-    
+
     silent_printf("warning suppressor", i);
-    
-    /*
     
     printf("start at %ld\n", time(NULL));
         
     Game_Init(&game);
     
-    for (i = 100000; i < 100001; i++)
+    for (i = 100000; i < 200000; i++)
     {
         Game_Play(&game, i);
         
@@ -78,9 +80,8 @@ int main(int argc, const char * argv[])
     Game_Clear(&game);
     
     printf("ended at %ld\n", time(NULL));
-     
-     */
 
+    printf("\n");
     memtrack_list_allocations();
 
     return 0;
