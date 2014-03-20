@@ -63,7 +63,6 @@ int main(int argc, const char * argv[])
 
     silent_printf("warning suppressor", i);
     
-    /*
     printf("start at %ld\n", time(NULL));
         
     Game_Init(&game);
@@ -86,7 +85,6 @@ int main(int argc, const char * argv[])
     Game_Clear(&game);
     
     printf("ended at %ld\n", time(NULL));
-     */
 
     printf("\n");
     memtrack_list_allocations();
