@@ -6,8 +6,8 @@
  *  Copyright (c) 2014 MED. All rights reserved.
  */
 
-#include "medlist.h"
 #include "common.h"
+#include "medlist.h"
 
 medlist_t *MEDList_Create(void)
 {
@@ -15,29 +15,20 @@ medlist_t *MEDList_Create(void)
     return l;
 }
 
-void MEDList_Destroy(medlist_t *l, MEDListFunc_Delete delfunc)
+void MEDList_Destroy(medlist_t **l, MEDListFunc_Delete delfunc)
 {
-    medlist_t *node, *temp;
+    medlist_t *current = *l;
+    medlist_t *next;
     
-    if (l->next == NULL)
+    while (current != NULL)
     {
-        delfunc(l->payload);
-        free(l);
-        return;
+        next = current->next;
+        delfunc(current->payload);
+        free(current);
+        current = next;
     }
     
-    node = l->next;
-    temp = l;
-    while (node->next != NULL)
-    {
-        delfunc(temp->payload);
-        free(temp);
-        temp = node;
-        node = node->next;
-    }
-    
-    delfunc(node->payload);
-    free(node);
+    *l = NULL;
 }
 
 int MEDList_Length(medlist_t *l)
@@ -56,15 +47,8 @@ int MEDList_Length(medlist_t *l)
 
 void MEDList_PushFront(medlist_t **l, medlist_t *node)
 {
-    if (*l == NULL)
-    {
-        *l = node;
-    }
-    else
-    {
-        node->next = (*l)->next;
-        (*l)->next = node;
-    }
+    node->next = *l;
+    *l = node;
 }
 
 void MEDList_PushBack(medlist_t **l, medlist_t *node)
@@ -131,4 +115,26 @@ medlist_t *MEDList_Find(medlist_t *l, void *context, MEDListFunc_Find finder)
     }
     
     return (found != 0) ? result : NULL;
+}
+
+/*
+ *
+ */
+
+void _MEDList_Destroy(void *payload)
+{
+    
+}
+
+void MEDList_Test(void)
+{
+    medlist_t *a, *b, *c;
+    a = MEDList_Create();
+    b = MEDList_Create();
+    c = MEDList_Create();
+    
+    MEDList_PushBack(&a, b);
+    MEDList_PushFront(&a, c);
+    
+    MEDList_Destroy(&a, _MEDList_Destroy);
 }

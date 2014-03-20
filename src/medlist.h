@@ -33,7 +33,7 @@ typedef void (*MEDListFunc_Delete)(void *payload);
 
 medlist_t *MEDList_Create(void);
 
-void MEDList_Destroy(medlist_t *l, MEDListFunc_Delete delfunc);
+void MEDList_Destroy(medlist_t **l, MEDListFunc_Delete delfunc);
 
 int MEDList_Length(medlist_t *l);
 
@@ -44,5 +44,7 @@ void MEDList_PushBack(medlist_t **l, medlist_t *node);
 void MEDList_Remove(medlist_t **l, medlist_t *node);
 
 medlist_t *MEDList_Find(medlist_t *l, void *context, MEDListFunc_Find finder);
+
+void MEDList_Test(void);
 
 #endif /* LANDLORD_MEDLIST_H_ */

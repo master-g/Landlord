@@ -8,6 +8,7 @@
 
 #include "common.h"
 #include "game.h"
+#include "medlist.h"
 
 char szr[] = { '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'R' };
 
@@ -35,10 +36,12 @@ void test_advanced_hand_analyzer()
     
     CardArray_Print(&cards);
     
-    HandList_AdvancedAnalyze(&cards);
+    hl = HandList_AdvancedAnalyze(&cards);
+    HandList_Destroy(hl);
     
     hl = HandList_StandardAnalyze(&cards);
     HandList_Print(hl);
+    HandList_Destroy(hl);
 }
 
 void silent_printf(const char *fmt, ...)
@@ -53,11 +56,14 @@ int main(int argc, const char * argv[])
     int i = 0;
     
     game_t game;
+    
+    MEDList_Test();
 
     test_advanced_hand_analyzer();
 
     silent_printf("warning suppressor", i);
     
+    /*
     printf("start at %ld\n", time(NULL));
         
     Game_Init(&game);
@@ -80,6 +86,7 @@ int main(int argc, const char * argv[])
     Game_Clear(&game);
     
     printf("ended at %ld\n", time(NULL));
+     */
 
     printf("\n");
     memtrack_list_allocations();

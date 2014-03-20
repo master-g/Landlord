@@ -1897,7 +1897,7 @@ hand_list_t *HandList_AdvancedAnalyze(card_array_t *array)
     _HandList_SearchLongestConsecutive(&ctx, &hand, HAND_PRIMAL_PAIR);
     _HandList_SearchLongestConsecutive(&ctx, &hand, HAND_PRIMAL_TRIO);
     
-    return NULL;
+    return hl;
 }
 
 int HandList_AdvancedEvaluator(card_array_t *array)
