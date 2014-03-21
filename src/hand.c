@@ -1737,6 +1737,8 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
         /* trio chain */
         if (hand->type == 0)
             _HandList_SearchLongestConsecutive(ctx, hand, 3);
+        
+        /* trio */
     }
     /* continue search */
     else
