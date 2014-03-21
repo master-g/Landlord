@@ -158,7 +158,7 @@ medtree_t *MEDTree_Create(void)
     return (medtree_t *)calloc(1, sizeof(medtree_t));
 }
 
-void _MEDTree_PushNode(medstack_t **s, medtree_t *node)
+void _MEDTreeStack_PushNode(medstack_t **s, medtree_t *node)
 {
     medstack_t *snode = (medstack_t *)calloc(1, sizeof(medstack_t));
     snode->payload = node;
@@ -173,7 +173,7 @@ void MEDTree_Destroy(medtree_t **t, MEDAlgoFunc_Delete delfunc)
     medtree_t *temp = NULL;
     
     tnode = *t;
-    _MEDTree_PushNode(&s, tnode);
+    _MEDTreeStack_PushNode(&s, tnode);
     
     while (s != NULL)
     {
@@ -185,12 +185,27 @@ void MEDTree_Destroy(medtree_t **t, MEDAlgoFunc_Delete delfunc)
         temp = tnode->child;
         while (temp != NULL)
         {
-            _MEDTree_PushNode(&s, temp);
+            _MEDTreeStack_PushNode(&s, temp);
             temp = temp->sibling;
         }
         
         free(tnode);
     }
+}
+
+void MEDTree_AddChild(medtree_t **t, medtree_t *node)
+{
+    if (*t != NULL)
+    {
+        node->sibling = (*t)->child;
+        (*t)->child = node;
+    }
+}
+
+void MEDTree_AddSibling(medtree_t **t, medtree_t *node)
+{
+    node->sibling = *t;
+    *t = node;
 }
 
 /*

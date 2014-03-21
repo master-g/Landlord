@@ -10,6 +10,7 @@
 #define LANDLORD_HAND_H_
 
 #include "card.h"
+#include "medalgo.h"
 
 /* primal hands */
 #define HAND_PRIMAL_NONE        0x00

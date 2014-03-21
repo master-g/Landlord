@@ -87,6 +87,10 @@ medtree_t *MEDTree_Create(void);
 
 void MEDTree_Destroy(medtree_t **t, MEDAlgoFunc_Delete delfunc);
 
+void MEDTree_AddChild(medtree_t **t, medtree_t *node);
+
+void MEDTree_AddSibling(medtree_t **t, medtree_t *node);
+
 void MEDTree_Test(void);
 
 #endif /* LANDLORD_MEDALGO_H_ */
