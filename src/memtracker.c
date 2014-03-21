@@ -42,7 +42,7 @@ struct memblock *memblockList = NULL;
 
 static void memblock_print_info(struct memblock *mb)
 {
-    printf("%d bytes allocated with \"%s\" at %s:%d\n", (int)mb->size, mb->expr, mb->file, mb->line);
+    printf("%p %d bytes allocated with \"%s\" at %s:%d\n", (void *)&mb[1], (int)mb->size, mb->expr, mb->file, mb->line);
 }
 
 void* memtrack_malloc(size_t size, const char* expr, const char* file, int line)

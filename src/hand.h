@@ -100,70 +100,47 @@ void Hand_Print(hand_t *hand);
 
 /*
  * ************************************************************
- * utils
+ * hand list
  * ************************************************************
  */
-
-typedef struct hand_node_t
-{
-    hand_t hand;
-    struct hand_node_t *prev;
-    struct hand_node_t *next;
-    
-} hand_node_t;
-
-typedef struct hand_list_t
-{
-    hand_node_t *first;
-    
-} hand_list_t;
 
 typedef int (*HandList_EvaluateFunc)(card_array_t *);
 
 /*
- * create a empty handlist
- */
-hand_list_t *HandList_Create(void);
-
-/*
- * count handlist length
- */
-int HandList_Length(hand_list_t *hl);
-
-/*
  * push a hand into the front of hand list
  */
-void HandList_PushFront(hand_list_t *hl, hand_t *hand);
+void HandList_PushFront(medlist_t **hl, hand_t *hand);
 
 /*
  * push a hand into the back of hand list
  */
-void HandList_PushBack(hand_list_t *hl, hand_t *hand);
+void HandList_PushBack(medlist_t **hl, hand_t *hand);
 
 /*
  * remove a hand from hand list
  */
-void HandList_Remove(hand_list_t *hl, hand_node_t *node);
-
-/*
- * get tail from hand list
- */
-hand_node_t *HandList_GetTail(hand_list_t *hl);
+void HandList_Remove(medlist_t **hl, medlist_t *node);
 
 /*
  * search a specific hand type from hand list
  */
-hand_node_t *HandList_Find(hand_list_t *hl, int handtype);
+medlist_t *HandList_Find(medlist_t **hl, int handtype);
 
 /*
  * destroy a hand list
  */
-void HandList_Destroy(hand_list_t *hl);
+void HandList_Destroy(medlist_t **hl);
 
 /*
- * destroy a hand list node
+ * get payload as hand_t
  */
-#define HandListNode_Destroy(n) (free((n)))
+hand_t *HandList_GetHand(medlist_t *node);
+
+/*
+ * ************************************************************
+ * utils
+ * ************************************************************
+ */
 
 /*
  * search a beat in card array
@@ -173,12 +150,12 @@ int HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat);
 /*
  * search all the beats
  */
-hand_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat);
+medlist_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat);
 
 /*
  * standard analyze a card array into hand list
  */
-hand_list_t *HandList_StandardAnalyze(card_array_t *array);
+medlist_t *HandList_StandardAnalyze(card_array_t *array);
 
 /*
  * count how many primal hands in array
@@ -188,7 +165,7 @@ int HandList_StandardEvaluator(card_array_t *array);
 /*
  * advanced hand analyze
  */
-hand_list_t *HandList_AdvancedAnalyze(card_array_t *array);
+medlist_t *HandList_AdvancedAnalyze(card_array_t *array);
 
 /*
  * advanced hand evaluator
@@ -203,6 +180,6 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
 /*
  * print hand_list_t
  */
-void HandList_Print(hand_list_t *hl);
+void HandList_Print(medlist_t *hl);
 
 #endif /* LANDLORD_HAND_H_ */

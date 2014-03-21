@@ -663,147 +663,56 @@ void Hand_Print(hand_t *hand)
  * ************************************************************
  */
 
-hand_list_t *HandList_Create(void)
+void HandList_PushFront(medlist_t **hl, hand_t *hand)
 {
-    return (hand_list_t *)calloc(1, sizeof(hand_list_t));
+    medlist_t *node = MEDList_Create();
+    node->payload = (hand_t *)calloc(1, sizeof(hand_t));
+    Hand_Copy(node->payload, hand);
+    
+    MEDList_PushFront(hl, node);
 }
 
-int HandList_Length(hand_list_t *hl)
+void HandList_PushBack(medlist_t **hl, hand_t *hand)
 {
-    int length = 0;
-    hand_node_t *node = hl->first;
+    medlist_t *node = MEDList_Create();
+    node->payload = (hand_t *)calloc(1, sizeof(hand_t));
+    Hand_Copy(node->payload, hand);
     
-    while (node != NULL)
-    {
-        length++;
-        node = node->next;
-    }
-    
-    return length;
+    MEDList_PushBack(hl, node);
 }
 
-void _HandList_PushFrontRaw(hand_list_t *hl, hand_node_t *node)
+void HandList_Remove(medlist_t **hl, medlist_t *node)
 {
-    if (hl->first == NULL)
+    if (MEDList_Remove(hl, node))
     {
-        hl->first = node;
-    }
-    else
-    {
-        node->next = hl->first;
-        hl->first->prev = node;
-        hl->first = node;
+        free(node->payload);
+        free(node);
     }
 }
 
-void HandList_PushFront(hand_list_t *hl, hand_t *hand)
+int _HandList_FindFunc(void *payload, void *context)
 {
-    hand_node_t *node = (hand_node_t *)calloc(1, sizeof(hand_node_t));
-    Hand_Copy(&node->hand, hand);
-    
-    _HandList_PushFrontRaw(hl, node);
+    return ((hand_t *)payload)->type == *(int *)context ? 1 : 0;
 }
 
-void HandList_PushBack(hand_list_t *hl, hand_t *hand)
+medlist_t *HandList_Find(medlist_t **hl, int handtype)
 {
-    hand_node_t *tail = NULL;
-    hand_node_t *node = (hand_node_t *)calloc(1, sizeof(hand_node_t));
-    memcpy(&node->hand, hand, sizeof(hand_t));
-    
-    if (hl->first == NULL)
-    {
-        hl->first = node;
-    }
-    else
-    {
-        tail = hl->first;
-        while (tail->next != NULL)
-            tail = tail->next;
-        
-        tail->next = node;
-        node->prev = tail;
-    }
+    return MEDList_Find(*hl, &handtype, _HandList_FindFunc);
 }
 
-void HandList_Remove(hand_list_t *hl, hand_node_t *node)
+void _HandList_DestroyFunc(void *payload)
 {
-    hand_node_t *temp = NULL;
-    
-    if (hl->first == NULL)
-        return;
-    
-    if (hl->first == node)
-    {
-        temp = hl->first;
-        hl->first = hl->first->next;
-    }
-    else
-    {
-        for (temp = hl->first; temp != NULL; temp = temp->next)
-        {
-            if (temp == node)
-            {
-                if (temp->next != NULL)
-                    temp->next->prev = temp->prev;
-                
-                if (temp->prev != NULL)
-                    temp->prev->next = temp->next;
-                
-                break;
-            }
-        }
-    }
-    
-    if (temp == node)
-        HandListNode_Destroy(temp);
+    free(payload);
 }
 
-hand_node_t *HandList_GetTail(hand_list_t *hl)
+void HandList_Destroy(medlist_t **hl)
 {
-    hand_node_t *tail = hl->first;
-    
-    do
-    {
-        if (tail == NULL)
-            break;
-        
-        while (tail->next != NULL)
-            tail = tail->next;
-        
-    } while (0);
-    
-    return tail;
+    MEDList_Destroy(hl, _HandList_DestroyFunc);
 }
 
-hand_node_t *HandList_Find(hand_list_t *hl, int handtype)
+hand_t *HandList_GetHand(medlist_t *node)
 {
-    hand_node_t *ret = NULL;
-    
-    for (ret = hl->first; ret != NULL; ret = ret->next)
-    {
-        if (ret->hand.type == handtype)
-            break;
-    }
-    
-    return ret;
-}
-
-void HandList_Destroy(hand_list_t *hl)
-{
-    hand_node_t *temp;
-    hand_node_t *prev;
-    
-    if (hl != NULL && hl->first != NULL)
-    {
-        for (temp = hl->first; temp != NULL; )
-        {
-            prev = temp;
-            temp = temp->next;
-            HandListNode_Destroy(prev);
-        }
-    }
-    
-    free(hl);
+    return (hand_t *)node->payload;
 }
 
 /*
@@ -1312,9 +1221,9 @@ int HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat)
         return _HandList_SearchBeat(cards, tobeat, beat);
 }
 
-hand_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat)
+medlist_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat)
 {
-    hand_list_t *hl = NULL;
+    medlist_t *hl = NULL;
     hand_t htobeat;
     hand_t beat;
     int canbeat = 0;
@@ -1322,14 +1231,13 @@ hand_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat)
     Hand_Clear(&beat);
     Hand_Copy(&htobeat, tobeat);
     
-    hl = HandList_Create();
     do
     {
         canbeat = _HandList_SearchBeat(cards, &htobeat, &beat);
         if (canbeat)
         {
             Hand_Copy(&htobeat, &beat);
-            HandList_PushFront(hl, &beat);
+            HandList_PushFront(&hl, &beat);
         }
         
     } while (canbeat);
@@ -1347,7 +1255,7 @@ hand_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat)
  * extract hands like 34567 / 334455 / 333444555 etc
  * array is a processed card array holds count[rank] == duplicate
  */
-void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int duplicate)
+void _HandList_ExtractConsecutive(medlist_t **hl, card_array_t *array, int duplicate)
 {
     int i = 0;
     int j = 0;
@@ -1433,7 +1341,7 @@ void _HandList_ExtractConsecutive(hand_list_t *hl, card_array_t *array, int dupl
     }
 }
 
-void _HandList_ExtractNukeBomb2(hand_list_t *hl, card_array_t *array, int *count)
+void _HandList_ExtractNukeBomb2(medlist_t **hl, card_array_t *array, int *count)
 {
     int i = 0;
     hand_t hand;
@@ -1502,11 +1410,11 @@ void _HandList_ExtractNukeBomb2(hand_list_t *hl, card_array_t *array, int *count
     }
 }
 
-hand_list_t *HandList_StandardAnalyze(card_array_t *array)
+medlist_t *HandList_StandardAnalyze(card_array_t *array)
 {
     int i = 0;
     int count[CARD_RANK_END];
-    hand_list_t *hl = NULL;
+    medlist_t *hl = NULL;
     
     card_array_t arrsolo;
     card_array_t arrpair;
@@ -1524,10 +1432,8 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     CardArray_Sort(array, NULL);
     Hand_CountRank(array, count, NULL);
     
-    hl = HandList_Create();
-    
     /* nuke, bomb and 2 */
-    _HandList_ExtractNukeBomb2(hl, array, count);
+    _HandList_ExtractNukeBomb2(&hl, array, count);
     
     /* chains */
     for (i = 0; i < array->length; )
@@ -1545,9 +1451,9 @@ hand_list_t *HandList_StandardAnalyze(card_array_t *array)
     }
     
     /* chain */
-    _HandList_ExtractConsecutive(hl, &arrtrio, 3);
-    _HandList_ExtractConsecutive(hl, &arrpair, 2);
-    _HandList_ExtractConsecutive(hl, &arrsolo, 1);
+    _HandList_ExtractConsecutive(&hl, &arrtrio, 3);
+    _HandList_ExtractConsecutive(&hl, &arrpair, 2);
+    _HandList_ExtractConsecutive(&hl, &arrsolo, 1);
     
     return hl;
 }
@@ -1716,26 +1622,6 @@ int HandList_StandardEvaluator(card_array_t *array)
  * ************************************************************
  */
 
-typedef struct hand_tree_t
-{
-    hand_t  hand;
-    int     done;
-    struct hand_tree_t *child;
-    struct hand_tree_t *sibling;
-    
-} hand_tree_t;
-
-hand_tree_t *HandTree_Create(void)
-{
-    hand_tree_t *t = (hand_tree_t *)calloc(1, sizeof(hand_tree_t));
-    return t;
-}
-
-void HandTree_Destroy(hand_tree_t *t)
-{
-    
-}
-
 void _HandList_SearchLongestConsecutive(beat_search_ctx_t *ctx, hand_t *hand, int duplicate)
 {
     /* context */
@@ -1847,10 +1733,10 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
     return 0;
 }
 
-hand_list_t *HandList_AdvancedAnalyze(card_array_t *array)
+medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
 {
     hand_t hand;
-    hand_list_t *hl = NULL;
+    medlist_t *hl = NULL;
     beat_search_ctx_t ctx;
     /* setup search context */
     BeatSearchCtx_Clear(&ctx);
@@ -1860,8 +1746,7 @@ hand_list_t *HandList_AdvancedAnalyze(card_array_t *array)
     CardArray_Copy(&ctx.cards, array);
     
     /* extract bombs and 2 */
-    hl = HandList_Create();
-    _HandList_ExtractNukeBomb2(hl, &ctx.cards, ctx.count);
+    _HandList_ExtractNukeBomb2(&hl, &ctx.cards, ctx.count);
     
     /* finish building beat search context */
     CardArray_Copy(&ctx.rcards, array);
@@ -1892,7 +1777,7 @@ int HandList_AdvancedEvaluator(card_array_t *array)
 /* nodes for beat list sort */
 typedef struct beat_node_t
 {
-    hand_node_t *node;
+    medlist_t *node;
     int value;
     
 } beat_node_t;
@@ -1916,27 +1801,27 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
     int nodei = 0;
     int bombi = 0;
     int canbeat = 0;
-    hand_list_t *hl = NULL;
-    hand_node_t *node = NULL;
+    medlist_t *hl = NULL;
+    medlist_t *node = NULL;
     card_array_t temp;
     beat_node_t *hnodes[BEAT_NODE_CAPACITY];
-    hand_node_t *hbombs[BEAT_NODE_CAPACITY];
+    medlist_t *hbombs[BEAT_NODE_CAPACITY];
     HandList_EvaluateFunc evalFunc;
     evalFunc = (func == NULL) ? HandList_StandardEvaluator : func;
     
     memset(hnodes, 0, sizeof(beat_node_t *) * BEAT_NODE_CAPACITY);
-    memset(hbombs, 0, sizeof(hand_node_t *) * BEAT_NODE_CAPACITY);
+    memset(hbombs, 0, sizeof(medlist_t *) * BEAT_NODE_CAPACITY);
     
     /* search beat list */
     hl = HandList_SearchBeatList(array, tobeat);
     
     /* separate bomb/nuke and normal hands */
-    node = hl->first;
+    node = hl;
     
     while (node != NULL)
     {
-        if (node->hand.type == Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAIN_NONE) ||
-            node->hand.type == Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE))
+        if (HandList_GetHand(node)->type == Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAIN_NONE) ||
+            HandList_GetHand(node)->type == Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE))
         {
             hbombs[bombi++] = node;
         }
@@ -1957,10 +1842,10 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
         {
             CardArray_Copy(&temp, array);
             /* evaluate the value of cards left after hand was played */
-            CardArray_Subtract(&temp, &hnodes[i]->node->hand.cards);
+            CardArray_Subtract(&temp, &HandList_GetHand(hnodes[i]->node)->cards);
             hnodes[i]->value = evalFunc(&temp) *
             BEAT_VALUE_FACTOR +
-            CARD_RANK(hnodes[i]->node->hand.cards.cards[0]);
+            CARD_RANK(HandList_GetHand(hnodes[i]->node)->cards.cards[0]);
         }
         
         /* sort primal hands */
@@ -1968,14 +1853,13 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
     }
     
     /* re-build hand list */
-    hl->first = NULL;
+    hl = NULL;
     for (i = bombi; i >= 0; i--)
     {
         if (hbombs[i])
         {
             hbombs[i]->next = NULL;
-            hbombs[i]->prev = NULL;
-            _HandList_PushFrontRaw(hl, hbombs[i]);
+            MEDList_PushFront(&hl, hbombs[i]);
         }
     }
     
@@ -1984,15 +1868,14 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
         if (hnodes[i])
         {
             hnodes[i]->node->next = NULL;
-            hnodes[i]->node->prev = NULL;
-            _HandList_PushFrontRaw(hl, hnodes[i]->node);
+            MEDList_PushFront(&hl, hnodes[i]->node);
         }
     }
     
     /* select beat */
-    if (hl->first != NULL)
+    if (hl != NULL)
     {
-        Hand_Copy(beat, &hl->first->hand);
+        Hand_Copy(beat, HandList_GetHand(hl));
         canbeat = 1;
     }
     
@@ -2000,22 +1883,22 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
     for (i = 0; i < nodei; i++)
         _BeatNode_Destroy(hnodes[i]);
     
-    HandList_Destroy(hl);
+    HandList_Destroy(&hl);
      
     return canbeat;
 }
 
-void HandList_Print(hand_list_t *hl)
+void HandList_Print(medlist_t *hl)
 {
-    hand_node_t *node = hl->first;
+    medlist_t *node = hl;
     
-    if (node == NULL || node->hand.type == 0)
+    if (node == NULL || HandList_GetHand(node) == NULL || HandList_GetHand(node)->type == 0)
         return;
     
     DBGLog("-----hand_list_t begin---------\n");
-    for (node = hl->first; node != NULL; node = node->next)
+    for (node = hl; node != NULL; node = node->next)
     {
-        Hand_Print(&node->hand);
+        Hand_Print(HandList_GetHand(node));
     }
     DBGLog("-----hand_list_t ended---------\n");
 }

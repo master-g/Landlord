@@ -34,7 +34,7 @@ typedef struct player_t
 {
     card_array_t    cards;      /* card array, will change during game play */
     card_array_t    record;     /* card record */
-    hand_list_t     *handlist;  /* the analyze result of cards */
+    medlist_t       *handlist;  /* the analyze result of cards */
     int             identity;   /* 0: peasant, 1: landlord */
     int             seatId;     /* 0, 1, 2 */
     

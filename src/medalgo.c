@@ -74,33 +74,37 @@ void MEDList_PushBack(medlist_t **l, medlist_t *node)
     }
 }
 
-void MEDList_Remove(medlist_t **l, medlist_t *node)
+int MEDList_Remove(medlist_t **l, medlist_t *node)
 {
+    int found = 0;
     medlist_t *temp, *prev;
     
     if (*l == node)
     {
         (*l) = (*l)->next;
-        return;
+        return 1;
     }
     
     if ((*l)->next == NULL && *l != node)
-        return;
+        return 0;
     
     prev = *l;
     temp = (*l)->next;
     
-    while (temp->next != NULL)
+    while (temp != NULL)
     {
         if (temp == node)
         {
             prev->next = temp->next;
+            found = 1;
             break;
         }
         
         prev = temp;
         temp = temp->next;
     }
+    
+    return found;
 }
 
 medlist_t *MEDList_Find(medlist_t *l, void *context, MEDAlgoFunc_Find finder)
@@ -234,9 +238,10 @@ void MEDList_Test(void)
     
     for (i = 0; i < 3; i++)
     {
-        b = MEDStack_Pop(&a);
-        b->next = NULL;
-        MEDList_Destroy(&b, _MEDList_Destroy);
+        c = a;
+        MEDList_Remove(&a, a);
+        free(c->payload);
+        free(c);
     }
     
     printf("%p\n", a);

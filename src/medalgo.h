@@ -46,7 +46,7 @@ void MEDList_PushFront(medlist_t **l, medlist_t *node);
 
 void MEDList_PushBack(medlist_t **l, medlist_t *node);
 
-void MEDList_Remove(medlist_t **l, medlist_t *node);
+int MEDList_Remove(medlist_t **l, medlist_t *node);
 
 medlist_t *MEDList_Find(medlist_t *l, void *context, MEDAlgoFunc_Find finder);
 
