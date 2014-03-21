@@ -39,19 +39,8 @@ void test_advanced_hand_analyzer()
     
     hl = HandList_AdvancedAnalyze(&cards);
     
-    hl = HandList_StandardAnalyze(&cards);
     HandList_Print(hl);
-    
-    n = hl;
-    while (n->next != NULL)
-    {
-        n = n->next;
-    }
-    
-    HandList_Remove(&hl, n);
-    
-    HandList_Destroy(&hl);
-    
+
     HandList_Destroy(&hl);
 }
 
@@ -72,12 +61,13 @@ int main(int argc, const char * argv[])
     MEDList_Test();
     
     MEDTree_Test();
+    */
 
     test_advanced_hand_analyzer();
-     */
 
     silent_printf("warning suppressor", i);
-    
+
+    /*
     printf("start at %ld\n", time(NULL));
         
     Game_Init(&game);
@@ -100,6 +90,7 @@ int main(int argc, const char * argv[])
     Game_Clear(&game);
     
     printf("ended at %ld\n", time(NULL));
+    */
 
     printf("\n");
     memtrack_list_allocations();

@@ -1706,16 +1706,33 @@ void _HandList_SearchLongestConsecutive(beat_search_ctx_t *ctx, hand_t *hand, in
     }
 }
 
-/*
- * search solo chain (from longest to shortest)
- * search pair chain
- * search trio chain
- * search trio pair chain
- * search trio solo chain
- * search trio
- * search pair
- * search solo
- */
+void _HandList_SearchPrimal(beat_search_ctx_t *ctx, hand_t *hand, int primal)
+{
+    int i = 0;
+    int j = 0;
+    int *count = ctx->count;
+    int primals[] = {0, HAND_PRIMAL_SOLO, HAND_PRIMAL_PAIR, HAND_PRIMAL_TRIO};
+    card_array_t *cards = &ctx->cards;
+    card_array_t *rcards = &ctx->rcards;
+
+    if (primal > 3 || primal < 1)
+        return;
+
+    /* search count[rank] >= primal */
+    for (i = 0; i < rcards->length; i++)
+    {
+        if (count[CARD_RANK(rcards->cards[i])] >= primal)
+        {
+            /* found */
+            Hand_Clear(hand);
+            CardArray_PushBackCards(&hand->cards, rcards, i, primal);
+            hand->type = Hand_Format(primals[primal], HAND_KICKER_NONE, HAND_CHAIN_NONE);
+            break;
+        }
+    }
+}
+
+typedef void (*_HandList_SearchPrimalFunc)(beat_search_ctx_t *, hand_t *, int);
 
 /*
  * pass a empty hand to start traverse
@@ -1724,29 +1741,73 @@ void _HandList_SearchLongestConsecutive(beat_search_ctx_t *ctx, hand_t *hand, in
  */
 int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
 {
+    int found = 0;
+    int i = 0;
+    int primals[] = {1, 2, 3, 3, 2, 1};
+    /* solo chain, pair chain, trio chain, trio, pair, solo */
+    _HandList_SearchPrimalFunc searchers[6];
+    searchers[0] = _HandList_SearchLongestConsecutive;
+    searchers[1] = _HandList_SearchLongestConsecutive;
+    searchers[2] = _HandList_SearchLongestConsecutive;
+    searchers[3] = _HandList_SearchPrimal;
+    searchers[4] = _HandList_SearchPrimal;
+    searchers[5] = _HandList_SearchPrimal;
+
     /* init search */
     if (hand->type == 0)
     {
-        /* solo chain */
-        _HandList_SearchLongestConsecutive(ctx, hand, 1);
-        
-        /* pair chain */
-        if (hand->type == 0)
-            _HandList_SearchLongestConsecutive(ctx, hand, 2);
-        
-        /* trio chain */
-        if (hand->type == 0)
-            _HandList_SearchLongestConsecutive(ctx, hand, 3);
-        
-        /* trio */
+        while (i < 6 && hand->type == 0)
+        {
+            searchers[i](ctx, hand, primals[i]);
+            i++;
+        }
+
+        /* if found == 0, should panic */
+        found = (hand->type == 0) ? 0 : 1;
     }
-    /* continue search */
+    /* continue search via beat */
     else
     {
-        
+        found = HandList_SearchBeat(&ctx->cards, hand, hand);
+
+        /* if can't beat, reduce card length for more */
+        if (found == 0)
+        {
+            /* 
+             * TODO 
+             * 1. check code
+             * 2. use function array
+             */
+            if (hand->type == Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN) && 
+                    hand->cards.length > HAND_SOLO_CHAIN_MIN_LENGTH)
+            {
+                found = 1;
+                CardArray_DropFront(&hand->cards, 1);
+            }
+            else if (hand->type == Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN) &&
+                    hand->cards.length > HAND_PAIR_CHAIN_MIN_LENGTH)
+            {
+                found = 1;
+                CardArray_DropFront(&hand->cards, 2);
+            }
+            else if (hand->type == Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN) &&
+                    hand->cards.length > HAND_TRIO_CHAIN_MIN_LENGTH)
+            {
+                found = 1;
+                CardArray_DropFront(&hand->cards, 3);
+            }
+
+            if (found != 0)
+                found = HandList_SearchBeat(&ctx->cards, hand, hand);
+        }
+        else
+        {
+            Hand_Print(hand);
+            printf("*****************\n");
+        }
     }
     
-    return 0;
+    return found;
 }
 
 medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
@@ -1770,9 +1831,10 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
     
     /* TODO: start algorithm here */
     Hand_Clear(&hand);
-    _HandList_SearchLongestConsecutive(&ctx, &hand, HAND_PRIMAL_SOLO);
-    _HandList_SearchLongestConsecutive(&ctx, &hand, HAND_PRIMAL_PAIR);
-    _HandList_SearchLongestConsecutive(&ctx, &hand, HAND_PRIMAL_TRIO);
+    while (_HandList_TraverseHands(&ctx, &hand) != 0)
+    {
+        HandList_PushFront(&hl, &hand);
+    }
     
     return hl;
 }

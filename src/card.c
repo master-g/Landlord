@@ -264,6 +264,27 @@ uint8_t CardArray_PopBack(card_array_t *array)
     return card;
 }
 
+int CardArray_DropFront(card_array_t *array, int count)
+{
+    int drop = 0;
+    drop = (array->length >= count) ? count : array->length;
+    memmove(array->cards, array->cards + drop, array->length);
+    array->length -= drop;
+    memset(array->cards + array->length, 0, drop); 
+
+    return drop;
+}
+
+int CardArray_DropBack(card_array_t *array, int count)
+{
+    int drop = 0;
+    drop = (array->length >= count) ? count : array->length;
+    memset(array->cards + array->length - drop, 0, drop);
+    array->length -= drop;
+
+    return drop;
+}
+
 uint8_t CardArray_Insert(card_array_t *array, int before, uint8_t card)
 {
     uint8_t ret = 0;
@@ -394,10 +415,10 @@ void CardArray_Sort(card_array_t *array, int (*comparator)(const void *, const v
 
 #define CARD_STRING_LENGTH 4
 
-char szDIAMOND[] = { 0xE2, 0x99, 0xA6, 0};
-char szCLUB[]    = { 0xE2, 0x99, 0xA3, 0};
-char szHEART[]   = { 0xE2, 0x99, 0xA5, 0};
-char szSPADE[]   = { 0xE2, 0x99, 0xA0, 0};
+unsigned char szDIAMOND[] = { 0xE2, 0x99, 0xA6, 0};
+unsigned char szCLUB[]    = { 0xE2, 0x99, 0xA3, 0};
+unsigned char szHEART[]   = { 0xE2, 0x99, 0xA5, 0};
+unsigned char szSPADE[]   = { 0xE2, 0x99, 0xA0, 0};
 char szRank[]    = { '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'r', 'R' };
 
 int Card_ToString(uint8_t card, char *buf, int len)
@@ -411,16 +432,16 @@ int Card_ToString(uint8_t card, char *buf, int len)
         switch (suit)
         {
             case CARD_SUIT_DIAMOND:
-                szSuit = szDIAMOND;
+                szSuit = (char *)szDIAMOND;
                 break;
             case CARD_SUIT_CLUB:
-                szSuit = szCLUB;
+                szSuit = (char *)szCLUB;
                 break;
             case CARD_SUIT_HEART:
-                szSuit = szHEART;
+                szSuit = (char *)szHEART;
                 break;
             case CARD_SUIT_SPADE:
-                szSuit = szSPADE;
+                szSuit = (char *)szSPADE;
                 break;
                 
             default:

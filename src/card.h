@@ -128,6 +128,16 @@ uint8_t CardArray_PopFront(card_array_t *array);
 uint8_t CardArray_PopBack(card_array_t *array);
 
 /*
+ * drop multiple cards from the front of the array
+ */
+int CardArray_DropFront(card_array_t *array, int count);
+
+/*
+ * drop multiple cards from the back of the array
+ */
+int CardArray_DropBack(card_array_t *array, int count);
+
+/*
  * insert a card to the front of index
  */
 uint8_t CardArray_Insert(card_array_t *array, int before, uint8_t card);
