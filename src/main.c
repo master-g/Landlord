@@ -8,7 +8,7 @@
 
 #include "common.h"
 #include "game.h"
-#include "medlist.h"
+#include "medalgo.h"
 
 char szr[] = { '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'R' };
 
@@ -57,12 +57,13 @@ int main(int argc, const char * argv[])
     
     game_t game;
     
-    MEDList_Test();
+    MEDTree_Test();
 
     test_advanced_hand_analyzer();
 
     silent_printf("warning suppressor", i);
     
+    /*
     printf("start at %ld\n", time(NULL));
         
     Game_Init(&game);
@@ -85,6 +86,8 @@ int main(int argc, const char * argv[])
     Game_Clear(&game);
     
     printf("ended at %ld\n", time(NULL));
+     
+     */
 
     printf("\n");
     memtrack_list_allocations();

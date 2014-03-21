@@ -9,7 +9,7 @@
 #ifndef MT19937_H_
 #define MT19937_H_
 
-#include "common.h"
+#include <stdint.h>
 
 #define MT_N    624
 
