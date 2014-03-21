@@ -1727,7 +1727,21 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
     /* init search */
     if (hand->type == 0)
     {
-        /* start from solo chain */
+        /* solo chain */
+        _HandList_SearchLongestConsecutive(ctx, hand, 1);
+        
+        /* pair chain */
+        if (hand->type == 0)
+            _HandList_SearchLongestConsecutive(ctx, hand, 2);
+        
+        /* trio chain */
+        if (hand->type == 0)
+            _HandList_SearchLongestConsecutive(ctx, hand, 3);
+    }
+    /* continue search */
+    else
+    {
+        
     }
     
     return 0;
