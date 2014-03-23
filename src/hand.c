@@ -1734,6 +1734,7 @@ void _HandList_SearchPrimal(beat_search_ctx_t *ctx, hand_t *hand, int primal)
 typedef void (*_HandList_SearchPrimalFunc)(beat_search_ctx_t *, hand_t *, int);
 
 /*
+ * TODO, search ALL hands
  * pass a empty hand to start traverse
  * result stores in hand
  * return 0 when stop
@@ -1772,11 +1773,6 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
         /* if can't beat, reduce card length for more */
         if (found == 0)
         {
-            /* 
-             * TODO 
-             * 1. check code
-             * 2. use function array
-             */
             if (hand->type == Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN) && 
                     hand->cards.length > HAND_SOLO_CHAIN_MIN_LENGTH)
             {
@@ -1796,8 +1792,10 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
                 CardArray_DropFront(&hand->cards, 3);
             }
 
-            if (found != 0)
-                found = HandList_SearchBeat(&ctx->cards, hand, hand);
+            if (found == 0)
+            {
+                /* TODO: can't found beat, loop through hand type */
+            }
         }
     }
     
