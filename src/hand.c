@@ -1759,11 +1759,18 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
         while (i < 6 && hand->type == 0)
         {
             searchers[i](ctx, hand, primals[i]);
-            i++;
+            if (hand->type != 0)
+            {
+                found = 1;
+                break;
+            }
+            else
+            {
+                i++;
+            }
         }
 
-        /* if found == 0, should panic */
-        found = (hand->type == 0) ? 0 : 1;
+        /* if found == 0, should PANIC */
     }
     /* continue search via beat */
     else
@@ -1771,6 +1778,7 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
         found = HandList_SearchBeat(&ctx->cards, hand, hand);
 
         /* if can't beat, reduce card length for more */
+        /*
         if (found == 0)
         {
             if (hand->type == Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN) && 
@@ -1791,12 +1799,8 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
                 found = 1;
                 CardArray_DropFront(&hand->cards, 3);
             }
-
-            if (found == 0)
-            {
-                /* TODO: can't found beat, loop through hand type */
-            }
         }
+        */
     }
     
     return found;
@@ -1804,7 +1808,9 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
 
 medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
 {
-    hand_t hand;
+    hand_t workinghand;
+    hand_t lasthand;
+    int found = 0;
     medlist_t *hl = NULL;
     beat_search_ctx_t ctx;
     /* setup search context */
@@ -1823,10 +1829,39 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
     CardArray_Sort(&ctx.rcards, _HandList_SearchBeatSort);
     
     /* TODO: start algorithm here */
-    Hand_Clear(&hand);
-    while (_HandList_TraverseHands(&ctx, &hand) != 0)
+    /* init search */
+    Hand_Clear(&workinghand);
+    Hand_Clear(&lasthand);
+
+    found = _HandList_TraverseHands(&ctx, &workinghand);
+    if (found)
     {
-        HandList_PushFront(&hl, &hand);
+        Hand_Copy(&lasthand, &workinghand);
+WTF:    HandList_PushFront(&hl, &workinghand);
+
+        while (_HandList_TraverseHands(&ctx, &workinghand) != 0)
+            HandList_PushFront(&hl, &workinghand);
+
+        /* can't find any more hands, try to reduce chain length */
+        if (lasthand.type != 0)
+        {
+            if (lasthand.type == Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN) &&
+                    lasthand.cards.length > HAND_SOLO_CHAIN_MIN_LENGTH)
+            {
+                if (lasthand.cards.length > HAND_SOLO_CHAIN_MIN_LENGTH)
+                {
+                    CardArray_DropFront(&lasthand.cards, 1);
+                    Hand_Copy(&workinghand, &lasthand);
+                    goto WTF;
+                }
+                else
+                {
+                    lasthand.type = 0;
+                    goto WTF;
+                }
+            }
+
+        }
     }
     
     return hl;
