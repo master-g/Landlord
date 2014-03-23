@@ -1158,6 +1158,7 @@ int _HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat)
     Hand_CountRank(cards, ctx.count, NULL);
     CardArray_Copy(&ctx.cards, cards);
     CardArray_Copy(&ctx.rcards, cards);
+    CardArray_Sort(&ctx.cards, NULL);
     CardArray_Sort(&ctx.rcards, _HandList_SearchBeatSort);
     
     /* start search */
@@ -1709,10 +1710,8 @@ void _HandList_SearchLongestConsecutive(beat_search_ctx_t *ctx, hand_t *hand, in
 void _HandList_SearchPrimal(beat_search_ctx_t *ctx, hand_t *hand, int primal)
 {
     int i = 0;
-    int j = 0;
     int *count = ctx->count;
     int primals[] = {0, HAND_PRIMAL_SOLO, HAND_PRIMAL_PAIR, HAND_PRIMAL_TRIO};
-    card_array_t *cards = &ctx->cards;
     card_array_t *rcards = &ctx->rcards;
 
     if (primal > 3 || primal < 1)
@@ -1800,11 +1799,6 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, hand_t *hand)
             if (found != 0)
                 found = HandList_SearchBeat(&ctx->cards, hand, hand);
         }
-        else
-        {
-            Hand_Print(hand);
-            printf("*****************\n");
-        }
     }
     
     return found;
@@ -1827,6 +1821,7 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
     
     /* finish building beat search context */
     CardArray_Copy(&ctx.rcards, array);
+    CardArray_Sort(&ctx.cards, NULL);
     CardArray_Sort(&ctx.rcards, _HandList_SearchBeatSort);
     
     /* TODO: start algorithm here */
