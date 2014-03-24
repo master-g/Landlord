@@ -32,7 +32,6 @@ void test_advanced_hand_analyzer()
     const char* str = "♣3 ♣4 ♠5 ♦6 ♠6 ♥7 ♠7 ♦7 ♦8 ♣8 ♣9 ♦9 ♦T";
     card_array_t cards;
     medlist_t *hl;
-    medlist_t *n;
     CardArray_InitFromString(&cards, str);
     
     CardArray_Print(&cards);
@@ -56,23 +55,14 @@ int main(int argc, const char * argv[])
     int i = 0;
     
     game_t game;
-    
-    /*
-    MEDList_Test();
-    
-    MEDTree_Test();
-    */
-
-    test_advanced_hand_analyzer();
 
     silent_printf("warning suppressor", i);
 
-    /*
     printf("start at %ld\n", time(NULL));
         
     Game_Init(&game);
     
-    for (i = 100000; i < 100001; i++)
+    for (i = 100000; i < 20000; i++)
     {
         Game_Play(&game, i);
         
@@ -90,8 +80,9 @@ int main(int argc, const char * argv[])
     Game_Clear(&game);
     
     printf("ended at %ld\n", time(NULL));
-    */
-
+    
+    test_advanced_hand_analyzer();
+    
     printf("\n");
     memtrack_list_allocations();
 

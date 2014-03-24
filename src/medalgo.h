@@ -21,6 +21,8 @@ typedef int (*MEDAlgoFunc_Find)(void* payload, void* context);
 /* destroy function */
 typedef void (*MEDAlgoFunc_Delete)(void *payload);
 
+void MEDAlgo_StandardFree(void *payload);
+
 /*
  * ************************************************************
  * list
@@ -78,6 +80,7 @@ medstack_t *MEDStack_Pop(medstack_t **s);
 typedef struct medtree_t
 {
     void *payload;
+    struct medtree_t *root;
     struct medtree_t *child;
     struct medtree_t *sibling;
     

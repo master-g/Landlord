@@ -16,6 +16,7 @@ void Game_Init(game_t *game)
         Player_SetupStandardAI(&game->players[i]);
         game->players[i].identity = PlayerIdentity_Peasant;
         game->players[i].seatId = i;
+        game->players[i].handlist = NULL;
     }
     
     Deck_Reset(&game->deck);

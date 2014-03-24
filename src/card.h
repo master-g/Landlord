@@ -173,6 +173,11 @@ void CardArray_RemoveRank(card_array_t *array, uint8_t rank);
 void CardArray_Sort(card_array_t *array, int (*comparator)(const void *, const void *));
 
 /*
+ * reverse cards
+ */
+void CardArray_Reverse(card_array_t *array);
+
+/*
  * print every card in the array
  */
 void CardArray_Print(card_array_t *array);

@@ -412,6 +412,18 @@ void CardArray_Sort(card_array_t *array, int (*comparator)(const void *, const v
         qsort(array->cards, array->length, sizeof(uint8_t), comparator);
 }
 
+void CardArray_Reverse(card_array_t *array)
+{
+    int i = 0;
+    card_array_t temp;
+    CardArray_Clear(&temp);
+    
+    for (i = array->length; i--; )
+        temp.cards[temp.length++] = array->cards[i];
+    
+    CardArray_Copy(array, &temp);
+}
+
 
 #define CARD_STRING_LENGTH 4
 
