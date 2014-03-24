@@ -122,6 +122,11 @@ void HandList_PushBack(medlist_t **hl, hand_t *hand);
 void HandList_Remove(medlist_t **hl, medlist_t *node);
 
 /*
+ * concate two hand list
+ */
+void HandList_Concate(medlist_t **head, medlist_t *tail);
+
+/*
  * search a specific hand type from hand list
  */
 medlist_t *HandList_Find(medlist_t **hl, int handtype);

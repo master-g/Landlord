@@ -690,6 +690,23 @@ void HandList_Remove(medlist_t **hl, medlist_t *node)
     }
 }
 
+void HandList_Concate(medlist_t **head, medlist_t *tail)
+{
+    medlist_t *node = *head;
+    
+    if (*head == NULL)
+    {
+        *head = tail;
+    }
+    else
+    {
+        while (node->next != NULL)
+            node = node->next;
+        
+        node->next = tail;
+    }
+}
+
 int _HandList_FindFunc(void *payload, void *context)
 {
     return ((hand_t *)payload)->type == *(int *)context ? 1 : 0;
@@ -1863,9 +1880,13 @@ typedef struct _hltree_payload_t
     
 } _hltree_payload_t;
 
+/*
+ * FIXME
+ */
 medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
 {
     int lastlength;
+    medlist_t *otherhands = NULL;
     medlist_t *hl = NULL;
     medlist_t *hlnode = NULL;
     medstack_t *st = NULL;
@@ -1887,7 +1908,7 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
     CardArray_Copy(&ctx.cards, array);
     
     /* extract bombs and 2 */
-    _HandList_ExtractNukeBomb2(&hl, &ctx.cards, ctx.count);
+    _HandList_ExtractNukeBomb2(&otherhands, &ctx.cards, ctx.count);
     
     /* finish building beat_search_context */
     CardArray_Copy(&ctx.rcards, array);
@@ -2002,13 +2023,19 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
     
     MEDTree_Destroy(&grandtree, MEDAlgo_StandardFree);
     
+    HandList_Concate(&hl, otherhands);
+    
     return hl;
 }
 
 int HandList_AdvancedEvaluator(card_array_t *array)
 {
+    int value = 0;
     medlist_t *hl = HandList_AdvancedAnalyze(array);
-    return MEDList_Length(hl);
+    value = MEDList_Length(hl);
+    HandList_Destroy(&hl);
+    
+    return value;
 }
 
 /*

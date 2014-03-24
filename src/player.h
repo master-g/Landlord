@@ -48,6 +48,11 @@ typedef struct player_t
 void Player_SetupStandardAI(player_t *player);
 
 /*
+ * setup advanced AI player
+ */
+void Player_SetupAdvancedAI(player_t *player);
+
+/*
  * destroy a player context
  */
 void Player_Destroy(player_t *player);
