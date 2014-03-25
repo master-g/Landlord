@@ -32,8 +32,9 @@ void test_advanced_hand_analyzer()
     /*
     const char* str = "♣3 ♣4 ♠5 ♦6 ♠6 ♥7 ♠7 ♦7 ♦8 ♣8 ♣9 ♦9 ♦T";
     const char* str = "♣r ♣2 ♠K ♦K ♠Q ♥J ♠T ♥T ♦T ♣T ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5 ♠4 ♣4";
+    const char* str = "♠K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5";
      */
-    const char* str = "♠K ♦K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5";
+    const char* str = "♠K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5";
     card_array_t cards;
     medlist_t *hl;
     CardArray_InitFromString(&cards, str);

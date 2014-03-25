@@ -35,6 +35,9 @@ struct memblock
     struct memblock *prev;
 };
 
+static size_t memtrack_peak = 0;
+static size_t memtrack_livebytes = 0;
+
 #define MAGIC1 0xDEADBEEF
 #define MAGIC2 0xBEEFDEAD
 
@@ -53,6 +56,8 @@ void* memtrack_malloc(size_t size, const char* expr, const char* file, int line)
         printf("Unable to malloc memory!\n");
         return NULL;
     }
+    
+    memtrack_livebytes += size;
     
     mb->magic = MAGIC1;
     mb->file = file;
@@ -79,6 +84,8 @@ void* memtrack_calloc(size_t count, size_t elem_size, const char* expr, const ch
         printf("Unable to calloc memory!\n");
         return NULL;
     }
+    
+    memtrack_livebytes += count * elem_size;
     
     mb->magic = MAGIC1;
     mb->file = file;
@@ -126,6 +133,9 @@ void* memtrack_realloc(void* ptr, const char* eptr, size_t size, const char* exp
         memcpy(newPtr, ptr, copysize);
         memtrack_free(ptr, eptr, file, line);
         
+        memtrack_livebytes -= mb->size;
+        memtrack_livebytes += size;
+        
         return newPtr;
     }
 }
@@ -154,14 +164,18 @@ void memtrack_free(void* ptr, const char* expr, const char* file, int line)
         }
         mb->magic = MAGIC2;
         if (mb == memblockList)
-        {
             memblockList = mb->next;
-        }
+        
         /* unlink */
         if (mb->next)
             mb->next->prev = mb->prev;
         if (mb->prev)
             mb->prev->next = mb->next;
+        
+        if (memtrack_livebytes > memtrack_peak)
+            memtrack_peak = memtrack_livebytes;
+        
+        memtrack_livebytes -= mb->size;
         
         free(mb);
     }
@@ -187,5 +201,6 @@ void memtrack_list_allocations(void)
         
         printf(">>>Total %ld Bytes %ld KB %ld MB<<<\n", (long int)total, (long int)(total/1024), (long int)(total/1024/1024));
 	}
+    printf(">>>History %ld Bytes %ld KB %ld MB<<<\n", (long int)memtrack_peak, (long int)(memtrack_peak/1024), (long int)(memtrack_peak/1024/1024));
 	printf("*** Allocation list end ***\n");
 }
