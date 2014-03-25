@@ -29,7 +29,11 @@ void Count_Print(int *count)
 
 void test_advanced_hand_analyzer()
 {
+    /*
     const char* str = "♣3 ♣4 ♠5 ♦6 ♠6 ♥7 ♠7 ♦7 ♦8 ♣8 ♣9 ♦9 ♦T";
+    const char* str = "♣r ♣2 ♠K ♦K ♠Q ♥J ♠T ♥T ♦T ♣T ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5 ♠4 ♣4";
+     */
+    const char* str = "♠K ♦K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5";
     card_array_t cards;
     medlist_t *hl;
     CardArray_InitFromString(&cards, str);
@@ -62,7 +66,7 @@ int main(int argc, const char * argv[])
         
     Game_Init(&game);
     
-    for (i = 100000; i < 200000; i++)
+    for (i = 100000; i < 20000; i++)
     {
         Game_Play(&game, i);
         
@@ -80,6 +84,8 @@ int main(int argc, const char * argv[])
     Game_Clear(&game);
     
     printf("ended at %ld\n", time(NULL));
+    
+    test_advanced_hand_analyzer();
     
     printf("\n");
     memtrack_list_allocations();

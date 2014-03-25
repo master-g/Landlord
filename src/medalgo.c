@@ -142,11 +142,7 @@ medlist_t *MEDList_Find(medlist_t *l, void *context, MEDAlgoFunc_Find finder)
 medstack_t *MEDStack_Pop(medstack_t **s)
 {
     medstack_t *node = *s;
-    
-    if ((*s)->next == NULL)
-        *s = NULL;
-    else
-        *s = (*s)->next;
+    *s = (*s)->next;
     
     return node;
 }

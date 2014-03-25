@@ -1373,6 +1373,9 @@ void _HandList_ExtractNukeBomb2(medlist_t **hl, card_array_t *array, int *count)
         
         count[CARD_RANK_r] = 0;
         count[CARD_RANK_R] = 0;
+        
+        CardArray_RemoveRank(array, CARD_RANK_r);
+        CardArray_RemoveRank(array, CARD_RANK_R);
     }
     /* bomb */
     for (i = CARD_RANK_2; i >= CARD_RANK_3; i--)
@@ -1386,6 +1389,7 @@ void _HandList_ExtractNukeBomb2(medlist_t **hl, card_array_t *array, int *count)
             HandList_PushFront(hl, &hand);
             
             count[i] = 0;
+            CardArray_RemoveRank(array, i);
         }
     }
     /* joker */
@@ -1398,6 +1402,8 @@ void _HandList_ExtractNukeBomb2(medlist_t **hl, card_array_t *array, int *count)
         HandList_PushFront(hl, &hand);
         count[CARD_RANK_r] = 0;
         count[CARD_RANK_R] = 0;
+        CardArray_RemoveRank(array, CARD_RANK_r);
+        CardArray_RemoveRank(array, CARD_RANK_R);
         
     }
     /* 2 */
@@ -1421,6 +1427,7 @@ void _HandList_ExtractNukeBomb2(medlist_t **hl, card_array_t *array, int *count)
                 break;
         }
         count[CARD_RANK_2] = 0;
+        CardArray_RemoveRank(array, CARD_RANK_2);
         HandList_PushFront(hl, &hand);
     }
 }
@@ -1768,6 +1775,9 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, int *lastsearch, hand_t *han
     searchers[4] = _HandList_SearchPrimal;
     searchers[5] = _HandList_SearchPrimal;
 
+    if (ctx->cards.length == 0)
+        return 0;
+    
     if (*lastsearch >= HAND_SEARCH_TYPES)
         return 0;
     
@@ -1911,7 +1921,7 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
     _HandList_ExtractNukeBomb2(&otherhands, &ctx.cards, ctx.count);
     
     /* finish building beat_search_context */
-    CardArray_Copy(&ctx.rcards, array);
+    CardArray_Copy(&ctx.rcards, &ctx.cards);
     CardArray_Sort(&ctx.cards, NULL);
     CardArray_Copy(&ctx.rcards, &ctx.cards);
     CardArray_Reverse(&ctx.rcards);
@@ -1970,6 +1980,18 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
         /* expansion */
         _HandList_ExtractAllHands(&pload->ctx, &hl);
         
+        /*
+        HandList_Print(hl);
+        printf("+++++++ %p \n", (void *)pload);
+        CardArray_Print(&pload->hand.cards);
+        printf("\n");
+        
+        if (pload->hand.type == Hand_Format(HAND_PRIMAL_PAIR, 0, 0))
+        {
+            printf("found\n");
+        }
+         */
+        
         if (hl == NULL)
         {
             /* a branch has been done */
@@ -1980,7 +2002,7 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
         else
         {
             if ((shortest == NULL) ||
-                (pload->length < ((_hltree_payload_t *)(shortest->payload))->length))
+                (pload->length + 1 < ((_hltree_payload_t *)(shortest->payload))->length))
             {
                 /* push new nodes */
                 hlnode = hl;
