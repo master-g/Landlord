@@ -68,7 +68,7 @@ int main(int argc, const char * argv[])
         
     Game_Init(&game);
     
-    for (i = 10000; i < 20000; i++)
+    for (i = 1000; i < 1001; i++)
     {
         Game_Play(&game, i);
         
@@ -86,8 +86,9 @@ int main(int argc, const char * argv[])
     Game_Clear(&game);
     
     printf("ended at %ld\n", time(NULL));
-    
+    /*   
     test_advanced_hand_analyzer();
+    */
     
     printf("\n");
     memtrack_list_allocations();
