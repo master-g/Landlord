@@ -44,6 +44,7 @@ void test_advanced_hand_analyzer()
     hl = HandList_AdvancedAnalyze(&cards);
     
     HandList_Print(hl);
+    printf("length: %d\n", MEDList_Length(hl));
 
     HandList_Destroy(&hl);
 }
@@ -67,7 +68,7 @@ int main(int argc, const char * argv[])
         
     Game_Init(&game);
     
-    for (i = 100000; i < 20000; i++)
+    for (i = 10000; i < 20000; i++)
     {
         Game_Play(&game, i);
         

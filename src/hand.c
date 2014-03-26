@@ -674,7 +674,11 @@ void HandList_PushFront(medlist_t **hl, hand_t *hand)
 
 void HandList_PushBack(medlist_t **hl, hand_t *hand)
 {
-    medlist_t *node = MEDList_Create();
+    medlist_t *node = NULL;
+    if (hl == NULL)
+        return;
+    
+    node = MEDList_Create();
     node->payload = (hand_t *)calloc(1, sizeof(hand_t));
     Hand_Copy(node->payload, hand);
     
@@ -734,20 +738,20 @@ hand_t *HandList_GetHand(medlist_t *node)
  */
 
 /* beat search context */
-typedef struct beat_search_ctx_t
+typedef struct hand_ctx_t
 {
     int count[CARD_RANK_END];   /* rank count */
     card_array_t cards;         /* original cards */
     card_array_t rcards;        /* reverse sorted cards */
     
-} beat_search_ctx_t;
+} hand_ctx_t;
 
-#define BeatSearchCtx_Clear(ctx) memset((ctx), 0, sizeof(beat_search_ctx_t))
+#define HandCtx_Clear(ctx) memset((ctx), 0, sizeof(hand_ctx_t))
 
-void _BeatSearchCtx_Setup(beat_search_ctx_t *ctx, card_array_t *array)
+void HandCtx_Setup(hand_ctx_t *ctx, card_array_t *array)
 {
     /* setup search context */
-    BeatSearchCtx_Clear(ctx);
+    HandCtx_Clear(ctx);
     
     Hand_CountRank(array, ctx->count, NULL);
     CardArray_Copy(&ctx->cards, array);
@@ -788,7 +792,7 @@ int _hl_next_comb(int comb[], int k, int n)
 	return 1;
 }
 
-int _HandList_SearchBeat_Primal(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int primal)
+int _HandList_SearchBeat_Primal(hand_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int primal)
 {
     int i = 0;
     int canbeat = 0;
@@ -818,7 +822,7 @@ int _HandList_SearchBeat_Primal(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *
     return canbeat;
 }
 
-int _HandList_SearchBeat_Bomb(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *beat)
+int _HandList_SearchBeat_Bomb(hand_ctx_t *ctx, hand_t *tobeat, hand_t *beat)
 {
     int canbeat = 0;
     int *count = NULL;
@@ -863,7 +867,7 @@ int _HandList_SearchBeat_Bomb(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *be
  * b) player_1 SEARCH_BEAT_LOOP player_1_prev_beat : possible for 333 vs 333
  *
  */
-int _HandList_SearchBeat_TrioKicker(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int kick)
+int _HandList_SearchBeat_TrioKicker(hand_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int kick)
 {
     int i = 0;
     int canbeat = 0;
@@ -953,7 +957,7 @@ int _HandList_SearchBeat_TrioKicker(beat_search_ctx_t *ctx, hand_t *tobeat, hand
     return canbeat;
 }
 
-int _HandList_SearchBeat_Chain(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int duplicate)
+int _HandList_SearchBeat_Chain(hand_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int duplicate)
 {
     int canbeat = 0;
     int i = 0;
@@ -1024,7 +1028,7 @@ int _HandList_SearchBeat_Chain(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *b
     return canbeat;
 }
 
-int _HandList_SearchBeat_TrioKickerChain(beat_search_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int kc)
+int _HandList_SearchBeat_TrioKickerChain(hand_ctx_t *ctx, hand_t *tobeat, hand_t *beat, int kc)
 {
     int canbeat = 0;
     int i = 0;
@@ -1170,10 +1174,10 @@ int _HandList_SearchBeat_TrioKickerChain(beat_search_ctx_t *ctx, hand_t *tobeat,
 int _HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat)
 {
     int canbeat = 0;
-    beat_search_ctx_t ctx;
+    hand_ctx_t ctx;
     
     /* setup search context */
-    _BeatSearchCtx_Setup(&ctx, cards);
+    HandCtx_Setup(&ctx, cards);
     
     /* start search */
     switch (tobeat->type)
@@ -1644,7 +1648,7 @@ int HandList_StandardEvaluator(card_array_t *array)
  * ************************************************************
  */
 
-void _HandList_SearchLongestConsecutive(beat_search_ctx_t *ctx, hand_t *hand, int duplicate)
+void _HandList_SearchLongestConsecutive(hand_ctx_t *ctx, hand_t *hand, int duplicate)
 {
     /* context */
     int i = 0;
@@ -1728,7 +1732,7 @@ void _HandList_SearchLongestConsecutive(beat_search_ctx_t *ctx, hand_t *hand, in
     }
 }
 
-void _HandList_SearchPrimal(beat_search_ctx_t *ctx, hand_t *hand, int primal)
+void _HandList_SearchPrimal(hand_ctx_t *ctx, hand_t *hand, int primal)
 {
     int i = 0;
     int *count = ctx->count;
@@ -1752,33 +1756,30 @@ void _HandList_SearchPrimal(beat_search_ctx_t *ctx, hand_t *hand, int primal)
     }
 }
 
-typedef void (*_HandList_SearchPrimalFunc)(beat_search_ctx_t *, hand_t *, int);
+typedef void (*_HandList_SearchPrimalFunc)(hand_ctx_t *, hand_t *, int);
 
-#define HAND_SEARCH_TYPES   6
+#define HAND_SEARCH_TYPES           3
 
 /*
  * pass a empty hand to start traverse
  * result stores in hand
  * return 0 when stop
  */
-int _HandList_TraverseHands(beat_search_ctx_t *ctx, int *lastsearch, hand_t *hand)
+int _HLAA_TraverseHands(hand_ctx_t *ctx, int *begin, hand_t *hand)
 {
     int found = 0;
-    int i = *lastsearch;
-    int primals[] = {1, 2, 3, 3, 2, 1};
+    int i = *begin;
+    int primals[] = {1, 2, 3};
     /* solo chain, pair chain, trio chain, trio, pair, solo */
     _HandList_SearchPrimalFunc searchers[HAND_SEARCH_TYPES];
     searchers[0] = _HandList_SearchLongestConsecutive;
     searchers[1] = _HandList_SearchLongestConsecutive;
     searchers[2] = _HandList_SearchLongestConsecutive;
-    searchers[3] = _HandList_SearchPrimal;
-    searchers[4] = _HandList_SearchPrimal;
-    searchers[5] = _HandList_SearchPrimal;
 
     if (ctx->cards.length == 0)
         return 0;
     
-    if (*lastsearch >= HAND_SEARCH_TYPES)
+    if (*begin >= HAND_SEARCH_TYPES)
         return 0;
     
     /* init search */
@@ -1795,7 +1796,7 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, int *lastsearch, hand_t *han
             else
             {
                 i++;
-                *lastsearch = i;
+                *begin = i;
             }
         }
 
@@ -1810,7 +1811,10 @@ int _HandList_TraverseHands(beat_search_ctx_t *ctx, int *lastsearch, hand_t *han
     return found;
 }
 
-void _HandList_ExtractAllHands(beat_search_ctx_t *ctx, medlist_t **hl)
+/* 
+ * extract all chains or primal hands in hand_ctx
+ */
+void _HLAA_ExtractAllChains(hand_ctx_t *ctx, medlist_t **hands)
 {
     int found = 0;
     int lastsearch = 0;
@@ -1821,15 +1825,15 @@ void _HandList_ExtractAllHands(beat_search_ctx_t *ctx, medlist_t **hl)
     Hand_Clear(&workinghand);
     Hand_Clear(&lasthand);
     
-    found = _HandList_TraverseHands(ctx, &lastsearch, &lasthand);
+    found = _HLAA_TraverseHands(ctx, &lastsearch, &lasthand);
     
     while (found != 0)
     {
-        HandList_PushFront(hl, &lasthand);
-        Hand_Copy(&workinghand, &lasthand);
+        HandList_PushFront(hands, &lasthand);
         
-        while (( found = _HandList_TraverseHands(ctx, &lastsearch, &workinghand)) != 0)
-            HandList_PushFront(hl, &workinghand);
+        Hand_Copy(&workinghand, &lasthand);
+        while (( found = _HLAA_TraverseHands(ctx, &lastsearch, &workinghand)) != 0)
+            HandList_PushFront(hands, &workinghand);
         
         /* can't find any more hands, try to reduce chain length */
         if (lasthand.type != 0)
@@ -1876,49 +1880,79 @@ void _HandList_ExtractAllHands(beat_search_ctx_t *ctx, medlist_t **hl)
             {
                 lastsearch++;
                 Hand_Clear(&lasthand);
-                found = _HandList_TraverseHands(ctx, &lastsearch, &lasthand);
+                found = _HLAA_TraverseHands(ctx, &lastsearch, &lasthand);
             }
         }
     }
 }
 
+/* advanced search tree payload */
 typedef struct _hltree_payload_t
 {
-    beat_search_ctx_t   ctx;
-    hand_t              hand;
-    int                 length;
+    hand_ctx_t          ctx;    /* hand context */
+    hand_t              hand;   /* hand */
+    int                 weight; /* evaluation weight */
     
 } _hltree_payload_t;
 
+medtree_t *_HLAA_TreeAddHand(medtree_t **tree, medlist_t *hand)
+{
+    medtree_t *node = NULL;
+    _hltree_payload_t *oldpayload = NULL;
+    _hltree_payload_t *newpayload = NULL;
+    
+    oldpayload = (*tree)->payload;
+    newpayload = (_hltree_payload_t *)calloc(1, sizeof(_hltree_payload_t));
+    
+    memcpy(&newpayload->ctx, &oldpayload->ctx, sizeof(hand_ctx_t));
+    Hand_Copy(&newpayload->hand, hand->payload);
+    CardArray_Subtract(&newpayload->ctx.cards, &HandList_GetHand(hand)->cards);
+    CardArray_Copy(&newpayload->ctx.rcards, &newpayload->ctx.cards);
+    CardArray_Reverse(&newpayload->ctx.rcards);
+    Hand_CountRank(&newpayload->ctx.cards, newpayload->ctx.count, NULL);
+    newpayload->weight = oldpayload->weight + 1;
+    
+    node = (medtree_t *)calloc(1, sizeof(medtree_t));
+    node->payload = newpayload;
+    MEDTree_AddChild(tree, node);
+    
+    return node;
+}
+
+void _HLAA_StackPushTreeNode(medstack_t **st, medtree_t *tree)
+{
+    medstack_t *node = (medstack_t *)calloc(1, sizeof(medstack_t));
+    node->payload = tree;
+    MEDStack_Push(st, node);
+}
+
 /*
- * FIXME
+ * FIXME memleak
  */
 medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
 {
-    int lastlength;
-    medlist_t *otherhands = NULL;
-    medlist_t *hl = NULL;
+    medlist_t *handlist = NULL;
+    medlist_t *chains = NULL;
+    medlist_t *others = NULL;
     medlist_t *hlnode = NULL;
     medstack_t *st = NULL;
-    medstack_t *snode = NULL;
     medstack_t *temp = NULL;
-    _hltree_payload_t *pload = NULL;
     medtree_t *grandtree = NULL;
-    medtree_t *tnode = NULL;
     medtree_t *workingtree = NULL;
+    medtree_t *tnode = NULL;
     medtree_t *shortest = NULL;
-    beat_search_ctx_t tempctx;
+    _hltree_payload_t *pload = NULL;
     
-    beat_search_ctx_t ctx;
+    hand_ctx_t ctx;
     /* setup search context */
-    BeatSearchCtx_Clear(&ctx);
+    HandCtx_Clear(&ctx);
     
     /* build beat search context */
     Hand_CountRank(array, ctx.count, NULL);
     CardArray_Copy(&ctx.cards, array);
     
     /* extract bombs and 2 */
-    _HandList_ExtractNukeBomb2(&otherhands, &ctx.cards, ctx.count);
+    _HandList_ExtractNukeBomb2(&handlist, &ctx.cards, ctx.count);
     
     /* finish building beat_search_context */
     CardArray_Copy(&ctx.rcards, &ctx.cards);
@@ -1930,42 +1964,34 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
     
     /* root */
     pload = (_hltree_payload_t *)calloc(1, sizeof(_hltree_payload_t));
-    memcpy(&pload->ctx, &ctx, sizeof(beat_search_ctx_t));
-    pload->length = 0;
+    memcpy(&pload->ctx, &ctx, sizeof(hand_ctx_t));
+    pload->weight = 0;
     
     grandtree = (medtree_t *)calloc(1, sizeof(medtree_t));
     grandtree->payload = pload;
     
     /* first expansion */
-    _HandList_ExtractAllHands(&ctx, &hl);
+    _HLAA_ExtractAllChains(&ctx, &chains);
     
-    hlnode = hl;
+    /* no chains, fall back to standard analyze */
+    if (chains == NULL)
+    {
+        MEDTree_Destroy(&grandtree, MEDAlgo_StandardFree);
+        return HandList_StandardAnalyze(array);
+    }
+    
+    hlnode = chains;
     while (hlnode != NULL)
     {
-        pload = (_hltree_payload_t *)calloc(1, sizeof(_hltree_payload_t));
-        memcpy(&pload->ctx, &ctx, sizeof(beat_search_ctx_t));
-        CardArray_Subtract(&pload->ctx.cards, &((hand_t *)hlnode->payload)->cards);
-        CardArray_Copy(&pload->ctx.rcards, &pload->ctx.cards);
-        CardArray_Reverse(&pload->ctx.rcards);
-        Hand_Copy(&pload->hand, hlnode->payload);
-        Hand_CountRank(&pload->ctx.cards, pload->ctx.count, NULL);
-        pload->length = 1;
-        
-        tnode = (medtree_t *)calloc(1, sizeof(medtree_t));
-        tnode->payload = pload;
-        
-        snode = (medstack_t *)calloc(1, sizeof(medstack_t));
-        snode->payload = tnode;
-        
-        MEDTree_AddChild(&grandtree, tnode);
-        MEDStack_Push(&st, snode);
+        tnode = _HLAA_TreeAddHand(&grandtree, hlnode);
+        _HLAA_StackPushTreeNode(&st, tnode);
         
         hlnode = hlnode->next;
     }
     
-    HandList_Destroy(&hl);
+    HandList_Destroy(&chains);
     
-    /* loop */
+    /* loop start */
     while (st != NULL)
     {
         /* pop stack */
@@ -1974,80 +2000,70 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
         /* extract node data */
         workingtree = (medtree_t *)temp->payload;
         free(temp);
-        hl = NULL;
+        chains = NULL;
         pload = (_hltree_payload_t *)workingtree->payload;
         
         /* expansion */
-        _HandList_ExtractAllHands(&pload->ctx, &hl);
+        _HLAA_ExtractAllChains(&pload->ctx, &chains);
         
-        /*
-        HandList_Print(hl);
-        printf("+++++++ %p \n", (void *)pload);
-        CardArray_Print(&pload->hand.cards);
-        printf("\n");
-        
-        if (pload->hand.type == Hand_Format(HAND_PRIMAL_PAIR, 0, 0))
+        if (chains != NULL)
         {
-            printf("found\n");
-        }
-         */
-        
-        if (hl == NULL)
-        {
-            /* a branch has been done */
-            if ((shortest == NULL) ||
-                (pload->length < ((_hltree_payload_t *)(shortest->payload))->length))
-                shortest = tnode;
-        }
-        else
-        {
-            if ((shortest == NULL) ||
-                (pload->length + 1 < ((_hltree_payload_t *)(shortest->payload))->length))
+            /* push new nodes */
+            hlnode = chains;
+            while (hlnode != NULL)
             {
-                /* push new nodes */
-                hlnode = hl;
-                memcpy(&tempctx, &pload->ctx, sizeof(beat_search_ctx_t));
-                lastlength = pload->length;
-                while (hlnode != NULL)
-                {
-                    pload = (_hltree_payload_t *)calloc(1, sizeof(_hltree_payload_t));
-                    memcpy(&pload->ctx, &tempctx, sizeof(beat_search_ctx_t));
-                    CardArray_Subtract(&pload->ctx.cards, &((hand_t *)hlnode->payload)->cards);
-                    CardArray_Copy(&pload->ctx.rcards, &pload->ctx.cards);
-                    CardArray_Reverse(&pload->ctx.rcards);
-                    Hand_CountRank(&pload->ctx.cards, pload->ctx.count, NULL);
-                    Hand_Copy(&pload->hand, hlnode->payload);
-                    pload->length = lastlength + 1;
-                    
-                    tnode = (medtree_t *)calloc(1, sizeof(medtree_t));
-                    tnode->payload = pload;
-                    
-                    snode = (medstack_t *)calloc(1, sizeof(medstack_t));
-                    snode->payload = tnode;
-                    
-                    MEDTree_AddChild(&workingtree, tnode);
-                    MEDStack_Push(&st, snode);
-                    
-                    hlnode = hlnode->next;
-                }
+                tnode = _HLAA_TreeAddHand(&workingtree, hlnode);
+                _HLAA_StackPushTreeNode(&st, tnode);
+                
+                hlnode = hlnode->next;
             }
             
-            HandList_Destroy(&hl);
-            hl = NULL;
+            HandList_Destroy(&chains);
+            chains = NULL;
         }
     }
     
-    while (shortest != NULL && ((_hltree_payload_t *)shortest->payload)->length != 0)
+    /* tree construction complete */
+    st = NULL;
+    MEDTree_DumpLeafToStack(grandtree, &st);
+    
+    /* find shortest path */
+    while (st != NULL)
     {
-        HandList_PushFront(&hl, &((_hltree_payload_t *)(shortest->payload))->hand);
+        /* pop stack */
+        temp = MEDStack_Pop(&st);
+        /* extract node data */
+        workingtree = (medtree_t *)temp->payload;
+        free(temp);
+        pload = (_hltree_payload_t *)workingtree->payload;
+        
+        CardArray_Print(&pload->ctx.cards);
+        Hand_Print(&pload->hand);
+        
+        /* calculate other hands weight */
+        pload->weight += HandList_StandardEvaluator(&pload->ctx.cards);
+        
+        if (shortest == NULL || pload->weight < ((_hltree_payload_t *)shortest->payload)->weight)
+            shortest = workingtree;
+        
+        others = NULL;
+    }
+    
+    /* extract shortest node's other hands */
+    HandList_Destroy(&others);
+    others = HandList_StandardAnalyze(&((_hltree_payload_t *)(shortest->payload))->ctx.cards);
+    
+    while (shortest != NULL && ((_hltree_payload_t *)shortest->payload)->weight != 0)
+    {
+        HandList_PushFront(&others, &((_hltree_payload_t *)(shortest->payload))->hand);
         shortest = shortest->root;
     }
     
+    HandList_Concate(&others, handlist);
+    
     MEDTree_Destroy(&grandtree, MEDAlgo_StandardFree);
     
-    HandList_Concate(&hl, otherhands);
-    
-    return hl;
+    return others;
 }
 
 int HandList_AdvancedEvaluator(card_array_t *array)

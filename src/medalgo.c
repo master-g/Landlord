@@ -247,6 +247,35 @@ void MEDTree_AddSibling(medtree_t **t, medtree_t *node)
     }
 }
 
+void MEDTree_DumpLeafToStack(medtree_t *t, medstack_t **s)
+{
+    medstack_t *tempstack = NULL;
+    medstack_t *snode = NULL;
+    medtree_t *tnode = NULL;
+    medtree_t *temp = NULL;
+    
+    tnode = t;
+    _MEDTreeStack_PushNode(&tempstack, tnode);
+    
+    while (tempstack != NULL)
+    {
+        snode = MEDStack_Pop(&tempstack);
+        tnode = (medtree_t *)snode->payload;
+        free(snode);
+        
+        temp = tnode->child;
+        while (temp != NULL)
+        {
+            _MEDTreeStack_PushNode(&tempstack, temp);
+            temp = temp->sibling;
+        }
+        
+        /* leaf */
+        if (tnode->child == NULL)
+            _MEDTreeStack_PushNode(s, tnode);
+    }
+}
+
 /*
  * Test
  */

@@ -17,7 +17,7 @@
 
 #include "memtracker.h"
 
-#define PRINT_GAME_LOG
+#define PRINT_GAME_LOG_
 
 #ifdef PRINT_GAME_LOG
 #define DBGLog printf
