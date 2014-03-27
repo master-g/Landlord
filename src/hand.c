@@ -85,7 +85,7 @@
 #define HANDS_PATTERN_END   HANDS_PATTERN_20_3
 
 
-int _hand_pattern[][PATTERN_LENGTH] =
+const int _hand_pattern[][PATTERN_LENGTH] =
 {
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },     /* place holder */
     { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },     /* 1, solo */
