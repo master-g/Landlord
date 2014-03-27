@@ -68,7 +68,7 @@ int main(int argc, const char * argv[])
         
     Game_Init(&game);
     
-    for (i = 100000; i < 20000; i++)
+    for (i = 1000000; i < 2000000; i++)
     {
         Game_Play(&game, i);
         
@@ -80,7 +80,7 @@ int main(int argc, const char * argv[])
         Game_Reset(&game);
     }
     
-    printf("peasant : %d\n", peasantwon);
+    printf("peasants : %d\n", peasantwon);
     printf("landlord : %d\n", landlordwon);
     
     Game_Clear(&game);
