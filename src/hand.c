@@ -1976,6 +1976,7 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
     /* no chains, fall back to standard analyze */
     if (chains == NULL)
     {
+        HandList_Destroy(&handlist);
         MEDTree_Destroy(&grandtree, MEDAlgo_StandardFree);
         return HandList_StandardAnalyze(array);
     }
@@ -2036,9 +2037,6 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
         workingtree = (medtree_t *)temp->payload;
         free(temp);
         pload = (_hltree_payload_t *)workingtree->payload;
-        
-        CardArray_Print(&pload->ctx.cards);
-        Hand_Print(&pload->hand);
         
         /* calculate other hands weight */
         pload->weight += HandList_StandardEvaluator(&pload->ctx.cards);
