@@ -27,6 +27,4 @@
 
 void silent_printf(const char *fmt, ...);
 
-/* #define PRINT_ADDRESS */
-
 #endif /* LANDLORD_COMMON_H_ */

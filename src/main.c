@@ -44,7 +44,6 @@ void test_advanced_hand_analyzer()
     hl = HandList_AdvancedAnalyze(&cards);
     
     HandList_Print(hl);
-    printf("length: %d\n", MEDList_Length(hl));
 
     HandList_Destroy(&hl);
 }
@@ -68,7 +67,7 @@ int main(int argc, const char * argv[])
         
     Game_Init(&game);
     
-    for (i = 1000000; i < 2000000; i++)
+    for (i = 10000; i < 20000; i++)
     {
         Game_Play(&game, i);
         
@@ -90,6 +89,7 @@ int main(int argc, const char * argv[])
     test_advanced_hand_analyzer();
     
     printf("\n");
+    
     memtrack_list_allocations();
 
     return 0;
