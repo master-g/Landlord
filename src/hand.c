@@ -186,12 +186,18 @@ int _Hand_PatternMatch(int *sorted, int pattern)
 {
     int i = 0;
     int ret = 1;
-    
+#ifdef NICE_AND_CLEAN
     for (i = 0; i < PATTERN_LENGTH; i++)
     {
         if (sorted[i] != _hand_pattern[pattern][i])
-            return 0;
+        {
+            ret = 0;
+            break;
+        }
     }
+#else
+    ret = memcmp(sorted, _hand_pattern, sizeof(int) * PATTERN_LENGTH) == 0 ? 1 : 0;
+#endif
     
     return ret;
 }

@@ -78,11 +78,6 @@ typedef int (*CardSortFunc)(void *, void *);
 void *CardArray_InitFromString(card_array_t *array, const char *str);
 
 /*
- * destroy a card array
- */
-void CardArray_Destroy(card_array_t *array);
-
-/*
  * reset a card array with 54 cards
  */
 void CardArray_Reset(card_array_t *array);

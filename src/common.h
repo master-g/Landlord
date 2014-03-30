@@ -25,6 +25,10 @@
 #define DBGLog  silent_printf
 #endif
 
+/*
+#define NICE_AND_CLEAN
+ */
+
 void silent_printf(const char *fmt, ...);
 
 #endif /* LANDLORD_COMMON_H_ */
