@@ -34,7 +34,7 @@ void test_advanced_hand_analyzer()
     const char* str = "♣r ♣2 ♠K ♦K ♠Q ♥J ♠T ♥T ♦T ♣T ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5 ♠4 ♣4";
     const char* str = "♠K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5";
      */
-    const char* str = "♣r ♣2 ♠K ♦K ♠Q ♥J ♠T ♥T ♦T ♣T ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5 ♠4 ♣4";
+    const char* str = "♠9 ♦8 ♠7 ♥6 ♠5 ♣4";
     card_array_t cards;
     medlist_t *hl;
     CardArray_InitFromString(&cards, str);
@@ -46,6 +46,12 @@ void test_advanced_hand_analyzer()
     HandList_Print(hl);
 
     HandList_Destroy(&hl);
+
+    {
+        hand_t ass;
+        Hand_Parse(&ass, &cards);
+        Hand_Print(&ass);
+    }
 }
 
 void silent_printf(const char *fmt, ...)
@@ -67,7 +73,7 @@ int main(int argc, const char * argv[])
         
     Game_Init(&game);
     
-    for (i = 10000; i < 20000; i++)
+    for (i = 10000; i < 2000; i++)
     {
         Game_Play(&game, i);
         
