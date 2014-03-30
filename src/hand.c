@@ -1933,7 +1933,7 @@ void _HLAA_StackPushTreeNode(medstack_t **st, medtree_t *tree)
 }
 
 /*
- * FIXME memleak
+ * search hand via least hands
  */
 medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
 {
