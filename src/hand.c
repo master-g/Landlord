@@ -184,9 +184,9 @@ void Hand_CountRank(card_array_t *array, int *count, int *sort)
 /* check if a sorted count array matches specific pattern */
 int _Hand_PatternMatch(int *sorted, int pattern)
 {
-    int i = 0;
     int ret = 1;
 #ifdef NICE_AND_CLEAN
+    int i = 0;
     for (i = 0; i < PATTERN_LENGTH; i++)
     {
         if (sorted[i] != _hand_pattern[pattern][i])

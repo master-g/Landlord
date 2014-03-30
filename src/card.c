@@ -222,8 +222,7 @@ uint8_t CardArray_PushBack(card_array_t *array, uint8_t card)
     
     if (!CardArray_IsFull(array))
     {
-        array->cards[array->length] = card;
-        array->length++;
+        array->cards[array->length++] = card;
         
         ret = card;
     }
@@ -410,10 +409,13 @@ void CardArray_RemoveRank(card_array_t *array, uint8_t rank)
 
 int CardArray_StandardSort(const void *a, const void *b)
 {
-    if (CARD_RANK(*(uint8_t *)a) == CARD_RANK(*(uint8_t *)b))
-        return CARD_SUIT(*(uint8_t *)b) - CARD_SUIT(*(uint8_t *)a);
-    else
-        return CARD_RANK(*(uint8_t *)b) - CARD_RANK(*(uint8_t *)a);
+    uint8_t ra = 0;
+    uint8_t rb = 0;
+    /* rotation */
+    ra = ((*(uint8_t *)a & 0xF0) >> 4) | ((*(uint8_t *)a & 0x0F) << 4);
+    rb = ((*(uint8_t *)b & 0xF0) >> 4) | ((*(uint8_t *)b & 0x0F) << 4);
+
+    return (rb - ra);
 }
 
 void CardArray_Sort(card_array_t *array, int (*comparator)(const void *, const void *))
