@@ -30,7 +30,7 @@ typedef enum
 
 typedef int (*PlayerEventHandler)(void *player, void *context);
 
-typedef struct player_t
+typedef struct player_s
 {
     card_array_t    cards;      /* card array, will change during game play */
     card_array_t    record;     /* card record */

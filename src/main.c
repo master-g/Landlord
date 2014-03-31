@@ -98,7 +98,9 @@ int main(int argc, const char * argv[])
     
     printf("\n");
     
+    /*
     memtrack_list_allocations();
+     */
 
     return 0;
 }

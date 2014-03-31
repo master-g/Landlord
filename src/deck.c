@@ -50,7 +50,7 @@ void Deck_RecycleSingle(deck_t *deck, uint8_t card)
 
 int Deck_Deal(deck_t *deck, card_array_t *array, int count)
 {
-#ifdef DECK_PEDANTIC
+#ifdef NICE_AND_CLEAN
     int i = 0;
     uint8_t card = 0;
     
@@ -83,7 +83,7 @@ int Deck_Deal(deck_t *deck, card_array_t *array, int count)
 
 int Deck_Recycle(deck_t *deck, card_array_t *array)
 {
-#ifdef DECK_PEDANTIC
+#ifdef NICE_AND_CLEAN
     int i = 0;
     uint8_t card = 0;
     

@@ -61,7 +61,7 @@ typedef enum
  * hand is a valid card set that can play.
  * cards format must be like 12345/112233/111222/1112223344/11122234 etc
  */
-typedef struct hand_t
+typedef struct hand_s
 {
     uint8_t         type;
     card_array_t    cards;
@@ -110,11 +110,6 @@ typedef int (*HandList_EvaluateFunc)(card_array_t *);
  * push a hand into the front of hand list
  */
 void HandList_PushFront(medlist_t **hl, hand_t *hand);
-
-/*
- * push a hand into the back of hand list
- */
-void HandList_PushBack(medlist_t **hl, hand_t *hand);
 
 /*
  * remove a hand from hand list

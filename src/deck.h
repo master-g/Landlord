@@ -11,7 +11,7 @@
 
 #include "card.h"
 
-typedef struct deck_t
+typedef struct deck_s
 {
     card_array_t cards;
     card_array_t used;

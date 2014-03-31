@@ -29,10 +29,10 @@ void MEDAlgo_StandardFree(void *payload);
  * ************************************************************
  */
 
-typedef struct medlist_t
+typedef struct medlist_s
 {
     void *payload;
-    struct medlist_t *next;
+    struct medlist_s *next;
     
 } medlist_t;
 
@@ -51,8 +51,6 @@ void MEDList_PushBack(medlist_t **l, medlist_t *node);
 int MEDList_Remove(medlist_t **l, medlist_t *node);
 
 medlist_t *MEDList_Find(medlist_t *l, void *context, MEDAlgoFunc_Find finder);
-
-void MEDList_Test(void);
 
 /*
  * ************************************************************
@@ -77,12 +75,12 @@ medstack_t *MEDStack_Pop(medstack_t **s);
  * ************************************************************
  */
 
-typedef struct medtree_t
+typedef struct medtree_s
 {
     void *payload;
-    struct medtree_t *root;
-    struct medtree_t *child;
-    struct medtree_t *sibling;
+    struct medtree_s *root;
+    struct medtree_s *child;
+    struct medtree_s *sibling;
     
 } medtree_t;
 
@@ -95,7 +93,5 @@ void MEDTree_AddChild(medtree_t **t, medtree_t *node);
 void MEDTree_AddSibling(medtree_t **t, medtree_t *node);
 
 void MEDTree_DumpLeafToStack(medtree_t *t, medstack_t **stack);
-
-void MEDTree_Test(void);
 
 #endif /* LANDLORD_MEDALGO_H_ */

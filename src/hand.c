@@ -672,23 +672,10 @@ void Hand_Print(hand_t *hand)
 void HandList_PushFront(medlist_t **hl, hand_t *hand)
 {
     medlist_t *node = MEDList_Create();
-    node->payload = (hand_t *)calloc(1, sizeof(hand_t));
+    node->payload = (hand_t *)malloc(sizeof(hand_t));
     Hand_Copy(node->payload, hand);
     
     MEDList_PushFront(hl, node);
-}
-
-void HandList_PushBack(medlist_t **hl, hand_t *hand)
-{
-    medlist_t *node = NULL;
-    if (hl == NULL)
-        return;
-    
-    node = MEDList_Create();
-    node->payload = (hand_t *)calloc(1, sizeof(hand_t));
-    Hand_Copy(node->payload, hand);
-    
-    MEDList_PushBack(hl, node);
 }
 
 void HandList_Remove(medlist_t **hl, medlist_t *node)
@@ -744,7 +731,7 @@ hand_t *HandList_GetHand(medlist_t *node)
  */
 
 /* beat search context */
-typedef struct hand_ctx_t
+typedef struct hand_ctx_s
 {
     int count[CARD_RANK_END];   /* rank count */
     card_array_t cards;         /* original cards */
@@ -1026,7 +1013,6 @@ int _HandList_SearchBeat_Chain(hand_ctx_t *ctx, hand_t *tobeat, hand_t *beat, in
     if (found)
     {
         beat->type = tobeattype;
-        CardArray_Clear(&beat->cards);
         CardArray_Copy(&beat->cards, &temp);
         canbeat = 1;
     }
@@ -1893,7 +1879,7 @@ void _HLAA_ExtractAllChains(hand_ctx_t *ctx, medlist_t **hands)
 }
 
 /* advanced search tree payload */
-typedef struct _hltree_payload_t
+typedef struct _hltree_payload_s
 {
     hand_ctx_t          ctx;    /* hand context */
     hand_t              hand;   /* hand */
@@ -1908,7 +1894,7 @@ medtree_t *_HLAA_TreeAddHand(medtree_t **tree, medlist_t *hand)
     _hltree_payload_t *newpayload = NULL;
     
     oldpayload = (*tree)->payload;
-    newpayload = (_hltree_payload_t *)calloc(1, sizeof(_hltree_payload_t));
+    newpayload = (_hltree_payload_t *)malloc(sizeof(_hltree_payload_t));
     
     memcpy(&newpayload->ctx, &oldpayload->ctx, sizeof(hand_ctx_t));
     Hand_Copy(&newpayload->hand, hand->payload);
@@ -1927,7 +1913,7 @@ medtree_t *_HLAA_TreeAddHand(medtree_t **tree, medlist_t *hand)
 
 void _HLAA_StackPushTreeNode(medstack_t **st, medtree_t *tree)
 {
-    medstack_t *node = (medstack_t *)calloc(1, sizeof(medstack_t));
+    medstack_t *node = (medstack_t *)malloc(sizeof(medstack_t));
     node->payload = tree;
     MEDStack_Push(st, node);
 }
@@ -1969,7 +1955,7 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
     /* magic goes here */
     
     /* root */
-    pload = (_hltree_payload_t *)calloc(1, sizeof(_hltree_payload_t));
+    pload = (_hltree_payload_t *)malloc(sizeof(_hltree_payload_t));
     memcpy(&pload->ctx, &ctx, sizeof(hand_ctx_t));
     pload->weight = 0;
     
@@ -2089,24 +2075,17 @@ int HandList_AdvancedEvaluator(card_array_t *array)
 #define BEAT_VALUE_FACTOR 10
 
 /* nodes for beat list sort */
-typedef struct beat_node_t
+typedef struct beat_node_s
 {
     medlist_t *node;
     int value;
     
 } beat_node_t;
 
-beat_node_t *_BeatNode_Create(void)
-{
-    return (beat_node_t *)calloc(1, sizeof(beat_node_t));
-}
-
-#define _BeatNode_Destroy(n) free((n))
-
 /* sort function */
 int _BeatNode_ValueSort(const void *a, const void *b)
 {
-    return ((beat_node_t *)b)->value - ((beat_node_t *)a)->value;
+    return (int)((*(beat_node_t **)a)->value - (*(beat_node_t **)b)->value);
 }
 
 int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandList_EvaluateFunc func)
@@ -2141,7 +2120,7 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
         }
         else
         {
-            hnodes[nodei] = _BeatNode_Create();
+            hnodes[nodei] = (beat_node_t *)malloc(sizeof(beat_node_t));
             hnodes[nodei]->node = node;
             nodei++;
         }
@@ -2157,9 +2136,7 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
             CardArray_Copy(&temp, array);
             /* evaluate the value of cards left after hand was played */
             CardArray_Subtract(&temp, &HandList_GetHand(hnodes[i]->node)->cards);
-            hnodes[i]->value = evalFunc(&temp) *
-            BEAT_VALUE_FACTOR +
-            CARD_RANK(HandList_GetHand(hnodes[i]->node)->cards.cards[0]);
+            hnodes[i]->value = evalFunc(&temp) * BEAT_VALUE_FACTOR + CARD_RANK(HandList_GetHand(hnodes[i]->node)->cards.cards[0]);
         }
         
         /* sort primal hands */
@@ -2195,7 +2172,7 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
     
     /* clean up */
     for (i = 0; i < nodei; i++)
-        _BeatNode_Destroy(hnodes[i]);
+        free(hnodes[i]);
     
     HandList_Destroy(&hl);
      

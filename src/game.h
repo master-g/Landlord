@@ -39,7 +39,7 @@ typedef enum
     
 } StagePhase;
 
-typedef struct game_t
+typedef struct game_s
 {
     player_t        players[GAME_PLAYERS];      /* player array */
     deck_t          deck;                       /* deck */

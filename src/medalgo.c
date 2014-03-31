@@ -22,7 +22,7 @@ void MEDAlgo_StandardFree(void *payload)
 
 medlist_t *MEDList_Create(void)
 {
-    medlist_t *l = (medlist_t *)calloc(1, sizeof(medlist_t));
+    medlist_t *l = (medlist_t *)malloc(sizeof(medlist_t));
     return l;
 }
 
@@ -166,7 +166,7 @@ medtree_t *MEDTree_Create(void)
 
 void _MEDTreeStack_PushNode(medstack_t **s, medtree_t *node)
 {
-    medstack_t *snode = (medstack_t *)calloc(1, sizeof(medstack_t));
+    medstack_t *snode = (medstack_t *)malloc(sizeof(medstack_t));
     snode->payload = node;
     MEDStack_Push(s, snode);
 }
@@ -274,83 +274,4 @@ void MEDTree_DumpLeafToStack(medtree_t *t, medstack_t **s)
         if (tnode->child == NULL)
             _MEDTreeStack_PushNode(s, tnode);
     }
-}
-
-/*
- * Test
- */
-
-void _MEDList_Destroy(void *payload)
-{
-    printf("free %p\n", payload);
-    free(payload);
-}
-
-void MEDList_Test(void)
-{
-    int i = 0;
-    medlist_t *a, *b, *c;
-    a = MEDList_Create();
-    a->payload = calloc(1, sizeof(int));
-    b = MEDList_Create();
-    b->payload = calloc(1, sizeof(int));
-    c = MEDList_Create();
-    c->payload = calloc(1, sizeof(int));
-    
-    MEDStack_Push(&a, b);
-    MEDStack_Push(&a, c);
-    
-    for (i = 0; i < 3; i++)
-    {
-        c = a;
-        MEDList_Remove(&a, a);
-        free(c->payload);
-        free(c);
-    }
-    
-    printf("%p\n", a);
-}
-
-void _MEDTree_Free(void *payload)
-{
-    printf("free %p %d\n", payload, *(int *)payload);
-    free(payload);
-}
-
-void MEDTree_Test(void)
-{
-    medtree_t *a, *b, *c, *d, *e, *f;
-    
-    a = MEDTree_Create();
-    a->payload = calloc(1, sizeof(int));
-    *(int *)(a->payload) = 1;
-    b = MEDTree_Create();
-    b->payload = calloc(1, sizeof(int));
-    *(int *)(b->payload) = 2;
-    c = MEDTree_Create();
-    c->payload = calloc(1, sizeof(int));
-    *(int *)(c->payload) = 3;
-    d = MEDTree_Create();
-    d->payload = calloc(1, sizeof(int));
-    *(int *)(d->payload) = 4;
-    e = MEDTree_Create();
-    e->payload = calloc(1, sizeof(int));
-    *(int *)(e->payload) = 5;
-    f = MEDTree_Create();
-    f->payload = calloc(1, sizeof(int));
-    *(int *)(f->payload) = 6;
-    
-    MEDTree_AddChild(&a, b);
-    MEDTree_AddSibling(&b, c);
-    MEDTree_AddChild(&c, d);
-    MEDTree_AddSibling(&d, e);
-    MEDTree_AddChild(&c, f);
-    
-    while (f != NULL)
-    {
-        printf("%d\n", *(int *)f->payload);
-        f = f->root;
-    }
-    
-    MEDTree_Destroy(&a, _MEDTree_Free);
 }

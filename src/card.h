@@ -62,7 +62,7 @@
 #define CardArray_Capacity(a)   (CARD_ARRAY_PRESET_LENGTH - (a)->length)
 #define CardArray_Set(array, where, what, count)    (memset((array->cards + where), (what), (count) * sizeof(uint8_t)))
 
-typedef struct card_array_t
+typedef struct card_array_s
 {
     int     length;
     uint8_t cards[CARD_ARRAY_PRESET_LENGTH];
