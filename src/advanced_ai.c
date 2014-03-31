@@ -98,3 +98,4 @@ int AdvancedAI_Beat(void *p, void *g)
     
     return canbeat;
 }
+
