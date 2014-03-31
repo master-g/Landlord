@@ -483,4 +483,3 @@ void CardArray_Print(card_array_t *array)
     
     DBGLog("\n");
 }
-
