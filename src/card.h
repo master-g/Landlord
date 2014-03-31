@@ -105,7 +105,7 @@ int CardArray_IsContain(card_array_t *array, card_array_t *segment);
 /*
  * push a card to the rear of the array
  */
-uint8_t CardArray_PushBack(card_array_t *array, uint8_t card);
+void CardArray_PushBack(card_array_t *array, uint8_t card);
 
 /*
  * push a card to the front of the array
@@ -135,7 +135,7 @@ int CardArray_DropBack(card_array_t *array, int count);
 /*
  * insert a card to the front of index
  */
-uint8_t CardArray_Insert(card_array_t *array, int before, uint8_t card);
+void CardArray_Insert(card_array_t *array, int before, uint8_t card);
 
 /*
  * remove a card from the front of index

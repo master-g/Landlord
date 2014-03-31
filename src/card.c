@@ -216,18 +216,10 @@ int CardArray_IsContain(card_array_t *array, card_array_t *segment)
     return contain;
 }
 
-uint8_t CardArray_PushBack(card_array_t *array, uint8_t card)
+void CardArray_PushBack(card_array_t *array, uint8_t card)
 {
-    uint8_t ret = 0;
-    
     if (!CardArray_IsFull(array))
-    {
         array->cards[array->length++] = card;
-        
-        ret = card;
-    }
-    
-    return ret;
 }
 
 uint8_t CardArray_PushFront(card_array_t *array, uint8_t card)
@@ -296,30 +288,25 @@ int CardArray_DropBack(card_array_t *array, int count)
     return drop;
 }
 
-uint8_t CardArray_Insert(card_array_t *array, int before, uint8_t card)
+void CardArray_Insert(card_array_t *array, int before, uint8_t card)
 {
-    uint8_t ret = 0;
-    
     if (!CardArray_IsFull(array))
     {
         if (before == 0)
         {
-            ret = CardArray_PushFront(array, card);
+            CardArray_PushFront(array, card);
         }
         else if (before == array->length)
         {
-            ret = CardArray_PushBack(array, card);
+            CardArray_PushBack(array, card);
         }
         else if (before > 0 && before < array->length)
         {
             memmove(array->cards + before + 1, array->cards + before, array->length - before);
             array->cards[before] = card;
             array->length++;
-            ret = card;
         }
     }
-    
-    return ret;
 }
 
 uint8_t CardArray_Remove(card_array_t *array, int where)
