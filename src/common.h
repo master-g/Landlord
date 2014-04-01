@@ -14,10 +14,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-
 /*
 #include "memtracker.h"
  */
+
+#define MED_API extern
 
 #define PRINT_GAME_LOG_
 
@@ -31,6 +32,6 @@
 #define NICE_AND_CLEAN
  */
 
-void silent_printf(const char *fmt, ...);
+MED_API void silent_printf(const char *fmt, ...);
 
 #endif /* LANDLORD_COMMON_H_ */

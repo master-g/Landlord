@@ -275,3 +275,14 @@ void MEDTree_DumpLeafToStack(medtree_t *t, medstack_t **s)
             _MEDTreeStack_PushNode(s, tnode);
     }
 }
+
+/*
+ * ************************************************************
+ * silencer
+ * ************************************************************
+ */
+
+void silent_printf(const char *fmt, ...)
+{
+    
+}

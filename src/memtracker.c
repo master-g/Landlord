@@ -50,7 +50,7 @@ static void memblock_print_info(struct memblock *mb)
 
 void* memtrack_malloc(size_t size, const char* expr, const char* file, int line)
 {
-    struct memblock *mb = malloc(size + sizeof(*mb));
+    struct memblock *mb = (struct memblock *)malloc(size + sizeof(*mb));
     if (!mb)
     {
         printf("Unable to malloc memory!\n");
@@ -76,7 +76,7 @@ void* memtrack_malloc(size_t size, const char* expr, const char* file, int line)
 
 void* memtrack_calloc(size_t count, size_t elem_size, const char* expr, const char* file, int line)
 {
-    struct memblock *mb = malloc(count*elem_size + sizeof(*mb));
+    struct memblock *mb = (struct memblock *)malloc(count*elem_size + sizeof(*mb));
     memset(mb, 0, count*elem_size + sizeof(*mb));
     
     if (!mb)

@@ -673,7 +673,7 @@ void HandList_PushFront(medlist_t **hl, hand_t *hand)
 {
     medlist_t *node = MEDList_Create();
     node->payload = (hand_t *)malloc(sizeof(hand_t));
-    Hand_Copy(node->payload, hand);
+    Hand_Copy((hand_t *)node->payload, hand);
     
     MEDList_PushFront(hl, node);
 }
@@ -1893,11 +1893,11 @@ medtree_t *_HLAA_TreeAddHand(medtree_t **tree, medlist_t *hand)
     _hltree_payload_t *oldpayload = NULL;
     _hltree_payload_t *newpayload = NULL;
     
-    oldpayload = (*tree)->payload;
+    oldpayload = (_hltree_payload_t *)(*tree)->payload;
     newpayload = (_hltree_payload_t *)malloc(sizeof(_hltree_payload_t));
     
     memcpy(&newpayload->ctx, &oldpayload->ctx, sizeof(hand_ctx_t));
-    Hand_Copy(&newpayload->hand, hand->payload);
+    Hand_Copy(&newpayload->hand, (hand_t *)hand->payload);
     CardArray_Subtract(&newpayload->ctx.cards, &HandList_GetHand(hand)->cards);
     CardArray_Copy(&newpayload->ctx.rcards, &newpayload->ctx.cards);
     CardArray_Reverse(&newpayload->ctx.rcards);

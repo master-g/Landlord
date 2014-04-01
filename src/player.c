@@ -42,6 +42,6 @@ void Player_Clear(player_t *player)
 
 int Player_HandleEvent(int event, void *p, void *game)
 {
-    player_t *player = p;
+    player_t *player = (player_t *)p;
     return player->eventHandlers[event](p, game);
 }

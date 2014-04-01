@@ -29,7 +29,7 @@ void shuffle(uint8_t arr[], int len, mt19937_t *mt)
 
 void Deck_Shuffle(deck_t *deck, void *mtctx)
 {
-    shuffle(deck->cards.cards, deck->cards.length, mtctx);
+    shuffle(deck->cards.cards, deck->cards.length, (mt19937_t *)mtctx);
 }
 
 void Deck_Reset(deck_t *deck)

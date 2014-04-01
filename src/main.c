@@ -54,11 +54,6 @@ void test_advanced_hand_analyzer()
     }
 }
 
-void silent_printf(const char *fmt, ...)
-{
-    
-}
-
 int main(int argc, const char * argv[])
 {
     int peasantwon = 0;
