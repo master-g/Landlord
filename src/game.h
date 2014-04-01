@@ -55,14 +55,14 @@ typedef struct game_s
     
 } game_t;
 
-MED_API void Game_Init(game_t *game);
+void Game_Init(game_t *game);
 
-MED_API void Game_Clear(game_t *game);
+void Game_Clear(game_t *game);
 
-MED_API void Game_Destroy(game_t *game);
+void Game_Destroy(game_t *game);
 
-MED_API void Game_Reset(game_t *game);
+void Game_Reset(game_t *game);
 
-MED_API void Game_Play(game_t *game, uint32_t seed);
+void Game_Play(game_t *game, uint32_t seed);
 
 #endif /* LANDLORD_GAME_H_ */

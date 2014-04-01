@@ -18,8 +18,6 @@
 #include "memtracker.h"
  */
 
-#define MED_API extern
-
 #define PRINT_GAME_LOG_
 
 #ifdef PRINT_GAME_LOG
@@ -32,6 +30,6 @@
 #define NICE_AND_CLEAN
  */
 
-MED_API void silent_printf(const char *fmt, ...);
+void silent_printf(const char *fmt, ...);
 
 #endif /* LANDLORD_COMMON_H_ */

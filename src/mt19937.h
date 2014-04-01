@@ -20,10 +20,10 @@ typedef struct mt19937_s
     
 } mt19937_t;
 
-MED_API void Random_Init(mt19937_t *context, uint32_t seed);
-MED_API void Random_InitWithArray(mt19937_t *context, uint32_t array[], int length);
-MED_API uint32_t Random_uint32(mt19937_t *context);
-MED_API int32_t Random_int32(mt19937_t *context);
-MED_API double Random_real_0_1(mt19937_t *context);
+void Random_Init(mt19937_t *context, uint32_t seed);
+void Random_InitWithArray(mt19937_t *context, uint32_t array[], int length);
+uint32_t Random_uint32(mt19937_t *context);
+int32_t Random_int32(mt19937_t *context);
+double Random_real_0_1(mt19937_t *context);
 
 #endif /* MT19937_H_ */
