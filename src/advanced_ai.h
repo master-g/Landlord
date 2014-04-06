@@ -15,6 +15,11 @@
 int AdvancedAI_GetReady(void *player, void *game);
 
 /*
+ * decide whether to bid for landlord
+ */
+int AdvancedAI_Bid(void *player, void *game);
+
+/*
  * free play, result will return by hand_t *
  */
 int AdvancedAI_Play(void *player, void *game);

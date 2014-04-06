@@ -14,6 +14,7 @@
 typedef enum
 {
     Player_Event_GetReady = 0,
+    Player_Event_Bid,
     Player_Event_Play,
     Player_Event_Beat,
     

@@ -22,6 +22,11 @@ int StandardAI_GetReady(void *p, void *game)
     return 0;
 }
 
+int StandardAI_Bid(void *p, void *g)
+{
+    return 0;
+}
+
 int StandardAI_Play(void *p, void *game)
 {
     int countpair = 0;

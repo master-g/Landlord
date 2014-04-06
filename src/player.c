@@ -14,6 +14,7 @@
 void Player_SetupStandardAI(player_t *player)
 {
     player->eventHandlers[Player_Event_GetReady]    = StandardAI_GetReady;
+    player->eventHandlers[Player_Event_Bid]         = StandardAI_Bid;
     player->eventHandlers[Player_Event_Play]        = StandardAI_Play;
     player->eventHandlers[Player_Event_Beat]        = StandardAI_Beat;
 }
@@ -21,6 +22,7 @@ void Player_SetupStandardAI(player_t *player)
 void Player_SetupAdvancedAI(player_t *player)
 {
     player->eventHandlers[Player_Event_GetReady]    = AdvancedAI_GetReady;
+    player->eventHandlers[Player_Event_Bid]         = AdvancedAI_Bid;
     player->eventHandlers[Player_Event_Play]        = StandardAI_Play;
     player->eventHandlers[Player_Event_Beat]        = AdvancedAI_Beat;
 }
