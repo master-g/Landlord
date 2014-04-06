@@ -28,6 +28,8 @@ void Game_Init(game_t *game)
     game->phase = 0;
     
     Deck_Reset(&game->deck);
+    CardArray_Clear(&game->cardRecord);
+    CardArray_Clear(&game->kittyCards);
     Random_Init(&game->mt, 0);
 }
 
@@ -66,6 +68,7 @@ void Game_Reset(game_t *game)
 
     Hand_Clear(&game->lastHand);
     Deck_Reset(&game->deck);
+    CardArray_Clear(&game->kittyCards);
     CardArray_Clear(&game->cardRecord);
 }
 
@@ -92,6 +95,7 @@ void Game_Play(game_t *game, uint32_t seed)
     game->playerIndex = game->landlord;
     game->phase = Phase_Play;
     
+    /* game play */
     while (game->status != GameStatus_Over)
     {
         if (game->phase == Phase_Play)

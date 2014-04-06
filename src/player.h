@@ -15,6 +15,7 @@ typedef enum
 {
     Player_Event_GetReady = 0,
     Player_Event_Bid,
+    Player_Event_Start,
     Player_Event_Play,
     Player_Event_Beat,
     
@@ -28,6 +29,14 @@ typedef enum
     PlayerIdentity_Landlord
     
 } PlayerIdentity;
+
+typedef enum
+{
+    Player_Bid_Abstain  = 0,
+    Player_Bid_Bid,
+    Player_Bid_TODO
+
+} PlayerBidAction;
 
 typedef int (*PlayerEventHandler)(void *player, void *context);
 
@@ -72,6 +81,18 @@ int Player_HandleEvent(int event, void *player, void *game);
  * sort cards, analyze hands etc.
  *
  * int Player_GetReady(void *player, void *game);
+ */
+
+/*
+ * decide whether to bid for landlord
+ *
+ * int Player_Bid(void *player, void *game);
+ */
+
+/*
+ * the game will start, process landlord and kitty cards
+ *
+ * int Player_Start(void *player, void *game);
  */
 
 /*

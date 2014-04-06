@@ -46,6 +46,7 @@ typedef struct game_s
     mt19937_t       mt;                         /* random context */
     hand_t          lastHand;                   /* last played hand */
     card_array_t    cardRecord;                 /* card record */
+    card_array_t    kittyCards;                 /* kitty cards */
     int             bid;                        /* current bid */
     int             playerIndex;                /* current player index */
     int             landlord;                   /* landlord index */

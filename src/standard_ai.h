@@ -26,6 +26,11 @@ int StandardAI_GetReady(void *player, void *game);
 int StandardAI_Bid(void *player, void *game);
 
 /*
+ * the game will start
+ */
+int StandardAI_Start(void *player, void *game);
+
+/*
  * free play, result will return by hand_t *
  */
 int StandardAI_Play(void *player, void *game);
