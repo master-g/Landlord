@@ -18,6 +18,14 @@ void Game_Init(game_t *game)
         game->players[i].seatId = i;
         game->players[i].handlist = NULL;
     }
+
+    game->bid = 0;
+    game->playerIndex = 0;
+    game->landlord = 0;
+    game->lastplay = 0;
+    game->winner = 0;
+    game->status = 0;
+    game->phase = 0;
     
     Deck_Reset(&game->deck);
     Random_Init(&game->mt, 0);
@@ -47,14 +55,17 @@ void Game_Reset(game_t *game)
         Player_SetupStandardAI(&game->players[i]);
         Player_Clear(&game->players[i]);
     }
-    
-    Hand_Clear(&game->lastHand);
+ 
+    game->bid = 0;
     game->playerIndex = 0;
-    game->winner = 0;
+    game->landlord = 0;
     game->lastplay = 0;
-    
+    game->winner = 0;
+    game->status = 0;
+    game->phase = 0;   
+
+    Hand_Clear(&game->lastHand);
     Deck_Reset(&game->deck);
-    
     CardArray_Clear(&game->cardRecord);
 }
 

@@ -18,7 +18,7 @@ int StandardAI_GetReady(void *p, void *game)
     CardArray_Print(&player->record);
 #endif
     player->handlist = HandList_StandardAnalyze(&player->cards);
-    
+
     return 0;
 }
 

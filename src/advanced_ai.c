@@ -21,7 +21,7 @@ int AdvancedAI_GetReady(void *p, void *game)
     CardArray_Print(&player->record);
 #endif
     player->handlist = HandList_AdvancedAnalyze(&player->cards);
-    
+
     return 0;
 }
 
