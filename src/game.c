@@ -76,13 +76,52 @@ void Game_Play(game_t *game, uint32_t seed)
 {
     int i = 0;
     int beat = 0;
+    int bid = 0;
     
     Random_Init(&game->mt, seed);
     
     /* bid */
-    i = Random_int32(&game->mt) % GAME_PLAYERS;
+    /* TODO log */
+    game->status = GameStatus_Bid;
+    game->bid = 0;
+    game->highestBidder = -1;
+    while (game->status == GameStatus_Bid)
+    {
+        game->playerIndex = Random_Int32(&game->mt) % GAME_PLAYERS;
+        for (i = 0; i < GAME_PLAYERS; i++)
+        {
+            Deck_Deal(&game->deck, &(Game_GetCurrentPlayer(game))->cards, GAME_HAND_CARDS);
+            Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_GetReady, game);
+            bid = Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Bid, game);
+            if (bid > game->bid)
+            {
+                game->highestBidder = game->playerIndex;
+                game->bid = bid;
+            }
 
-    game->landlord = Random_int32(&game->mt) % 3;
+            Game_IncPlayerIndex(game);
+        }
+
+        /* check if bid stage is done */
+        if (game->bid == 0)
+        {
+            Deck_Reset(&game->deck);
+        }
+        else
+        {
+            /* setup landlord, game start! */
+            game->landlord = game->highestBidder;
+            game->playerIndex = game->landlord;
+            game->phase = Phase_Play;
+            Deck_Deal(&game->deck, &game->kittyCards, GAME_REST_CARDS);
+            CardArray_Concate(&game->players[game->landlord].cards, &game->kittyCards);
+            Player_HandleEvent(&game->players[game->landlord], Player_Event_GetReady, game);
+            game->status = GameStatus_Ready;
+        }
+    }
+
+    /*
+    game->landlord = Random_Int32(&game->mt) % 3;
     game->players[game->landlord].identity = PlayerIdentity_Landlord;
     Player_SetupAdvancedAI(&game->players[game->landlord]);
     
@@ -97,6 +136,7 @@ void Game_Play(game_t *game, uint32_t seed)
     game->status = GameStatus_Ready;
     game->playerIndex = game->landlord;
     game->phase = Phase_Play;
+    */
     
     /* game play */
     while (game->status != GameStatus_Over)

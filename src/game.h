@@ -25,6 +25,7 @@
 typedef enum
 {
     GameStatus_Halt = 0,
+    GameStatus_Bid,
     GameStatus_Ready,
     GameStatus_Pause,
     GameStatus_Over
@@ -48,6 +49,7 @@ typedef struct game_s
     card_array_t    cardRecord;                 /* card record */
     card_array_t    kittyCards;                 /* kitty cards */
     int             bid;                        /* current bid */
+    int             highestBidder;              /* for the highest bidder! */
     int             playerIndex;                /* current player index */
     int             landlord;                   /* landlord index */
     int             lastplay;                   /* who played the last hand */

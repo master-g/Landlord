@@ -17,7 +17,7 @@ void shuffle(uint8_t arr[], int len, mt19937_t *mt)
 	while (--i > 0)
 	{
         if (mt != NULL)
-            j = Random_int32(mt) % (i+1);
+            j = Random_Int32(mt) % (i+1);
         else
             j = rand() % (i+1);
 		

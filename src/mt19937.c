@@ -105,7 +105,7 @@ uint32_t Random_uint32(mt19937_t *context)
     return y;
 }
 
-int32_t Random_int32(mt19937_t *context)
+int32_t Random_Int32(mt19937_t *context)
 {
     return (int32_t)(Random_uint32(context)>>1);
 }
