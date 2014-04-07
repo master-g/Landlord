@@ -42,7 +42,7 @@ void Player_Clear(player_t *player)
     CardArray_Clear(&player->record);
 }
 
-int Player_HandleEvent(int event, void *p, void *game)
+int Player_HandleEvent(void *p, int event, void *game)
 {
     player_t *player = (player_t *)p;
     return player->eventHandlers[event](p, game);

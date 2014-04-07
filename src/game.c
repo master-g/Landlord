@@ -79,6 +79,9 @@ void Game_Play(game_t *game, uint32_t seed)
     
     Random_Init(&game->mt, seed);
     
+    /* bid */
+    i = Random_int32(&game->mt) % GAME_PLAYERS;
+
     game->landlord = Random_int32(&game->mt) % 3;
     game->players[game->landlord].identity = PlayerIdentity_Landlord;
     Player_SetupAdvancedAI(&game->players[game->landlord]);
@@ -88,7 +91,7 @@ void Game_Play(game_t *game, uint32_t seed)
     for (i = 0; i < GAME_PLAYERS; i++)
     {
         Deck_Deal(&game->deck, &game->players[i].cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
-        Player_HandleEvent(Player_Event_GetReady, &game->players[i], game);
+        Player_HandleEvent(&game->players[i], Player_Event_GetReady, game);
     }
     
     game->status = GameStatus_Ready;
@@ -100,7 +103,7 @@ void Game_Play(game_t *game, uint32_t seed)
     {
         if (game->phase == Phase_Play)
         {
-            Player_HandleEvent(Player_Event_Play, Game_GetCurrentPlayer(game), game);
+            Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Play, game);
             game->lastplay = game->playerIndex;
             game->phase = Phase_Query;
             
@@ -111,7 +114,7 @@ void Game_Play(game_t *game, uint32_t seed)
         }
         else if (game->phase == Phase_Query || game->phase == Phase_Pass)
         {
-            beat = Player_HandleEvent(Player_Event_Beat, Game_GetCurrentPlayer(game), game);
+            beat = Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Beat, game);
             /* has beat in this phase */
             if (beat == 0)
             {

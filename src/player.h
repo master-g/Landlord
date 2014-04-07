@@ -33,8 +33,7 @@ typedef enum
 typedef enum
 {
     Player_Bid_Abstain  = 0,
-    Player_Bid_Bid,
-    Player_Bid_TODO
+    Player_Bid_Bid
 
 } PlayerBidAction;
 
@@ -47,6 +46,7 @@ typedef struct player_s
     medlist_t       *handlist;  /* the analyze result of cards */
     int             identity;   /* 0: peasant, 1: landlord */
     int             seatId;     /* 0, 1, 2 */
+    int             bid;        /* 0, 1, 2, 3 */
     
     PlayerEventHandler  eventHandlers[Player_Event_Count];
     
@@ -75,7 +75,7 @@ void Player_Clear(player_t *player);
 /* 
  * handle event 
  */
-int Player_HandleEvent(int event, void *player, void *game);
+int Player_HandleEvent(void *player, int event, void *ctx);
 
 /*
  * sort cards, analyze hands etc.
