@@ -1428,12 +1428,13 @@ void _HandList_ExtractNukeBomb2(medlist_t **hl, card_array_t *array, int *count)
     }
 }
 
-medlist_t *HandList_StandardAnalyze(card_array_t *array)
+medlist_t *HandList_StandardAnalyze(card_array_t *cards)
 {
     int i = 0;
     int count[CARD_RANK_END];
     medlist_t *hl = NULL;
     
+    card_array_t array;
     card_array_t arrsolo;
     card_array_t arrpair;
     card_array_t arrtrio;
@@ -1447,19 +1448,21 @@ medlist_t *HandList_StandardAnalyze(card_array_t *array)
     arrkicks[1] = &arrpair;
     arrkicks[2] = &arrtrio;
     
-    CardArray_Sort(array, NULL);
-    Hand_CountRank(array, count, NULL);
+    CardArray_Copy(&array, cards);
+    
+    CardArray_Sort(&array, NULL);
+    Hand_CountRank(&array, count, NULL);
     
     /* nuke, bomb and 2 */
-    _HandList_ExtractNukeBomb2(&hl, array, count);
+    _HandList_ExtractNukeBomb2(&hl, &array, count);
     
     /* chains */
-    for (i = 0; i < array->length; )
+    for (i = 0; i < array.length; )
     {
-        int c = count[CARD_RANK(array->cards[i])];
+        int c = count[CARD_RANK(array.cards[i])];
         if (c != 0)
         {
-            CardArray_PushBackCards(arrkicks[c - 1], array, i, c);
+            CardArray_PushBackCards(arrkicks[c - 1], &array, i, c);
             i += c;
         }
         else

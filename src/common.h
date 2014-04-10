@@ -14,11 +14,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-/*
-#include "memtracker.h"
- */
 
-#define PRINT_GAME_LOG_
+#include "memtracker.h"
+
+#define PRINT_GAME_LOG
 
 #ifdef PRINT_GAME_LOG
 #define DBGLog printf

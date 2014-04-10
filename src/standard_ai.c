@@ -24,7 +24,36 @@ int StandardAI_GetReady(void *p, void *game)
 
 int StandardAI_Bid(void *p, void *g)
 {
-    return 0;
+    int shouldbid = 0;
+    int handlistlen = 0;
+    game_t *game = (game_t *)g;
+    player_t *player = (player_t *)p;
+    CardArray_Sort(&player->cards, NULL);
+    player->handlist = HandList_StandardAnalyze(&player->cards);
+    handlistlen = MEDList_Length(player->handlist);
+    HandList_Destroy(&player->handlist);
+    
+    if (handlistlen > 9)
+    {
+        shouldbid = 0;
+    }
+    else if (handlistlen < 9 && handlistlen > 3)
+    {
+        shouldbid = 1;
+    }
+    else if (handlistlen <= 3 && handlistlen > 2)
+    {
+        shouldbid = 2;
+    }
+    else if (handlistlen <= 2)
+    {
+        shouldbid = 3;
+    }
+    
+    if (shouldbid > game->bid)
+        return shouldbid;
+    else
+        return 0;
 }
 
 int StandardAI_Play(void *p, void *game)

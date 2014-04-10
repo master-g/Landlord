@@ -90,11 +90,11 @@ void Game_Play(game_t *game, uint32_t seed)
         game->playerIndex = Random_Int32(&game->mt) % GAME_PLAYERS;
         for (i = 0; i < GAME_PLAYERS; i++)
         {
-            Deck_Deal(&game->deck, &(Game_GetCurrentPlayer(game))->cards, GAME_HAND_CARDS);
-            Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_GetReady, game);
+            Deck_Deal(&game->deck, &Game_GetCurrentPlayer(game)->cards, GAME_HAND_CARDS);
             bid = Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Bid, game);
             if (bid > game->bid)
             {
+                DBGLog("\nPlayer ---- %d ---- bid for %d\n", game->playerIndex, bid);
                 game->highestBidder = game->playerIndex;
                 game->bid = bid;
             }
@@ -111,12 +111,14 @@ void Game_Play(game_t *game, uint32_t seed)
         {
             /* setup landlord, game start! */
             game->landlord = game->highestBidder;
+            game->players[game->landlord].identity = PlayerIdentity_Landlord;
             game->playerIndex = game->landlord;
             game->phase = Phase_Play;
             Deck_Deal(&game->deck, &game->kittyCards, GAME_REST_CARDS);
             CardArray_Concate(&game->players[game->landlord].cards, &game->kittyCards);
-            Player_HandleEvent(&game->players[game->landlord], Player_Event_GetReady, game);
             game->status = GameStatus_Ready;
+            
+            Player_SetupAdvancedAI(&game->players[game->landlord]);
         }
     }
 
@@ -127,16 +129,15 @@ void Game_Play(game_t *game, uint32_t seed)
     
     Deck_Shuffle(&game->deck, &game->mt);
     
-    for (i = 0; i < GAME_PLAYERS; i++)
-    {
-        Deck_Deal(&game->deck, &game->players[i].cards, i == game->landlord ? GAME_HAND_CARDS + GAME_REST_CARDS : GAME_HAND_CARDS);
-        Player_HandleEvent(&game->players[i], Player_Event_GetReady, game);
-    }
+
     
     game->status = GameStatus_Ready;
     game->playerIndex = game->landlord;
     game->phase = Phase_Play;
     */
+    
+    for (i = 0; i < GAME_PLAYERS; i++)
+        Player_HandleEvent(&game->players[i], Player_Event_GetReady, game);
     
     /* game play */
     while (game->status != GameStatus_Over)

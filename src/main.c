@@ -68,7 +68,7 @@ int main(int argc, const char * argv[])
         
     Game_Init(&game);
     
-    for (i = 100000; i < 200000; i++)
+    for (i = 100000; i < 100001; i++)
     {
         Game_Play(&game, i);
         
@@ -93,9 +93,7 @@ int main(int argc, const char * argv[])
     
     printf("\n");
     
-    /*
     memtrack_list_allocations();
-     */
 
     return 0;
 }
