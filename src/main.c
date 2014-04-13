@@ -68,11 +68,9 @@ int main(int argc, const char * argv[])
         
     Game_Init(&game);
     
-    /*
-    for (i = 100000; i < 100001; i++)
-    */
+    for (i = 100000; i < 200000; i++)
     {
-        Game_Play(&game, 12);
+        Game_Play(&game, i);
         
         if (game.winner == game.landlord)
             landlordwon++;

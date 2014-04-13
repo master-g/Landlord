@@ -49,7 +49,7 @@ int StandardAI_Bid(void *p, void *g)
     {
         shouldbid = 3;
     }
-    
+
     if (shouldbid > game->bid)
         return shouldbid;
     else
