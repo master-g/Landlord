@@ -68,7 +68,7 @@ int main(int argc, const char * argv[])
         
     Game_Init(&game);
     
-    for (i = 1000000; i < 2000000; i++)
+    for (i = 100000; i < 200000; i++)
     {
         Game_Play(&game, i);
         
@@ -81,7 +81,7 @@ int main(int argc, const char * argv[])
         
         if (i % 10000 == 0)
         {
-            printf("%.1f%%\n", (i - 1000000) / 1000000.0f * 100.0f);
+            printf("%.1f%%\n", (i - 100000) / 100000.0f * 100.0f);
         }
     }
     

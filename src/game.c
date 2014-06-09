@@ -55,7 +55,7 @@ void Game_Reset(game_t *game)
     int i = 0;
     for (i = 0; i < GAME_PLAYERS; i++)
     {
-        Player_SetupStandardAI(&game->players[i]);
+        Player_SetupAdvancedAI(&game->players[i]);
         Player_Clear(&game->players[i]);
     }
  
