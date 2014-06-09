@@ -28,6 +28,7 @@ void Game_Init(game_t *game)
     game->phase = 0;
     
     Deck_Reset(&game->deck);
+    Deck_Shuffle(&game->deck, &game->mt);
     CardArray_Clear(&game->cardRecord);
     CardArray_Clear(&game->kittyCards);
     Random_Init(&game->mt, 0);
@@ -68,6 +69,7 @@ void Game_Reset(game_t *game)
 
     Hand_Clear(&game->lastHand);
     Deck_Reset(&game->deck);
+    Deck_Shuffle(&game->deck, &game->mt);
     CardArray_Clear(&game->kittyCards);
     CardArray_Clear(&game->cardRecord);
 }
