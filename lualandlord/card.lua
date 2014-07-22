@@ -58,6 +58,27 @@ function ll.Card_Make(suit, rank)
 	return ll.BIT.bor(suit, rank);
 end
 
+function ll.Card_ToString(card)
+	local str = "";
+	local rank = ll.Card_Rank(card);
+	local suit = ll.Card_Suit(card);
+
+	if suit == ll.CARD_SUIT_DIAMOND then
+		str = string.char(0xE2, 0x99, 0xA6);
+	elseif suit == ll.CARD_SUIT_CLUB then
+		str = string.char(0xE2, 0x99, 0xA3);
+	elseif suit == ll.CARD_SUIT_HEART then
+		str = string.char(0xE2, 0x99, 0xA5);
+	elseif suit == ll.CARD_SUIT_SPADE then
+		str = string.char(0xE2, 0x99, 0xA0);
+	end
+
+	local strRank = { '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'r', 'R' };
+	str = str .. strRank[rank];
+
+	return str;
+end	
+
 -----------------------------------------------------------------------------
 -- card array
 -- {
@@ -354,10 +375,96 @@ function ll.CardArray_DropBack(array, count)
 		table.remove(array.cards, array.length);
 		array.length = array.length - 1;
 	end
+
+	return drop;
 end
 
 -- drop multiple cards from the front of the array
--- TODO
+function ll.CardArray_DropFront(array, count)
+	local drop = 0;
+	if array.length >= count then
+		drop = count;
+	else
+		drop = array.length;
+	end
+
+	for i = 1, drop do
+		table.remove(array.cards, 1);
+		array.length = array.length - 1;
+	end
+
+	return drop;
+end
+
+-- insert a card into array
+function ll.CardArray_Insert(array, card, where)
+	if ll.CardArray_IsFull(array) then
+		return;
+	end
+
+	table.insert(array.cards, where, card);
+	array.length = array.length + 1;
+end
+
+-- remove a card from array
+function ll.CardArray_Remove(array, where)
+	table.remove(array.cards, where);
+	array.length = array.length - 1;
+end
+
+-- remove specific card from array
+function ll.CardArray_RemoveCard(array, card)
+	local remove = 0;
+	local newarray = {};
+	for k, v in pairs(array.cards) do
+		if v ~= card then
+			table.insert(newarray, v);
+		else
+			array.length = array.length - 1;
+			remove = remove + 1;
+		end
+	end
+
+	array.cards = newarray;
+
+	return remove;
+end
+
+-- push cards from specific position of array 'from' to the back of array
+function ll.CardArray_PushBackCards(array, from, where, count)
+	for i = 0, count - 1 do
+		ll.CardArray_PushBack(array, from.cards[where + i]);
+	end
+end
+
+-- copy specific rank cards into another array
+function ll.CardArray_CopyRank(dst, src, rank)
+	local cards = 0;
+
+	for k, v in pairs(src.cards) do
+		if ll.Card_Rank(v) == rank then
+			ll.CardArray_PushBack(dst, v);
+			cards = cards + 1;
+		end
+	end
+
+	return cards;
+end
+
+-- remove specific rank cards from array
+function ll.CardArray_RemoveRank(array, rank)
+	local newarray = {};
+	local newlength = 0;
+	for k, v in pairs(array.cards) do
+		if ll.Card_Rank(v) ~= rank then
+			table.insert(newarray, v);
+			newlength = newlength + 1;
+		end
+	end
+
+	array.length = newlength;
+	array.cards = newarray;
+end
 
 -- sort cards
 function ll.CardArray_Sort(array, sortfunc)
@@ -375,4 +482,21 @@ function ll.CardArray_Sort(array, sortfunc)
 	end
 end
 
+-- reverse cards in the array
+function ll.CardArray_Reverse(array)
+	local newarray = {};
+	for i = array.length, 1, -1 do
+		table.insert(newarray, array.cards[i]);
+	end
 
+	array.cards = newarray;
+end
+
+function ll.CardArray_ToString(array)
+	local str = "";
+	for k, v in pairs(array.cards) do
+		str = str .. ll.Card_ToString(v);
+	end
+
+	return str;
+end
