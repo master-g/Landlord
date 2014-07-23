@@ -127,26 +127,26 @@ function ll.CardArray_CreateWithString(str)
     	elseif c == "T" then
     		card = ll.BIT.bor(card, ll.CARD_RANK_T);
     	elseif c == "J" then
-    		card == ll.BIT.bor(card, ll.CARD_RANK_J);
+    		card = ll.BIT.bor(card, ll.CARD_RANK_J);
     	elseif c == "Q" then
-    		card == ll.BIT.bor(card, ll.CARD_RANK_Q);
+    		card = ll.BIT.bor(card, ll.CARD_RANK_Q);
     	elseif c == "K" then
-    		card == ll.BIT.bor(card, ll.CARD_RANK_K);
+    		card = ll.BIT.bor(card, ll.CARD_RANK_K);
     	elseif c == "A" then
-    		card == ll.BIT.bor(card, ll.CARD_RANK_A);
+    		card = ll.BIT.bor(card, ll.CARD_RANK_A);
     	elseif c == "2" then
-    		card == ll.BIT.bor(card, ll.CARD_RANK_2);
+    		card = ll.BIT.bor(card, ll.CARD_RANK_2);
     	elseif c == "r" then
-    		card == ll.BIT.bor(card, ll.CARD_RANK_r);
+    		card = ll.BIT.bor(card, ll.CARD_RANK_r);
     	elseif c == "R" then
-    		card == ll.BIT.bor(card, ll.CARD_RANK_R);
+    		card = ll.BIT.bor(card, ll.CARD_RANK_R);
     	end
 
     	if c:byte() <= string.byte("9") and c:byte() >= string.byte("3") then
     		card = ll.BIT.bor(card, ll.CARD_RANK_3 + c:byte() - string.byte("3"));
     	end
 
-    	if ll.Card_Rank(card) ~= 0 && Card_Suit(card) ~= 0 then
+    	if ll.Card_Rank(card) ~= 0 and Card_Suit(card) ~= 0 then
     		ll.CardArray_PushBack(cardarray, card);
     		card = 0;
     	end
@@ -272,7 +272,7 @@ end
 
 -- check for identity
 function ll.CardArray_IsIdentity(array1, array2)
-	if array1.length != array2.length then
+	if array1.length ~= array2.length then
 		return false;
 	else
 		local c1 = ll.CardArray_Copy(array1);
