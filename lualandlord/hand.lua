@@ -519,7 +519,7 @@ function ll.Hand_Parse(array)
 	ll.CardArray_Sort(array);
 
 	-- count ranks
-	count, sorted = ll.Hand_CountRank(true);
+	count, sorted = ll.Hand_CountRank(array, true);
 
 	-- validate length
 	if array.length < ll.HAND_MIN_LENGTH or array.length > ll.HAND_MAX_LENGTH then
@@ -529,7 +529,94 @@ function ll.Hand_Parse(array)
 		-- solo chain
 		hand.type = ll.Hand_Format(ll.HAND_PRIMAL_SOLO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN);
 		hand.cards = ll.CardArray_Copy(array);
-	elseif	array.length >= HAND_PAIR_CHAIN_MIN_LENGTH and
+	elseif	array.length >= ll.HAND_PAIR_CHAIN_MIN_LENGTH and
 			array.length % 2 == 0 and
-			
+			ll._Hand_CheckChain(count, 2, array.length / 2) then
+		-- pair chain
+		hand.type = ll.Hand_Format(ll.HAND_PRIMAL_PAIR, ll.HAND_KICKER_NONE, ll.HAND_CHAIN);
+		hand.cards = ll.CardArray_Copy(array);
+	elseif 	array.length >= ll.HAND_TRIO_CHAIN_MIN_LENGTH and
+			array.length % 3 == 0 and
+			ll._Hand_CheckChain(count, 3, array.length / 3) then
+		-- trio chain
+		hand.type = ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN);
+		hand.cards = ll.CardArray_Copy(array);
+	elseif 	array.length >= ll.HAND_FOUR_CHAIN_MIN_LENGTH and
+			array.length % 4 == 0 and
+			ll._Hand_CheckChain(count, 4, array.length / 4) then
+		-- four chain
+		hand.type = ll.Hand_Format(ll.HAND_PRIMAL_FOUR, ll.HAND_KICKER_NONE, ll.HAND_CHAIN);
+		hand.cards = ll.CardArray_Copy(array);
+	else
+		-- other types
+		hand = ll._HandParser[array.length](array, count, sorted);
+	end
+
+	return hand;
 end
+
+-----------------------------------------------------------------------------
+-- comparators
+-----------------------------------------------------------------------------
+
+-- one of hand1, hand2 must be bomb or nuke
+function ll._Hand_CompareBomb(hand1, hand2)
+	local ret = ll.HAND_CMP_ILLEGAL;
+
+	-- same type same cards, equal
+	if (hand1.type == hand2.type) and (hand1.cards.cards[1] == hand2.cards.cards[1]) then
+		ret = ll.HAND_CMP_EQUAL;
+	elseif (hand1.type == ll.HAND_PRIMAL_BOMB) and (hand2.type == ll.HAND_PRIMAL_BOMB) then
+		if ll.Card_Rank(hand1.cards.cards[1]) > ll.Card_Rank(hand2.cards.cards[1]) then
+			ret = ll.HAND_CMP_GREATER;
+		else
+			ret = ll.HAND_CMP_LESS;
+		end
+	else
+		if ll.Hand_GetPrimal(hand1.type) > ll.Hand_GetPrimal(hand2.type) then
+			ret = ll.HAND_CMP_GREATER;
+		else
+			ret = ll.HAND_CMP_LESS;
+		end
+	end
+
+	return ret;
+end
+
+-- compare two hands
+function ll.Hand_Compare(hand1, hand2)
+	local ret = ll.HAND_CMP_ILLEGAL;
+
+	-- different hand type
+	-- check for bomb and nuke
+	if hand1.type ~= hand2.type then
+		if 	hand1.type ~= ll.HAND_PRIMAL_NUKE and
+			hand1.type ~= ll.HAND_PRIMAL_BOMB and 
+			hand2.type ~= ll.HAND_PRIMAL_NUKE and
+			hand2.type ~= ll.HAND_PRIMAL_BOMB then
+			ret = ll.HAND_CMP_ILLEGAL;
+		else
+			ret = ll._Hand_CompareBomb(hand1, hand2);
+		end
+	else
+		-- same hand type and with no bombs
+		if hand1.cards.length ~= hand2.cards.length then
+			ret = ll.HAND_CMP_ILLEGAL;
+		else
+			-- same hand type and same length
+			if ll.Card_Rank(hand1.cards.cards[1]) == ll.Card_Rank(hand2.cards.cards[1]) then
+				ret = ll.HAND_CMP_EQUAL;
+			else
+				if ll.Card_Rank(hand1.cards.cards[1]) > ll.Card_Rank(hand2.cards.cards[1]) then
+					ret = ll.HAND_CMP_GREATER;
+				else 
+					ret = ll.HAND_CMP_LESS;
+				end
+			end
+		end
+	end
+
+	return ret;
+end
+
+

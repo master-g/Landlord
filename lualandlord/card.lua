@@ -172,7 +172,7 @@ function ll.CardArray_Copy(cardarray)
 	local clone = {};
 	clone.length = cardarray.length;
 	clone.cards = {};
-	for k, v in pairs(cardarray) do
+	for k, v in pairs(cardarray.cards) do
 		table.insert(clone.cards, v);
 	end
 
