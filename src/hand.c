@@ -819,6 +819,7 @@ int _HandList_SearchBeat_Bomb(hand_ctx_t *ctx, hand_t *tobeat, hand_t *beat)
 {
     int canbeat = 0;
     int *count = NULL;
+    int i = 0;
     card_array_t *cards = &ctx->cards;
     
     count = ctx->count;
@@ -827,8 +828,26 @@ int _HandList_SearchBeat_Bomb(hand_ctx_t *ctx, hand_t *tobeat, hand_t *beat)
     if (tobeat->type == Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE))
         return 0;
     
-    canbeat = _HandList_SearchBeat_Primal(ctx, tobeat, beat, 4);
-    
+    /* search for a higher rank bomb */
+    if (tobeat->type == HAND_PRIMAL_BOMB)
+    {
+        canbeat = _HandList_SearchBeat_Primal(ctx, tobeat, beat, 4);
+    }
+    else
+    {
+        /* tobeat is not a nuke or bomb, search a bomb to beat it */
+        for (i = 0; i < ctx->cards.length; i++)
+        {
+            if (count[CARD_RANK(ctx->cards.cards[i])] == 4)
+            {
+                canbeat = 1;
+                Hand_Clear(beat);
+                CardArray_CopyRank(&beat->cards, cards, CARD_RANK(ctx->cards.cards[i]));
+                break;
+            }
+        }
+    }
+
     /* search for nuke */
     if (canbeat == 0)
     {

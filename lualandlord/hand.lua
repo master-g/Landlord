@@ -833,8 +833,20 @@ function ll._HandList_SearchBeat_Bomb(handctx, tobeat, beat)
 		return false;
 	end
 
-	-- search for bomb
-	canbeat = ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, 4);
+	-- search for higher rank bomb
+	if tobeat.type == ll.HAND_PRIMAL_BOMB then
+		canbeat = ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, 4);
+	else
+		-- tobeat is not a nuke or bomb, search a bomb to beat it
+		for i = 1, cards.length do
+			if count[ll.Card_Rank(cards.cards[i])] == 4 then
+				canbeat = true;
+				ll.Hand_Clear(beat);
+				ll.CardArray_CopyRank(beat.cards, cards, ll.Card_Rank(cards.cards[i]));
+				break;
+			end
+		end
+	end
 
 	-- search for nuke
 	if not canbeat then
@@ -842,8 +854,8 @@ function ll._HandList_SearchBeat_Bomb(handctx, tobeat, beat)
 			canbeat = true;
 			ll.Hand_Clear(beat);
 			beat.type = ll.HAND_PRIMAL_NUKE;
-			beat.cards = ll.CardArray_CopyRank(cards, ll.CARD_RANK_R);
-			beat.cards = ll.CardArray_CopyRank(cards, ll.CARD_RANK_r);
+			ll.CardArray_CopyRank(beat.cards, cards, ll.CARD_RANK_R);
+			ll.CardArray_CopyRank(beat.cards, cards, ll.CARD_RANK_r);
 		end
 	else
 		beat.type = ll.HAND_PRIMAL_BOMB;
@@ -1178,6 +1190,7 @@ end
 -- hand analyzer
 -----------------------------------------------------------------------------
 
+function ll.Hand_Test()
 -- TODO test current hand functions
     local cards1 = ll.CardArray_Create();
     ll.CardArray_PushBack(cards1, 0x13);
@@ -1213,3 +1226,4 @@ end
     for k, v in pairs(hl) do
         print("\n" .. ll.Hand_ToString(v));
     end
+end
