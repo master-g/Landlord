@@ -824,7 +824,7 @@ int _HandList_SearchBeat_Bomb(hand_ctx_t *ctx, hand_t *tobeat, hand_t *beat)
     count = ctx->count;
     
     /* can't beat nuke */
-    if (tobeat->type != Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE))
+    if (tobeat->type == Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAIN_NONE))
         return 0;
     
     canbeat = _HandList_SearchBeat_Primal(ctx, tobeat, beat, 4);
@@ -896,7 +896,7 @@ int _HandList_SearchBeat_TrioKicker(hand_ctx_t *ctx, hand_t *tobeat, hand_t *bea
             if (count[CARD_RANK(temp.cards[i])] >= kick &&
                 CARD_RANK(temp.cards[i]) > CARD_RANK(hkick.cards.cards[0]))
             {
-                CardArray_Clear(&hkickbeat);
+                CardArray_Clear(&hkickbeat.cards);
                 CardArray_PushBackCards(&hkickbeat.cards, &temp, i, kick);
                 canbeat = 1;
                 break;
@@ -1058,7 +1058,7 @@ int _HandList_SearchBeat_TrioKickerChain(hand_ctx_t *ctx, hand_t *tobeat, hand_t
     {
         int n = 0;                  /* combination total */
         
-        /* remove trio from kickount */
+        /* remove trio from kickcount */
         memcpy(kickcount, count, sizeof(int) * CARD_RANK_END);
         for (i = 0; i < htrio.cards.length; i+=3)
             kickcount[CARD_RANK(htrio.cards.cards[i])] = 0;

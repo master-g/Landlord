@@ -228,13 +228,15 @@ end
 function ll.Hand_CountRank(array, sort)
 	local count = {};
 	local sorted = {};
+
+	for i = ll.CARD_RANK_3, ll.CARD_RANK_R do
+		count[i] = 0;
+		sorted[i] = 0;
+	end
+
 	for k, v in pairs(array.cards) do
 		local rank = ll.Card_Rank(v);
-		if count[rank] == nil then
-			count[rank] = 1;
-		else
-			count[rank] = count[rank] + 1;
-		end
+		count[rank] = count[rank] + 1;
 	end
 
 	if sort ~= nil then
@@ -246,6 +248,25 @@ function ll.Hand_CountRank(array, sort)
 	end
 
 	return count, sorted;
+end
+
+-- create a count array
+function ll._Hand_CreateCount()
+	local count = {};
+	for i = ll.CARD_RANK_3, ll.CARD_RANK_R do
+		count[i] = 0;
+	end
+
+	return count;
+end
+
+function ll._Hand_CopyCount(count)
+	local clone = {};
+	for k, v in pairs(count) do
+		clone[k] = v;
+	end
+
+	return clone;
 end
 
 -- check if a sorted count array matches a specific pattern
@@ -619,4 +640,542 @@ function ll.Hand_Compare(hand1, hand2)
 	return ret;
 end
 
+-- convert hand to string
+function ll.Hand_ToString(hand)
+	local str = "Hand type: [";
 
+	local primal = ll.Hand_GetPrimal(hand.type);
+	local kicker = ll.Hand_GetKicker(hand.type);
+
+	-- primal
+	if primal == ll.HAND_PRIMAL_NONE then
+		str = str .. "none ";
+	elseif primal == ll.HAND_PRIMAL_SOLO then
+		str = str .. "solo ";
+	elseif primal == ll.HAND_PRIMAL_PAIR then
+		str = str .. "pair ";
+	elseif primal == ll.HAND_PRIMAL_TRIO then
+		str = str .. "trio ";
+	elseif primal == ll.HAND_PRIMAL_FOUR then
+		str = str .. "four ";
+	elseif primal == ll.HAND_PRIMAL_BOMB then
+		str = str .. "bomb ";
+	elseif primal == ll.HAND_PRIMAL_NUKE then
+		str = str .. "nuke ";
+	end
+
+	-- kicker
+	if kicker == ll.HAND_KICKER_NONE then
+		str = str .. "none";
+	elseif kicker == ll.HAND_KICKER_SOLO then
+		str = str .. "solo";
+	elseif kicker == ll.HAND_KICKER_PAIR then
+		str = str .. "pair";
+	elseif kicker == ll.HAND_KICKER_DUAL_SOLO then
+		str = str .. "dual solo";
+	elseif kicker == ll.HAND_KICKER_DUAL_PAIR then
+		str = str .. "dual pair";
+	end
+
+	-- chain
+	if ll.Hand_GetChain(hand.type) == ll.HAND_CHAIN then
+		str = str .. " chain";
+	end
+
+	str = str .. "]\n" .. ll.CardArray_ToString(hand.cards);
+
+	return str;
+end
+
+-----------------------------------------------------------------------------
+-- hand list
+-----------------------------------------------------------------------------
+
+-- push a hand into the front of a handlist, if handlist is nil , new handlist will be created
+function ll.HandList_PushFront(list, hand)
+	if list == nil then
+		list = {};
+	end
+
+	table.insert(list, 1, hand);
+
+	return list;
+end
+
+-- remove a hand from list
+function ll.HandList_Remove(list, hand)
+	for i = 1, #list do
+		if list[i] == hand then
+			table.remove(list, i);
+			return;
+		end
+	end
+end
+
+-- concate two handlist
+function ll.HandList_Concate(head, tail)
+	if head == nil then
+		head = {};
+	end
+
+	for k, v in pairs(tail) do
+		table.insert(head, v);
+	end
+
+	return head;
+end
+
+-- find function
+function ll.HandList_Find(handlist, handtype)
+	local hand = nil;
+	for k, v in pairs(handlist) do
+		if v.type == handtype then
+			hand = v;
+			break;
+		end
+	end
+
+	return hand;
+end
+
+-----------------------------------------------------------------------------
+-- beat search
+-- 
+-- hand_ctx
+-- {
+-- 		count 	: { number }
+-- 		cards 	: CardArray
+--		rcards	: CardArray
+-- }
+-----------------------------------------------------------------------------
+
+-- create hand context from card array
+function ll.HandContext_Create(array)
+	local handctx = {};
+
+	handctx.count = ll.Hand_CountRank(array);
+	handctx.cards = ll.CardArray_Copy(array);
+	ll.CardArray_Sort(handctx.cards);
+	handctx.rcards = ll.CardArray_Copy(handctx.cards);
+	ll.CardArray_Reverse(handctx.rcards);
+
+	return handctx;
+end
+
+--[[
+-- next_comb(int comb[], int k, int n)
+-- Generates the next combination of n elements as k after comb
+-- 
+-- comb => the previous combination ( use (0, 1, 2, ..., k) for first)
+-- k => the size of the subsets to generate
+-- n => the size of the original set
+-- 
+-- Returns: 1 if a valid combination was found
+-- 0, otherwise
+--]]
+function ll._next_comb(comb, k, n)
+	local i = k;
+	comb[i] = comb[i] + 1;
+
+	while i > 1 and (comb[i] >= n - k + 1 + i) do
+		i = i - 1;
+		comb[i] = comb[i] + 1;
+	end
+
+	if comb[1] > n - k + 1 then 	-- Combination (n-k, n-k+1, ..., n) reached
+		return false;				-- No more combinations can be generated
+	end
+
+	-- comb now looks like (..., x, n, n, n, ..., n).
+    -- Turn it into (..., x, x + 1, x + 2, ...)
+	for j = i + 1, k do
+		comb[j] = comb[j - 1] + 1;
+	end
+
+	return true;
+end
+
+function ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, primal)
+	local i = 0;
+	local canbeat = false;
+	local count = nil;
+	local rank = 0;
+	local temp = null;
+	local tobeattype = tobeat.type;
+
+	count = handctx.count;
+	temp = handctx.rcards;
+
+	rank = ll.Card_Rank(tobeat.cards.cards[1]);
+
+	-- search for primal
+	for i = 1, i < temp.length do
+		local searchRank = ll.Card_Rank(temp.cards[i]);
+		if searchRank > rank and count[searchRank] >= primal then
+			ll.Hand_Clear(beat);
+			beat.type = tobeattype;
+			ll.CardArray_PushBackCards(beat.cards, temp, i, primal);
+			canbeat = true;
+			break;
+		end
+	end
+
+	return canbeat;
+end
+
+function ll._HandList_SearchBeat_Bomb(handctx, tobeat, beat)
+	local canbeat = false;
+	local count = handctx.count;
+	local cards = handctx.cards;
+
+	-- can't beat nuke
+	if tobeat.type == ll.HAND_PRIMAL_NUKE then
+		return false;
+	end
+
+	-- search for bomb
+	canbeat = ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, 4);
+
+	-- search for nuke
+	if not canbeat then
+		if count[ll.CARD_RANK_r] ~= 0 and count[ll.CARD_RANK_R] ~= 0 then
+			canbeat = true;
+			ll.Hand_Clear(beat);
+			beat.type = ll.HAND_PRIMAL_NUKE;
+			beat.cards = ll.CardArray_CopyRank(cards, ll.CARD_RANK_R);
+			beat.cards = ll.CardArray_CopyRank(cards, ll.CARD_RANK_r);
+		end
+	else
+		beat.type = ll.HAND_PRIMAL_BOMB;
+	end
+
+	return canbeat;
+end
+
+--[[
+-- for a standard 54 card set, each rank has four cards
+-- so it is impossible for two trio of the same rank at the same time
+-- 
+-- a) player_1 SEARCH_BEAT player_2 : impossible for 333 vs 333
+-- 
+-- BUT
+
+-- b) player_1 SEARCH_BEAT_LOOP player_1_prev_beat : possible for 333 vs 333
+--]]
+function ll._HandList_SearchBeat_TrioKicker(handctx, tobeat, beat, kick)
+	local canbeat = false;
+	local cantriobeat = false;
+	local tobeattype = tobeat.type;
+	local count = handctx.count;
+	local temp = ll.CardArray_Copy(handctx.rcards);
+
+	local htrio = ll.Hand_Create();
+	local hkick = ll.Hand_Create();
+	local htriobeat = ll.Hand_Create();
+	local hkickbeat = ll.Hand_Create();
+
+	-- copy hands
+	ll.CardArray_PushBackCards(htrio.cards, tobeat.cards, 1, 3);
+	ll.CardArray_PushBackCards(hkick.cards, tobeat.cards, 4, kick);
+
+	-- same rank trio, case b)
+	if ll.CardArray_Contains(temp, htrio.cards) then
+		-- keep trio beat
+		htriobeat.cards = ll.CardArray_Copy(htrio.cards);
+		ll.CardArray_RemoveRank(temp, ll.Card_Rank(htriobeat.cards.cards[1]));
+
+		-- search for a higher kicker
+		-- round 1 : only search those count[rank] == kick
+		for i = 1, temp.length do
+			local ranktemp = ll.Card_Rank(temp.cards[i]);
+			if count[ranktemp] >= kick and ranktemp > ll.Card_Rank(hkick.cards.cards[1]) then
+				ll.CardArray_Clear(hkickbeat.cards);
+				ll.CardArray_PushBackCards(hkickbeat.cards, temp, i, kick);
+				canbeat = true;
+				break;
+			end
+		end
+
+		-- if kicker can't beat, restore trio
+		if not canbeat then
+			ll.CardArray_Clear(htriobeat.cards);
+			temp = ll.CardArray_Copy(handctx.rcards);
+		end
+	end
+
+	-- same rank trio not found
+	-- OR
+	-- same rank trio found, but kicker can't beat
+	if not canbeat then
+		cantriobeat = ll._HandList_SearchBeat_Primal(handctx, htrio, htriobeat, ll.HAND_PRIMAL_TRIO);
+		if cantriobeat then
+			-- trio beat found, search for kicker beat
+
+			-- remove trio from temp
+			ll.CardArray_RemoveRank(temp, ll.Card_Rank(htriobeat.cards.cards[1]));
+
+			-- search for a kicker
+			for i = 1, temp.length do
+				if count[temp.cards[i]] >= kicker then
+					ll.CardArray_PushBackCards(hkickbeat.cards, temp, i, kicker);
+					canbeat = true;
+					break;
+				end
+			end
+		end
+	end
+
+	-- beat
+	if canbeat then
+		ll.Hand_Clear(beat);
+		ll.CardArray_Concate(beat.cards, htriobeat.cards);
+		ll.CardArray_Concate(beat.cards, hkickbeat.cards);
+		beat.type = tobeattype;
+	end
+
+	return canbeat;
+end
+
+function ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, duplicate)
+	local canbeat = false;
+	local found = false;
+	local tobeattype = tobeat.type;
+	local chainlength = tobeat.cards.length / duplicate;
+	local count = handctx.count;
+	local cards = handctx.cards;
+	local temp = ll.CardArray_Create();
+	local footer = ll.Card_Rank(tobeat.cards.cards[tobeat.cards.length]);
+
+	-- search for beat chain in rank counts
+	for i = footer, ll.CARD_RANK_2 - chainlength do 
+		found = true;
+
+		for j = 1, chainlength do
+			-- check if chain breaks
+			if count[i + j] < duplicate then
+				found = false;
+				break;
+			end
+		end
+
+		local k = 0;
+		if found then
+			footer = i;			-- beat footer rank
+			k = duplicate;		-- how many cards need for each rank
+
+			i = card.length;
+			while i >= 0 and chainlength > 0 do
+				if ll.Card_Rank(cards.cards[i]) == footer then
+					ll.CardArray_PushFront(temp, cards.cards[i]);
+					k = k - 1;
+
+					if k == 0 then
+						k = duplicate;
+						chainlength = chainlength - 1;
+						footer = footer + 1;
+					end
+				end
+
+				i = i - 1;
+			end
+
+			break;
+		end
+	end
+
+	if found then
+		beat.type = tobeattype;
+		beat.cards = temp;
+		canbeat = true;
+	end
+
+	return canbeat;
+end
+
+function ll._HandList_SearchBeat_TrioKickerChain(handctx, tobeat, beat, kc)
+	local canbeat = false;
+	local i = 0;
+	local j = 0;
+	local chainlength = 0;
+	local cantriobeat = false;
+	local tobeattype = tobeat.type;
+	local count = ll._Hand_CopyCount(handctx.count);
+	local kickcount = ll._Hand_CreateCount();
+	local combrankmap = ll._Hand_CreateCount();
+	local rankcombmap = ll._Hand_CreateCount();
+	local comb = ll._Hand_CreateCount();
+	local temp = ll.CardArray_Copy(handctx.rcards);
+	local htrio = ll.Hand_Create();
+	local hkick = ll.Hand_Create();
+	local htriobeat = ll.Hand_Create();
+	local hkickbeat = ll.Hand_Create();
+
+	-- setup variables
+	chainlength = tobeattype.cards.length / (ll.HAND_PRIMAL_TRIO + kc);
+
+	-- copy tobeat cards
+	ll.CardArray_PushBackCards(htrio.cards, tobeat.cards, 1, 3 * chainlength);
+	ll.CardArray_PushBackCards(hkick.cards, tobeat.cards, 3 * chainlength + 1, kc * chainlength);
+
+	htrio.type = ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN);
+
+	-- self beat, see _HandList_SearchBeat_TrioKicker
+	if ll.CardArray_Contains(temp, htrio.cards) then
+		local n = 0;	-- combination total
+		-- remove trio from kickcout
+		kickcount = ll._Hand_CopyCount(count);
+		for i = 1, htrio.cards.length, 3 do
+			kickcount[ll.Card_Rank(htrio.cards.cards[i])] = 0;
+		end
+
+		-- remove count < kc and calculate n
+		for i = ll.CARD_RANK_3, ll.CARD_RANK_R do
+			if kickcount[i] < kc then
+				kickcount[i] = 0;
+			else
+				n = n + 1;
+			end
+		end
+
+		-- setup comb-rank and rank-comb map
+		j = 0;
+		for i = 1, hkick.cards.length, kc do
+			j = j + 1;
+			comb[j] = rankcombmap[ll.Card_Rank(hkick.cards.cards[i])];
+		end
+
+		-- find next combination
+		if ll._next_comb(comb, chainlength, n) then
+			-- next combination found, copy kickers
+			for i = 1, chainlength do
+				local rank = combrankmap[comb[i]];
+				for j = 1, temp.length do
+					if ll.Card_Rank(temp.cards[j]) == rank then
+						ll.CardArray_PushBackCards(hkickbeat.cards, temp, j, kc);
+						break;
+					end
+				end
+			end
+
+			canbeat = true;
+			-- copy trio to beat
+			ll.CardArray_Concate(htriobeat.cards, htrio.cards);
+			CardArray_Sort(hkickbeat.cards);
+		end
+	end
+
+	-- can't find same rank trio chain, search for higher rank trio
+	if not canbeat then
+		-- restore rank count
+		count = ll._Hand_CopyCount(handctx.count);
+		cantriobeat = ll._HandList_SearchBeat_Chain(handctx, htrio, htriobeat, 3);
+		if cantriobeat then
+			-- higher rank trio chain found, search for kickers
+
+			-- remove trio from temp
+			for i = 1, htriobeat.cards.length, 3 do
+				ll.CardArray_RemoveRank(temp, ll.Card_Rank(htriobeat.cards.cards[i]));
+				count[ll.Card_Rank(htriobeat.cards.cards[1])] = 0;
+			end
+
+			for j = 1, chainlength do
+				for i = 1, temp.length do
+					if count[ll.Card_Rank(temp.cards[i])] >= kc then
+						ll.CardArray_PushBackCards(hkickbeat.cards, temp, i, kc);
+						ll.CardArray_RemoveRank(temp, ll.Card_Rank(temp.cards[i]));
+						break;
+					end
+				end
+			end
+
+			if hkickbeat.cards.length == kc * chainlength then
+				canbeat = true;
+			end
+		end
+	end
+
+	-- final
+	if canbeat then
+		ll.Hand_Clear(beat);
+		ll.CardArray_Concate(beat.cards, htriobeat.cards);
+		ll.CardArray_Concate(beat.cards, hkickbeat.cards);
+		beat.type = tobeattype;
+	end
+
+	return canbeat;
+end
+
+function ll._HandList_SearchBeat(cards, tobeat, beat)
+	local canbeat = false;
+	local tobeattype = tobeat.type;
+	-- setup search context
+	local handctx = ll.HandContext_Create(cards);
+
+	-- start search
+	if tobeattype == ll.HAND_PRIMAL_SOLO then
+		canbeat = ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, ll.HAND_PRIMAL_SOLO);
+	elseif tobeattype == ll.HAND_PRIMAL_PAIR then
+		canbeat = ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, ll.HAND_PRIMAL_PAIR);
+	elseif tobeattype == ll.HAND_PRIMAL_TRIO then
+		canbeat = ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, ll.HAND_PRIMAL_TRIO);
+	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_PAIR, ll.HAND_CHAIN_NONE) then
+		canbeat = ll._HandList_SearchBeat_TrioKicker(handctx, tobeat, beat, ll.HAND_PRIMAL_PAIR);
+	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_SOLO, ll.HAND_CHAIN_NONE) then
+		canbeat = ll._HandList_SearchBeat_TrioKicker(handctx, tobeat, beat, ll.HAND_PRIMAL_SOLO);
+	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_SOLO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
+		canbeat = ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, ll.HAND_PRIMAL_SOLO);
+	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_PAIR, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
+		canbeat = ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, ll.HAND_PRIMAL_PAIR);
+	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
+		canbeat = ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, ll.HAND_PRIMAL_TRIO);
+	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_FOUR, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
+		canbeat = ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, ll.HAND_PRIMAL_FOUR);
+	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_PAIR, ll.HAND_CHAIN) then
+		canbeat = ll._HandList_SearchBeat_TrioKickerChain(handctx, tobeat, beat, ll.HAND_PRIMAL_PAIR);
+	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_SOLO, ll.HAND_CHAIN) then
+		canbeat = ll._HandList_SearchBeat_TrioKickerChain(handctx, tobeat, beat, ll.HAND_KICKER_SOLO);
+	end
+
+	-- search for bomb/nuke
+	if not canbeat then
+		canbeat = ll._HandList_SearchBeat_Bomb(handctx, tobeat, beat);
+	end
+
+	return canbeat;
+end
+
+-- search for beat, result will be store in beat
+-- 1, if [beat->type] != 0, then search [new beat] > [beat]
+-- 2, search [beat] > [tobeat], then store in [beat]
+function ll.HandList_SearchBeat(cards, tobeat, beat)
+	-- already in search loop, continue
+	if beat.type ~= 0 then
+		return ll._HandList_SearchBeat(cards, beat, beat);
+	else
+		return ll._HandList_SearchBeat(cards, tobeat, beat);
+	end
+end
+
+function ll.HandList_SearchBeatList(cards, tobeat)
+	local hl = {};
+	local htobeat = ll.Hand_Copy(tobeat);
+	local beat = ll.Hand_Create();
+	local canbeat = false;
+
+	repeat
+		canbeat = ll._HandList_SearchBeat(cards, htobeat, beat);
+		if canbeat then
+			htobeat = ll.Hand_Copy(beat);
+			local temp = ll.Hand_Copy(beat);
+			table.insert(hl, 1, temp);
+		end
+	until canbeat;
+
+	return hl;
+end
+
+-----------------------------------------------------------------------------
+-- hand analyzer
+-----------------------------------------------------------------------------
+
+-- TODO test current hand functions
