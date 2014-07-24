@@ -271,8 +271,8 @@ end
 
 -- check if a sorted count array matches a specific pattern
 function ll._Hand_PatternMatch(count, pattern)
-	for i = 1, #pattern do
-		if count[i] ~= pattern[i] then
+	for i = 1, #ll._hand_pattern[pattern] do
+		if count[i] ~= ll._hand_pattern[pattern][i] then
 			return false;
 		end
 	end
@@ -809,7 +809,7 @@ function ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, primal)
 	rank = ll.Card_Rank(tobeat.cards.cards[1]);
 
 	-- search for primal
-	for i = 1, i < temp.length do
+	for i = 1, temp.length do
 		local searchRank = ll.Card_Rank(temp.cards[i]);
 		if searchRank > rank and count[searchRank] >= primal then
 			ll.Hand_Clear(beat);
@@ -916,8 +916,8 @@ function ll._HandList_SearchBeat_TrioKicker(handctx, tobeat, beat, kick)
 
 			-- search for a kicker
 			for i = 1, temp.length do
-				if count[temp.cards[i]] >= kicker then
-					ll.CardArray_PushBackCards(hkickbeat.cards, temp, i, kicker);
+				if count[ll.Card_Rank(temp.cards[i])] >= kick then
+					ll.CardArray_PushBackCards(hkickbeat.cards, temp, i, kick);
 					canbeat = true;
 					break;
 				end
@@ -1169,7 +1169,7 @@ function ll.HandList_SearchBeatList(cards, tobeat)
 			local temp = ll.Hand_Copy(beat);
 			table.insert(hl, 1, temp);
 		end
-	until canbeat;
+	until not canbeat;
 
 	return hl;
 end
@@ -1179,3 +1179,37 @@ end
 -----------------------------------------------------------------------------
 
 -- TODO test current hand functions
+    local cards1 = ll.CardArray_Create();
+    ll.CardArray_PushBack(cards1, 0x13);
+    ll.CardArray_PushBack(cards1, 0x23);
+    ll.CardArray_PushBack(cards1, 0x33);
+    ll.CardArray_PushBack(cards1, 0x14);
+    ll.CardArray_PushBack(cards1, 0x24);
+    local hand = ll.Hand_Parse(cards1);
+    
+    print("--->" .. ll.Hand_ToString(hand));
+    
+    local cards2 = ll.CardArray_Create();
+    --[[
+    ll.CardArray_PushBack(cards2, 0x14);
+    ll.CardArray_PushBack(cards2, 0x24);
+    ll.CardArray_PushBack(cards2, 0x15);
+    ll.CardArray_PushBack(cards2, 0x25);
+    ll.CardArray_PushBack(cards2, 0x35);
+    ll.CardArray_PushBack(cards2, 0x16);
+    ll.CardArray_PushBack(cards2, 0x26);
+    ll.CardArray_PushBack(cards2, 0x36);
+    --]]
+    ll.CardArray_PushBack(cards2, 0x17);
+    ll.CardArray_PushBack(cards2, 0x27);
+    ll.CardArray_PushBack(cards2, 0x37);
+    ll.CardArray_PushBack(cards2, 0x47);
+    ll.CardArray_PushBack(cards2, 0x28);
+    ll.CardArray_PushBack(cards2, 0x38);
+    ll.CardArray_PushBack(cards2, 0x29);
+    ll.CardArray_PushBack(cards2, 0x39);
+    
+    local hl = ll.HandList_SearchBeatList(cards2, hand);
+    for k, v in pairs(hl) do
+        print("\n" .. ll.Hand_ToString(v));
+    end
