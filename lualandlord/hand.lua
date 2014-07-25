@@ -1190,20 +1190,511 @@ end
 -- hand analyzer
 -----------------------------------------------------------------------------
 
+-- extract hands like 34567 / 334455 / 333444555 etc
+-- array is a processed card array holds count[rank] == duplicate
+function ll._HandList_ExtractConsecutive(handlist, array, duplicate)
+	if array.length == 0 then
+		return;
+	end
+
+	local cardnum = array.length / duplicate;
+	local lastrank = ll.Card_Rank(array.cards[1]);
+	local hand = nil;
+	local primal = { ll.HAND_PRIMAL_SOLO, ll.HAND_PRIMAL_PAIR, ll.HAND_PRIMAL_TRIO };
+	local chainlen = { ll.HAND_SOLO_CHAIN_MIN_LENGTH, ll.HAND_PAIR_CHAIN_MIN_LENGTH, ll.HAND_TRIO_CHAIN_MIN_LENGTH };
+
+	if duplicate < 1 or duplicate > 3 then
+		return;
+	end
+
+	local i = duplicate;
+	while cardnum > 0 do
+		if lastrank - 1 ~= ll.Card_Rank(array.cards[i]) then
+			-- chain break
+			if i >= chainlen[duplicate] then
+				-- chain
+				hand = ll.Hand_Create();
+				hand.type = ll.Hand_Format(primal[duplicate], ll.HAND_KICKER_NONE, ll.HAND_CHAIN);
+				for j = 1, i do
+					ll.CardArray_PushBack(hand.cards, ll.CardArray_PopFront(array));
+				end
+
+				table.insert(handlist, 1, hand);
+			else
+				-- not a chain
+				for j = 1, i/duplicate do
+					hand = ll.Hand_Create();
+					hand.type = ll.Hand_Format(primal[duplicate], ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE);
+					for k = 1, duplicate do
+						ll.CardArray_PushBack(hand.cards, ll.CardArray_PopFront(array));
+					end
+
+					table.insert(handlist, 1, hand);
+				end
+			end
+
+			if array.length == 0 then
+				break;
+			end
+
+			lastrank = ll.Card_Rank(array.cards[1]);
+			i = duplicate;
+		else
+			-- chain still intact
+			lastrank = ll.Card_Rank(array.cards[i]);
+			i = i + duplicate;
+		end
+	end
+
+	local k = i - duplicate;				-- step back
+	if k ~= 0 and k == array.length then	-- all chained up
+		-- can chain up
+		if k >= chainlen[duplicate] then
+			hand = ll.Hand_Create();
+			hand.type = ll.Hand_Format(primal[duplicate], ll.HAND_KICKER_NONE, ll.HAND_CHAIN);
+			for j = 1, i - duplicate do
+				ll.CardArray_PushBack(hand.cards, ll.CardArray_PopFront(array));
+			end
+
+			table.insert(handlist, 1, hand);
+		else
+			for j = 1, k/duplicate do
+				hand = ll.Hand_Create();
+				hand.type = ll.Hand_Format(primal[duplicate], ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE);
+				for i = 1, duplicate do
+					ll.CardArray_PushBack(hand.cards, ll.CardArray_PopFront(array));	
+				end
+
+				table.insert(handlist, 1, hand);
+			end
+		end
+	end
+end
+
+-- extract nuke, bomb and 2
+function ll._HandList_ExtractNukeBomb2(handlist, array, count)
+	local i = 0;
+	local hand = nil;
+
+	-- nuke
+	if count[ll.CARD_RANK_r] and count[ll.CARD_RANK_R] then
+		hand = ll.Hand_Create();
+		hand.type = ll.Hand_Format(ll.HAND_PRIMAL_NUKE, ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE);
+		ll.CardArray_CopyRank(hand.cards, array, ll.CARD_RANK_R);
+		ll.CardArray_CopyRank(hand.cards, array, ll.CARD_RANK_r);
+
+		table.insert(handlist, 1, hand);
+
+		count[ll.CARD_RANK_r] = 0;
+		count[ll.CARD_RANK_R] = 0;
+
+		ll.CardArray_RemoveRank(array, ll.CARD_RANK_r);
+		ll.CardArray_RemoveRank(array, ll.CARD_RANK_R);
+	end
+
+	-- bomb
+	for i = ll.CARD_RANK_2, ll.CARD_RANK_3, -1 do
+		if count[i] == 4 then
+			hand = ll.Hand_Create();
+			hand.type = ll.Hand_Format(ll.HAND_PRIMAL_BOMB, ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE);
+			ll.CardArray_CopyRank(hand.cards, array, i);
+
+			table.insert(handlist, 1, hand);
+
+			count[i] = 0;
+			ll.CardArray_RemoveRank(array, i);
+		end
+	end
+
+	-- joker
+	local jokerRank = 0;
+	if count[ll.CARD_RANK_r] ~= 0 then
+		jokerRank = ll.CARD_RANK_r;
+	elseif count[ll.CARD_RANK_R] ~= 0 then
+		jokerRank = ll.CARD_RANK_R;
+	end
+
+	if jokerRank ~= 0 then
+		hand = ll.Hand_Create();
+		ll.CardArray_CopyRank(hand.cards, array, jokerRank);
+		hand.type = ll.HAND_PRIMAL_SOLO;
+		table.insert(handlist, 1, hand);
+		count[jokerRank] = 0;
+		ll.CardArray_RemoveRank(array, jokerRank);
+	end
+
+	-- 2
+	if count[ll.CARD_RANK_2] ~= 0 then
+		hand = ll.Hand_Create();
+		ll.CardArray_CopyRank(hand.cards, array, ll.CARD_RANK_2);
+
+		if count[ll.CARD_RANK_2] == 1 then
+			hand.type = ll.HAND_PRIMAL_SOLO;
+		elseif count[ll.CARD_RANK_2] == 2 then
+			hand.type = ll.HAND_PRIMAL_PAIR;
+		elseif count[ll.CARD_RANK_2] == 3 then
+			hand.type = ll.HAND_PRIMAL_TRIO;
+		end
+
+		count[ll.CARD_RANK_2] = 0;
+		ll.CardArray_RemoveRank(array, ll.CARD_RANK_2);
+		table.insert(handlist, 1, hand);
+	end
+end
+
+function ll.HandList_StandardAnalyze(cards)
+	local handlist = {};
+
+	local arrsolo = ll.CardArray_Create();
+	local arrpair = ll.CardArray_Create();
+	local arrtrio = ll.CardArray_Create();
+	local arrkicks = {};
+
+	table.insert(arrkicks, arrsolo);
+	table.insert(arrkicks, arrpair);
+	table.insert(arrkicks, arrtrio);
+
+	local array = ll.CardArray_Copy(cards);
+
+	ll.CardArray_Sort(array);
+	local count = ll.Hand_CountRank(array);
+
+	-- nuke, bomb and 2
+	ll._HandList_ExtractNukeBomb2(handlist, array, count);
+
+	-- chains
+	local i = 1;
+	while i <= array.length do
+		local c = count[ll.Card_Rank(array.cards[i])];
+		if c ~= 0 then
+			ll.CardArray_PushBackCards(arrkicks[c], array, i, c);
+			i = i + c;
+		else
+			i = i + 1;
+		end
+	end
+		
+	-- chain
+	ll._HandList_ExtractConsecutive(handlist, arrtrio, 3);
+	ll._HandList_ExtractConsecutive(handlist, arrpair, 2);
+	ll._HandList_ExtractConsecutive(handlist, arrsolo, 1);
+
+	return handlist;
+end
+
+-----------------------------------------------------------------------------
+-- hand evaluator
+-----------------------------------------------------------------------------
+
+function ll._HandList_CalculateConsecutive(array, duplicate)
+	local hands = 0;
+	if array.length == 0 then
+		return hands;
+	end
+
+	local cardnum = array.length / duplicate;
+	local lastrank = ll.Card_Rank(array.cards[1]);
+	local primal = { ll.HAND_PRIMAL_SOLO, ll.HAND_PRIMAL_PAIR, ll.HAND_PRIMAL_TRIO };
+	local chainlen = { ll.HAND_SOLO_CHAIN_MIN_LENGTH, ll.HAND_PAIR_CHAIN_MIN_LENGTH, ll.HAND_TRIO_CHAIN_MIN_LENGTH };
+
+	if duplicate < 1 or duplicate > 3 then
+		return hands;
+	end
+
+	local i = duplicate;
+	while cardnum > 0 do
+		if lastrank - 1 ~= ll.Card_Rank(array.cards[i]) then
+			-- chain break
+			if i >= chainlen[duplicate] then
+				-- chain
+				for j = 1, i do
+					ll.CardArray_PopFront(array);
+				end
+
+				hands = hands + 1;
+			else
+				-- not a chain
+				for j = 1, i/duplicate do
+					for k = 1, duplicate do
+						ll.CardArray_PopFront(array);
+					end
+
+					hands = hands + 1;
+				end
+			end
+
+			if array.length == 0 then
+				break;
+			end
+
+			lastrank = ll.Card_Rank(array.cards[1]);
+			i = duplicate;
+		else
+			-- chain still intact
+			lastrank = ll.Card_Rank(array.cards[i]);
+			i = i + duplicate;
+		end
+	end
+
+	local k = i - duplicate;				-- step back
+	if k ~= 0 and k == array.length then	-- all chained up
+		-- can chain up
+		if k >= chainlen[duplicate] then
+			for j = 1, i - duplicate do
+				ll.CardArray_PopFront(array);
+			end
+
+			hands = hands + 1;
+		else
+			for j = 1, k/duplicate do
+				for i = 1, duplicate do
+					ll.CardArray_PopFront(array);
+				end
+
+				hands = hands + 1;
+			end
+		end
+	end
+
+	return hands;
+end
+
+function ll.HandList_StandardEvaluator(array)
+	local hands = 0;
+	local arrsolo = ll.CardArray_Create();
+	local arrpair = ll.CardArray_Create();
+	local arrtrio = ll.CardArray_Create();
+	local arrkicks = {};
+
+	table.insert(arrkicks, arrsolo);
+	table.insert(arrkicks, arrpair);
+	table.insert(arrkicks, arrtrio);
+
+	local array = ll.CardArray_Copy(cards);
+
+	ll.CardArray_Sort(array);
+	local count = ll.Hand_CountRank(array);
+
+	-- nuke
+	if count[ll.CARD_RANK_R] ~= 0 and count[ll.CARD_RANK_R] ~= 0 then
+		hands = hands + 1;
+		count[ll.CARD_RANK_R] = 0;
+		count[ll.CARD_RANK_r]  = 0;
+	end
+
+	-- bomb
+	for i = ll.CARD_RANK_2, ll.CARD_RANK_3, -1 do
+		if count[i] == 4 then
+			hands = hands + 1;
+			count[i] = 0;
+		end
+	end
+
+	-- joker
+	if count[ll.CARD_RANK_R] ~= 0 || count[ll.CARD_RANK_r] ~= 0 then
+		hands = hands + 1;
+		count[ll.CARD_RANK_R] = 0;
+		count[ll.CARD_RANK_r]  = 0;
+	end
+
+	-- 2
+	if count[ll.CARD_RANK_2] ~= 0 then
+		hands = hands + 1;
+		count[ll.CARD_RANK_2] = 0;
+	end;
+
+	-- chains
+	local i = 1;
+	while i <= array.length do
+		local c = count[ll.Card_Rank(array.cards[i])];
+		if c ~= 0 then
+			ll.CardArray_PushBackCards(arrkicks[c], array, i, c);
+			i = i + c;
+		else
+			i = i + 1;
+		end
+	end
+		
+	-- chain
+	hands = hands + ll._HandList_CalculateConsecutive(arrtrio, 3);
+	hands = hands + ll._HandList_CalculateConsecutive(arrpair, 2);
+	hands = hands + ll._HandList_CalculateConsecutive(arrsolo, 1);
+
+	return hands;
+end
+
+-----------------------------------------------------------------------------
+-- advanced hand analyze
+-----------------------------------------------------------------------------
+
+function ll._HandList_SearchLongestConsecutive(handctx, hand, duplicate)
+	-- context
+	local rankstart = 0;
+	local lastrank = 0;
+	local primal = { ll.HAND_PRIMAL_SOLO, ll.HAND_PRIMAL_PAIR, ll.HAND_PRIMAL_TRIO };
+	local chainlen = { ll.HAND_SOLO_CHAIN_MIN_LENGTH, ll.HAND_PAIR_CHAIN_MIN_LENGTH, ll.HAND_TRIO_CHAIN_MIN_LENGTH };
+	local chain = ll.CardArray_Create();
+	local count = handctx.count;
+	local cards = handctx.cards;
+
+	if duplicate < 1 or duplicate > 3 then
+		return;
+	end
+
+	-- early break
+	if cards.length < chainlen[duplicate] then
+		return;
+	end
+
+	-- setup
+	rankstart = 0;
+	lastrank = ll.Card_Rank(cards.cards[1]);
+
+	--
+	-- i <= ll.CARD_RANK_2
+	-- but count[CARD_RANK_2] must be 0
+	-- for 2/bomb/nuke has been removed before calling this function
+	--
+	for i = lastrank, ll.CARD_RANK_2 do
+		-- find start of a possible chain
+		if rankstart == 0 then
+			if count[i] >= duplicate then
+				rankstart = i;
+			end
+		else
+			-- chain break;
+			if count[i] < duplicate then
+				-- chain break, extract chain and set new possible start
+				if ((i - rankstart) * duplicate) >= chainlen[duplicate] and (i - rankstart) > chain.length then
+					-- valid chain, store rank in CardArray
+					ll.CardArray_Clear(chain);
+					for j = rankstart, i - 1 do
+						ll.CardArray_PushBack(chain, j);
+					end
+				end
+
+				rankstart = 0;
+			end
+		end
+	end	
+
+	-- convert rank array to card array
+	if chain.length > 0 then
+		local k = 0;
+		for i = chain.length, 1, -1 do 
+			lastrank = chain.cards[i];
+			k = duplicate;
+			for j = 1, cards.length do
+				if ll.Card_Rank(cards.cards[j]) == lastrank then
+					ll.CardArray_PushBack(hand.cards, cards.cards[j]);
+					k = k - 1;
+
+					if k == 0 then
+						break;
+					end
+				end
+			end
+		end
+
+		hand.type = ll.Hand_Format(primal[duplicate], ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE);
+	end
+end
+
+function ll._HandList_SearchPrimal(handctx, primal)
+	local count = handctx.count;
+	local primals = { ll.HAND_PRIMAL_SOLO, ll.HAND_PRIMAL_PAIR, ll.HAND_PRIMAL_TRIO };
+	local rcards = handctx.rcards;
+	local hand = nil;
+
+	if primal > 3 or primal < 1 then
+		return nil;
+	end
+
+	-- search count[rank] >= primal
+	for i = 1, rcards.length do
+		if count[ll.Card_Rank(rcards.cards[i])] >= primal then
+			-- found
+			hand = ll.Hand_Create();
+			ll.CardArray_PushBackCards(hand.cards, rcards, i, primal);
+			hand.type = ll.Hand_Format(primals[primal], ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE);
+			break;
+		end
+	end
+
+	return hand;
+end
+
+ll._HAND_SEARCH_TYPES = 3;
+
+--[[
+-- pass a empty hand to start traverse
+-- result stores in hand
+-- return false when stop
+--]]
+function ll._HLAA_TraverseHands(handctx, begin, hand)
+	local found = false;
+	local i = begin;
+	local primals = { 1, 2, 3 };
+	-- solo chain, pair chain, trio chain, trio, pair, solo
+	local searchers = { };
+	table.insert(searchers, ll._HandList_SearchLongestConsecutive);
+	table.insert(searchers, ll._HandList_SearchLongestConsecutive);
+	table.insert(searchers, ll._HandList_SearchLongestConsecutive);
+
+	if handctx.cards.length == 0 then
+		return false, i;
+	end
+
+	if begin >= ll._HAND_SEARCH_TYPES then
+		return false, i;
+	end
+
+	-- init search
+	if hand.type == 0 then
+		while i < ll._HAND_SEARCH_TYPES and hand.type == 0 then
+			searches[i](handctx, hand, primals[i]);
+			if hand.type ~= 0 then
+				found = true;
+				break;
+			else
+				i = i + 1;
+			end
+		end
+
+		-- if found == 0, should PANIC
+	else
+		-- continue search via beat
+		found = ll.HandList_SearchBeat(handctx.cards, hand, hand);
+	end
+
+	return found, i;
+end
+
+-- extract all chains or primal hands in handctx
+function ll._HLAA_ExtractAllChains(handctx, hands)
+	local found = false;
+	local lastsearch = 0;
+	local workinghand = ll.Hand_Create();
+	local lasthand = ll.Hand_Create();
+
+	-- init search
+	found, lastsearch = ll._HLAA_TraverseHands(handctx, lastsearch, lasthand);
+
+	while found do
+		table.insert(hands, 1, lasthand);
+		workinghand = ll.Hand_Copy(lasthand);
+		lasthand = ll.Hand_Create();
+
+		repeat
+		until not found;
+
+	end
+
+end
+
 function ll.Hand_Test()
 -- TODO test current hand functions
-    local cards1 = ll.CardArray_Create();
-    ll.CardArray_PushBack(cards1, 0x13);
-    ll.CardArray_PushBack(cards1, 0x23);
-    ll.CardArray_PushBack(cards1, 0x33);
-    ll.CardArray_PushBack(cards1, 0x14);
-    ll.CardArray_PushBack(cards1, 0x24);
-    local hand = ll.Hand_Parse(cards1);
-    
-    print("--->" .. ll.Hand_ToString(hand));
-    
     local cards2 = ll.CardArray_Create();
-    --[[
     ll.CardArray_PushBack(cards2, 0x14);
     ll.CardArray_PushBack(cards2, 0x24);
     ll.CardArray_PushBack(cards2, 0x15);
@@ -1212,7 +1703,6 @@ function ll.Hand_Test()
     ll.CardArray_PushBack(cards2, 0x16);
     ll.CardArray_PushBack(cards2, 0x26);
     ll.CardArray_PushBack(cards2, 0x36);
-    --]]
     ll.CardArray_PushBack(cards2, 0x17);
     ll.CardArray_PushBack(cards2, 0x27);
     ll.CardArray_PushBack(cards2, 0x37);
@@ -1222,7 +1712,7 @@ function ll.Hand_Test()
     ll.CardArray_PushBack(cards2, 0x29);
     ll.CardArray_PushBack(cards2, 0x39);
     
-    local hl = ll.HandList_SearchBeatList(cards2, hand);
+    local hl = ll.HandList_StandardAnalyze(cards2);
     for k, v in pairs(hl) do
         print("\n" .. ll.Hand_ToString(v));
     end

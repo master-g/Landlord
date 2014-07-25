@@ -39,11 +39,19 @@ ll.CARD_SUIT_SPADE		= 0x40;
 ll.CARD_SET_LENGTH		= 54;
 
 function ll.Card_Rank(card)
-	return ll.BIT.band(card, 0x0F);
+	if card == nil then
+		return 0;
+	else
+		return ll.BIT.band(card, 0x0F);
+	end
 end
 
 function ll.Card_Suit(card)
-	return ll.BIT.band(card, 0x0F);
+	if card == nil then
+		return 0;
+	else
+		return ll.BIT.band(card, 0x0F);
+	end
 end
 
 function ll.Card_Red(card)

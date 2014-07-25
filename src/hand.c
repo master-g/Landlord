@@ -1296,7 +1296,7 @@ void _HandList_ExtractConsecutive(medlist_t **hl, card_array_t *array, int dupli
     int primal[] = {0, HAND_PRIMAL_SOLO, HAND_PRIMAL_PAIR, HAND_PRIMAL_TRIO};
     int chainlen[] = {0, HAND_SOLO_CHAIN_MIN_LENGTH, HAND_PAIR_CHAIN_MIN_LENGTH, HAND_TRIO_CHAIN_MIN_LENGTH};
     
-    if (duplicate < 1 || duplicate > 3)
+    if (duplicate < 1 || duplicate > 3 || array->length == 0)
         return;
     
     Hand_Clear(&hand);
@@ -1332,6 +1332,9 @@ void _HandList_ExtractConsecutive(medlist_t **hl, card_array_t *array, int dupli
                     HandList_PushFront(hl, &hand);
                 }
             }
+            
+            if (array->length == 0)
+                break;
             
             lastrank = CARD_RANK(array->cards[0]);
             i = duplicate;
@@ -1544,6 +1547,9 @@ int _HandList_CalculateConsecutive(card_array_t *array, int duplicate)
                     hands++;
                 }
             }
+
+            if (array->length == 0)
+                break;
             
             lastrank = CARD_RANK(array->cards[0]);
             i = duplicate;
