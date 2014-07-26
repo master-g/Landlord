@@ -73,3 +73,59 @@ function ll.Random_Range(ctx, floor, ceiling)
 
 	return r;
 end
+
+-----------------------------------------------------------------------------
+-- tree
+-----------------------------------------------------------------------------
+
+function ll.Tree_AddChild(tree, child)
+	child.root = tree;
+
+	if tree.child == nil then
+		tree.child = child;
+	else
+		if tree.child.sibling == nil then
+			tree.child.sibling = child;
+		else
+			local tail = tree.child;
+			while tail.sibling ~= nil do
+				tail = tail.sibling;
+			end
+			tail.sibling = child;
+		end
+	end
+end
+
+function ll.Tree_AddSibling(tree, sibling)
+	sibling.root = tree.root;
+	local tail = tree.sibling;
+	while tail.sibling ~= nil do
+		tail = tail.sibling;
+	end
+
+	tail.sibling = sibling;
+end
+
+function ll.Tree_DumpToStack(tree)
+	local stack = {};
+	local tempstack = {};
+
+	table.insert(tempstack, tree);
+
+	while #tempstack ~= 0 do
+		local tnode = table.remove(tempstack, 1);
+
+		local temp = tnode.child;
+		while temp ~= nil do
+			table.insert(tempstack, 1, temp);
+			temp = temp.sibling;
+		end
+
+		-- leaf
+		if tnode.child == nil then
+			table.insert(tempstack, 1, tnode);
+		end
+	end
+
+	return stack;
+end

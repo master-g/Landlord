@@ -1701,7 +1701,7 @@ void _HandList_SearchLongestConsecutive(hand_ctx_t *ctx, hand_t *hand, int dupli
      * but count[CARD_RANK_2] must be 0
      * for 2/bomb/nuke has been removed before calling this function 
      */
-    for (i = lastrank; i <= CARD_RANK_2; i++)
+    for (i = CARD_RANK_3; i <= CARD_RANK_2; i++)
     {
         /* find start of a possible chain */
         if (rankstart == 0)
@@ -1975,8 +1975,6 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
     _HandList_ExtractNukeBomb2(&handlist, &ctx.cards, ctx.count);
     
     /* finish building beat_search_context */
-    CardArray_Copy(&ctx.rcards, &ctx.cards);
-    CardArray_Sort(&ctx.cards, NULL);
     CardArray_Copy(&ctx.rcards, &ctx.cards);
     CardArray_Reverse(&ctx.rcards);
     

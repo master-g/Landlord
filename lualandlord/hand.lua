@@ -762,6 +762,16 @@ function ll.HandContext_Create(array)
 	return handctx;
 end
 
+-- copy hand context
+function ll._HandContext_Copy(ctx)
+	local clone = {};
+	clone.count = ll._Hand_CopyCount(ctx.count);
+	clone.cards = ll.CardArray_Copy(ctx.cards);
+	clone.rcards = ll.CardArray_Copy(ctx.rcards);
+
+	return clone;
+end
+
 --[[
 -- next_comb(int comb[], int k, int n)
 -- Generates the next combination of n elements as k after comb
@@ -1277,7 +1287,7 @@ function ll._HandList_ExtractNukeBomb2(handlist, array, count)
 	local hand = nil;
 
 	-- nuke
-	if count[ll.CARD_RANK_r] and count[ll.CARD_RANK_R] then
+	if count[ll.CARD_RANK_r] ~= 0 and count[ll.CARD_RANK_R] ~= 0 then
 		hand = ll.Hand_Create();
 		hand.type = ll.Hand_Format(ll.HAND_PRIMAL_NUKE, ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE);
 		ll.CardArray_CopyRank(hand.cards, array, ll.CARD_RANK_R);
@@ -1491,7 +1501,7 @@ function ll.HandList_StandardEvaluator(array)
 	end
 
 	-- joker
-	if count[ll.CARD_RANK_R] ~= 0 || count[ll.CARD_RANK_r] ~= 0 then
+	if count[ll.CARD_RANK_R] ~= 0 or count[ll.CARD_RANK_r] ~= 0 then
 		hands = hands + 1;
 		count[ll.CARD_RANK_R] = 0;
 		count[ll.CARD_RANK_r]  = 0;
@@ -1555,7 +1565,7 @@ function ll._HandList_SearchLongestConsecutive(handctx, hand, duplicate)
 	-- but count[CARD_RANK_2] must be 0
 	-- for 2/bomb/nuke has been removed before calling this function
 	--
-	for i = lastrank, ll.CARD_RANK_2 do
+	for i = ll.CARD_RANK_3, ll.CARD_RANK_2 do
 		-- find start of a possible chain
 		if rankstart == 0 then
 			if count[i] >= duplicate then
@@ -1596,7 +1606,7 @@ function ll._HandList_SearchLongestConsecutive(handctx, hand, duplicate)
 			end
 		end
 
-		hand.type = ll.Hand_Format(primal[duplicate], ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE);
+		hand.type = ll.Hand_Format(primal[duplicate], ll.HAND_KICKER_NONE, ll.HAND_CHAIN);
 	end
 end
 
@@ -1651,8 +1661,8 @@ function ll._HLAA_TraverseHands(handctx, begin, hand)
 
 	-- init search
 	if hand.type == 0 then
-		while i < ll._HAND_SEARCH_TYPES and hand.type == 0 then
-			searches[i](handctx, hand, primals[i]);
+		while i <= ll._HAND_SEARCH_TYPES and hand.type == 0 do
+			searchers[i](handctx, hand, primals[i]);
 			if hand.type ~= 0 then
 				found = true;
 				break;
@@ -1673,7 +1683,7 @@ end
 -- extract all chains or primal hands in handctx
 function ll._HLAA_ExtractAllChains(handctx, hands)
 	local found = false;
-	local lastsearch = 0;
+	local lastsearch = 1;
 	local workinghand = ll.Hand_Create();
 	local lasthand = ll.Hand_Create();
 
@@ -1681,15 +1691,199 @@ function ll._HLAA_ExtractAllChains(handctx, hands)
 	found, lastsearch = ll._HLAA_TraverseHands(handctx, lastsearch, lasthand);
 
 	while found do
-		table.insert(hands, 1, lasthand);
+		table.insert(hands, 1, ll.Hand_Copy(lasthand));
 		workinghand = ll.Hand_Copy(lasthand);
 		lasthand = ll.Hand_Create();
 
 		repeat
+			found, lastsearch = ll._HLAA_TraverseHands(handctx, lastsearch, workinghand);
+			if found then
+				local tmphand = ll.Hand_Copy(workinghand);
+				table.insert(hands, 1, tmphand);
+			end
 		until not found;
 
+		-- can't find any more hands, try to reduce chain length
+		if lasthand.type ~= 0 then
+			if lasthand.type == ll.Hand_Format(ll.HAND_PRIMAL_SOLO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
+				if lasthand.cards.length > ll.HAND_SOLO_CHAIN_MIN_LENGTH then
+					ll.CardArray_DropFront(lasthand.cards, 1);
+					found = true;
+				else
+					lasthand.type = 0;
+				end
+			elseif lasthand.type == ll.Hand_Format(ll.HAND_PRIMAL_PAIR, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
+				if lasthand.card.lasthand > ll.HAND_PAIR_CHAIN_MIN_LENGTH then
+					ll.CardArray_DropFront(lasthand.cards, 2);
+					found = true;
+				else
+					lasthand.type = 0;
+				end
+			elseif lasthand.type == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
+				if lasthand.card.lasthand > ll.HAND_TRIO_CHAIN_MIN_LENGTH then
+					ll.CardArray_DropFront(lasthand.cards, 3);
+					found = true;
+				else
+					lasthand.type = 0;
+				end
+			end
+		end
+
+		-- still can't found, loop through hand type for more
+		if not found then
+			lastsearch = lastsearch + 1;
+			ll.Hand_Clear(lasthand);
+			found, lastsearch = ll._HLAA_TraverseHands(handctx, lastsearch, lasthand);
+		end
+	end
+end
+
+-----------------------------------------------------------------------------
+-- advanced search tree payload
+-- 
+-- hltree_payload
+-- {
+-- 		ctx 	: hand_ctx
+-- 		hand 	: hand
+--		weight	: number
+-- }
+-----------------------------------------------------------------------------
+
+function ll._HLAA_CopyPayload(payload)
+	local clone = {};
+	clone.ctx = ll._HandContext_Copy(payload.ctx);
+	clone.hand = ll.Hand_Copy(payload.hand);
+	clone.weight = payload.weight;
+
+	return clone;
+end
+
+function ll._HLAA_TreeAddHand(tree, hand)
+	local oldpayload = tree.payload;
+	local newpayload = {};
+	newpayload.ctx = ll._HandContext_Copy(oldpayload.ctx);
+	newpayload.hand = ll.Hand_Copy(hand);
+	ll.CardArray_Subtract(newpayload.hand.cards, hand.cards);
+	newpayload.ctx.rcards = ll.CardArray_Copy(newpayload.hand.cards);
+	ll.CardArray_Reverse(newpayload.ctx.rcards);
+	newpayload.ctx.count = ll.Hand_CountRank(newpayload.ctx.cards);
+	newpayload.weight = oldpayload.weight + 1;
+
+	local node = {};
+	node.payload = newpayload;
+
+	ll.Tree_AddChild(tree, node);
+
+	return node;
+end
+
+-- search hand via least hands
+function ll.HandList_AdvancedAnalyze(array)
+	local handlist = {};
+	local chains = {};
+	local others = {};
+	local tnode = nil;
+	local temp = nil;
+	local st = {};
+	local shortest = nil;
+
+	-- setup search context
+	local ctx = ll.HandContext_Create(array);
+
+	-- extract bombs and 2
+	ll._HandList_ExtractNukeBomb2(handlist, ctx.cards, ctx.count);
+
+	-- finish building beat_search_context
+	ctx.rcards = ll.CardArray_Copy(ctx.cards);
+	ll.CardArray_Reverse(ctx.rcards);
+
+	-- magic goes here
+
+	-- root
+	local pload = {};
+	pload.ctx = ll._HandContext_Copy(ctx);
+	pload.hand = ll.Hand_Create();
+	pload.weight = 0;
+
+	local grandtree = {};
+	grandtree.payload = pload;
+
+	-- first expansion
+	ll._HLAA_ExtractAllChains(ctx, chains);
+
+	-- no chains, fall back to standard analyze
+	if #chains == 0 then
+		handlist = {};
+		return ll.HandList_StandardAnalyze();
 	end
 
+	for k, v in pairs(chains) do
+		tnode = ll._HLAA_TreeAddHand(grandtree, v);
+		table.insert(st, 1, tnode);
+	end
+
+	chains = {};
+
+	-- loop start
+	while #st ~= 0 do
+		-- pop stack
+		temp = table.remove(st, 1);
+
+		-- extract node data
+		pload = temp.payload;
+
+		-- expansion
+		ll._HLAA_ExtractAllChains(pload.ctx, chains);
+
+		if #chains ~= 0 then
+			-- push new nodes
+			for k, v in pairs(chains) do
+				tnode = ll._HLAA_TreeAddHand(temp, v);
+				table.insert(st, 1, tnode);
+			end
+
+			chains = {};
+		end
+	end
+
+	-- tree construction complete
+	st = ll.Tree_DumpToStack(grandtree);
+
+	-- find shortest path
+	-- FIXME
+	while #st ~= 0 do
+		-- pop stack
+		temp = table.remove(st, 1);
+		-- extract node data
+		pload = temp.payload;
+
+		-- calculate other hands weight
+		pload.weight = pload.weight + ll.HandList_StandardEvaluator(pload.ctx.cards);
+
+		if shortest == nil or pload.weight < shortest.payload.weight then
+			shortest = temp;
+		end
+
+		others = {};
+	end
+
+	-- extract shortest node's other hands
+	others = ll.HandList_StandardAnalyze(shortest.payload.ctx.cards);
+
+	while shortest ~= nil and shortest.payload.weight ~= 0 do
+		local handcpy = ll.Hand_Copy(shortest.payload.hand);
+		table.insert(others, 1, handcpy);
+		shortest = shortest.root;
+	end
+
+	ll.HandList_Concate(others, handlist);
+
+	return others;
+end
+
+function ll.HandList_AdvancedEvaluator(array)
+	local hl = ll.HandList_AdvancedAnalyze(array);
+	return #hl;
 end
 
 function ll.Hand_Test()
@@ -1712,7 +1906,7 @@ function ll.Hand_Test()
     ll.CardArray_PushBack(cards2, 0x29);
     ll.CardArray_PushBack(cards2, 0x39);
     
-    local hl = ll.HandList_StandardAnalyze(cards2);
+    local hl = ll.HandList_AdvancedAnalyze(cards2);
     for k, v in pairs(hl) do
         print("\n" .. ll.Hand_ToString(v));
     end

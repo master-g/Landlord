@@ -76,7 +76,7 @@ void luatest()
     CardArray_PushBack(&cards2, 0x29);
     CardArray_PushBack(&cards2, 0x39);
     
-    hl = HandList_StandardAnalyze(&cards2);
+    hl = HandList_AdvancedAnalyze(&cards2);
     
     HandList_Print(hl);
     
@@ -94,6 +94,8 @@ int main(int argc, const char * argv[])
     silent_printf("warning suppressor", i);
     
     luatest();
+    
+    return 0;
 
     printf("start at %ld\n", time(NULL));
         
