@@ -697,7 +697,7 @@ function ll.HandList_PushFront(list, hand)
 		list = {};
 	end
 
-	table.insert(list, 1, hand);
+	table.insert(list, 1, ll.Hand_Copy(hand));
 
 	return list;
 end
@@ -1134,26 +1134,36 @@ function ll._HandList_SearchBeat(cards, tobeat, beat)
 	local handctx = ll.HandContext_Create(cards);
 
 	-- start search
-	if tobeattype == ll.HAND_PRIMAL_SOLO then
+	if tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_SOLO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE) then
 		canbeat = ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, ll.HAND_PRIMAL_SOLO);
-	elseif tobeattype == ll.HAND_PRIMAL_PAIR then
+
+	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_PAIR, ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE) then
 		canbeat = ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, ll.HAND_PRIMAL_PAIR);
-	elseif tobeattype == ll.HAND_PRIMAL_TRIO then
+
+	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE) then
 		canbeat = ll._HandList_SearchBeat_Primal(handctx, tobeat, beat, ll.HAND_PRIMAL_TRIO);
+
 	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_PAIR, ll.HAND_CHAIN_NONE) then
 		canbeat = ll._HandList_SearchBeat_TrioKicker(handctx, tobeat, beat, ll.HAND_PRIMAL_PAIR);
+
 	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_SOLO, ll.HAND_CHAIN_NONE) then
 		canbeat = ll._HandList_SearchBeat_TrioKicker(handctx, tobeat, beat, ll.HAND_PRIMAL_SOLO);
+
 	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_SOLO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
 		canbeat = ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, ll.HAND_PRIMAL_SOLO);
+
 	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_PAIR, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
 		canbeat = ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, ll.HAND_PRIMAL_PAIR);
+
 	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
 		canbeat = ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, ll.HAND_PRIMAL_TRIO);
+
 	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_FOUR, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
 		canbeat = ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, ll.HAND_PRIMAL_FOUR);
+
 	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_PAIR, ll.HAND_CHAIN) then
 		canbeat = ll._HandList_SearchBeat_TrioKickerChain(handctx, tobeat, beat, ll.HAND_PRIMAL_PAIR);
+
 	elseif tobeattype == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_SOLO, ll.HAND_CHAIN) then
 		canbeat = ll._HandList_SearchBeat_TrioKickerChain(handctx, tobeat, beat, ll.HAND_KICKER_SOLO);
 	end
@@ -1655,7 +1665,7 @@ function ll._HLAA_TraverseHands(handctx, begin, hand)
 		return false, i;
 	end
 
-	if begin >= ll._HAND_SEARCH_TYPES then
+	if begin > ll._HAND_SEARCH_TYPES then
 		return false, i;
 	end
 
@@ -1681,6 +1691,7 @@ function ll._HLAA_TraverseHands(handctx, begin, hand)
 end
 
 -- extract all chains or primal hands in handctx
+-- FIXME
 function ll._HLAA_ExtractAllChains(handctx, hands)
 	local found = false;
 	local lastsearch = 1;
@@ -1691,15 +1702,13 @@ function ll._HLAA_ExtractAllChains(handctx, hands)
 	found, lastsearch = ll._HLAA_TraverseHands(handctx, lastsearch, lasthand);
 
 	while found do
-		table.insert(hands, 1, ll.Hand_Copy(lasthand));
+		ll.HandList_PushFront(hands, lasthand);
 		workinghand = ll.Hand_Copy(lasthand);
-		lasthand = ll.Hand_Create();
 
 		repeat
 			found, lastsearch = ll._HLAA_TraverseHands(handctx, lastsearch, workinghand);
 			if found then
-				local tmphand = ll.Hand_Copy(workinghand);
-				table.insert(hands, 1, tmphand);
+				ll.HandList_PushFront(hands, workinghand);
 			end
 		until not found;
 
@@ -1713,27 +1722,27 @@ function ll._HLAA_ExtractAllChains(handctx, hands)
 					lasthand.type = 0;
 				end
 			elseif lasthand.type == ll.Hand_Format(ll.HAND_PRIMAL_PAIR, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
-				if lasthand.card.lasthand > ll.HAND_PAIR_CHAIN_MIN_LENGTH then
+				if lasthand.cards.length > ll.HAND_PAIR_CHAIN_MIN_LENGTH then
 					ll.CardArray_DropFront(lasthand.cards, 2);
 					found = true;
 				else
 					lasthand.type = 0;
 				end
 			elseif lasthand.type == ll.Hand_Format(ll.HAND_PRIMAL_TRIO, ll.HAND_KICKER_NONE, ll.HAND_CHAIN) then
-				if lasthand.card.lasthand > ll.HAND_TRIO_CHAIN_MIN_LENGTH then
+				if lasthand.cards.length > ll.HAND_TRIO_CHAIN_MIN_LENGTH then
 					ll.CardArray_DropFront(lasthand.cards, 3);
 					found = true;
 				else
 					lasthand.type = 0;
 				end
 			end
-		end
-
-		-- still can't found, loop through hand type for more
-		if not found then
-			lastsearch = lastsearch + 1;
-			ll.Hand_Clear(lasthand);
-			found, lastsearch = ll._HLAA_TraverseHands(handctx, lastsearch, lasthand);
+			
+			-- still can't found, loop through hand type for more
+			if not found then
+				lastsearch = lastsearch + 1;
+				ll.Hand_Clear(lasthand);
+				found, lastsearch = ll._HLAA_TraverseHands(handctx, lastsearch, lasthand);
+			end
 		end
 	end
 end
@@ -1831,6 +1840,7 @@ function ll.HandList_AdvancedAnalyze(array)
 
 		-- extract node data
 		pload = temp.payload;
+		chains = {};
 
 		-- expansion
 		ll._HLAA_ExtractAllChains(pload.ctx, chains);

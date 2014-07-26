@@ -426,12 +426,18 @@ void CardArray_Reverse(card_array_t *array)
 }
 
 
-#define CARD_STRING_LENGTH 4
-
+#define CARD_STRING_LENGTH 2
+/*
 unsigned char szDIAMOND[] = { 0xE2, 0x99, 0xA6, 0};
 unsigned char szCLUB[]    = { 0xE2, 0x99, 0xA3, 0};
 unsigned char szHEART[]   = { 0xE2, 0x99, 0xA5, 0};
 unsigned char szSPADE[]   = { 0xE2, 0x99, 0xA0, 0};
+ */
+unsigned char szDIAMOND[] = { 'd', 0, 0, 0};
+unsigned char szCLUB[]    = { 'c', 0, 0, 0};
+unsigned char szHEART[]   = { 'h', 0, 0, 0};
+unsigned char szSPADE[]   = { 's', 0, 0, 0};
+
 char szRank[]    = { '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'r', 'R' };
 
 int Card_ToString(uint8_t card, char *buf, int len)
