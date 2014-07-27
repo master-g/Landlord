@@ -1,5 +1,6 @@
 .DS_Store
 *.xcuserdatad
 xcuserdata
+*.exe
 
 src/a.out
