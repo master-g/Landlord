@@ -1656,10 +1656,15 @@ function ll._HLAA_TraverseHands(handctx, begin, hand)
 	local i = begin;
 	local primals = { 1, 2, 3 };
 	-- solo chain, pair chain, trio chain, trio, pair, solo
-	local searchers = { };
-	table.insert(searchers, ll._HandList_SearchLongestConsecutive);
-	table.insert(searchers, ll._HandList_SearchLongestConsecutive);
-	table.insert(searchers, ll._HandList_SearchLongestConsecutive);
+	local searchers = 
+	{ 
+		ll._HandList_SearchLongestConsecutive,
+		ll._HandList_SearchLongestConsecutive,
+		ll._HandList_SearchLongestConsecutive
+	};
+
+	print(ll.CardArray_ToString(handctx.cards));
+	print("-----");
 
 	if handctx.cards.length == 0 then
 		return false, i;
