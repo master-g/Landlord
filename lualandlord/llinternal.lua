@@ -123,7 +123,7 @@ function ll.Tree_DumpToStack(tree)
 
 		-- leaf
 		if tnode.child == nil then
-			table.insert(tempstack, 1, tnode);
+			table.insert(stack, 1, tnode);
 		end
 	end
 

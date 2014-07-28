@@ -1479,7 +1479,7 @@ function ll._HandList_CalculateConsecutive(array, duplicate)
 	return hands;
 end
 
-function ll.HandList_StandardEvaluator(array)
+function ll.HandList_StandardEvaluator(cards)
 	local hands = 0;
 	local arrsolo = ll.CardArray_Create();
 	local arrpair = ll.CardArray_Create();
@@ -1663,9 +1663,6 @@ function ll._HLAA_TraverseHands(handctx, begin, hand)
 		ll._HandList_SearchLongestConsecutive
 	};
 
-	print(ll.CardArray_ToString(handctx.cards));
-	print("-----");
-
 	if handctx.cards.length == 0 then
 		return false, i;
 	end
@@ -1777,7 +1774,7 @@ function ll._HLAA_TreeAddHand(tree, hand)
 	local newpayload = {};
 	newpayload.ctx = ll._HandContext_Copy(oldpayload.ctx);
 	newpayload.hand = ll.Hand_Copy(hand);
-	ll.CardArray_Subtract(newpayload.hand.cards, hand.cards);
+	ll.CardArray_Subtract(newpayload.ctx.cards, hand.cards);
 	newpayload.ctx.rcards = ll.CardArray_Copy(newpayload.hand.cards);
 	ll.CardArray_Reverse(newpayload.ctx.rcards);
 	newpayload.ctx.count = ll.Hand_CountRank(newpayload.ctx.cards);
@@ -1865,7 +1862,6 @@ function ll.HandList_AdvancedAnalyze(array)
 	st = ll.Tree_DumpToStack(grandtree);
 
 	-- find shortest path
-	-- FIXME
 	while #st ~= 0 do
 		-- pop stack
 		temp = table.remove(st, 1);
@@ -1901,8 +1897,93 @@ function ll.HandList_AdvancedEvaluator(array)
 	return #hl;
 end
 
+-----------------------------------------------------------------------------
+-- best beat 
+-----------------------------------------------------------------------------
+
+ll._BEAT_VALUE_FACTOR = 10;
+
+-----------------------------------------------------------------------------
+-- nodes for beat list sort
+-- 
+-- beat_node
+-- {
+-- 		hand 	: hand
+-- 		value 	: number
+-- }
+-----------------------------------------------------------------------------
+
+-- sort function
+function ll._BeatNode_ValueSort(a, b)
+	return (a.value - b.value > 0);
+end
+
+function ll.HandList_BestBeat(array, tobeat, beat, evalfunc)
+	local i = 0;
+	local canbeat = false;
+	local hnodes = {};
+	local hbombs = {};
+	local evalFunc = evalfunc or ll.HandList_StandardEvaluator;
+
+	-- search beat list
+	local hl = ll.HandList_SearchBeatList(array, tobeat);
+
+	-- separate bomb/nuke and normal hands
+	for k, v in pairs(hl) do 
+		if v.type == ll.Hand_Format(ll.HAND_PRIMAL_BOMB, ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE) or
+			v.type == ll.Hand_Format(ll.HAND_PRIMAL_NUKE, ll.HAND_KICKER_NONE, ll.HAND_CHAIN_NONE) then
+
+			table.insert(hbombs, v);
+		else
+			local hn = {};
+			hn.hand = v;
+			hn.value = 0;
+			table.insert(hnodes, hn);
+		end
+	end
+
+	-- calculate value
+	if #hnodes > 1 then
+		for k, v in pairs(hnodes) do
+			local temp = ll.CardArray_Copy(array);
+			-- evaluate the value of cards left after hand was played
+			ll.CardArray_Subtract(temp, v.hand.cards);
+			v.value = evalFunc(temp) * ll._BEAT_VALUE_FACTOR + ll.Card_Rank(v.hand.cards.cards[1]);
+		end
+
+		-- sort primal hands
+		table.sort(hnodes, ll._BeatNode_ValueSort);
+	end
+
+	-- rebuild hand list
+	local newhl = {};
+	for k, v in pairs(hbombs) do
+		table.insert(newhl, 1, v);
+	end
+
+	for k, v in pairs(hnodes) do
+		table.insert(newhl, 1, v);
+	end
+
+	-- select beat
+	if #newhl ~= 0 then
+		local hand = newhl[1].hand;
+		beat.type = hand.type;
+		beat.cards = ll.CardArray_Copy(hand.cards);
+		canbeat = true;
+	end
+
+	return canbeat;
+end
+
 function ll.Hand_Test()
 -- TODO test current hand functions
+	local cards1 = ll.CardArray_Create();
+	ll.CardArray_PushBack(cards1, 0x34);
+	ll.CardArray_PushBack(cards1, 0x44);
+
+	local tobeat = ll.Hand_Parse(cards1);
+
     local cards2 = ll.CardArray_Create();
     ll.CardArray_PushBack(cards2, 0x14);
     ll.CardArray_PushBack(cards2, 0x24);
@@ -1920,6 +2001,15 @@ function ll.Hand_Test()
     ll.CardArray_PushBack(cards2, 0x38);
     ll.CardArray_PushBack(cards2, 0x29);
     ll.CardArray_PushBack(cards2, 0x39);
+
+    local beat = {};
+
+    local canbeat = ll.HandList_BestBeat(cards2, tobeat, beat, ll.HandList_AdvancedEvaluator);
+
+    print(ll.Hand_ToString(beat));
+    print("-----");
+
+
     
     local hl = ll.HandList_AdvancedAnalyze(cards2);
     for k, v in pairs(hl) do

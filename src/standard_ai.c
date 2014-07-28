@@ -153,15 +153,9 @@ int StandardAI_Play(void *p, void *game)
         
         /* pair chain */
         node = HandList_Find(&player->handlist, Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN));
-        if (node != NULL)
-        {
-            Hand_Copy(hand, (hand_t *)node->payload);
-            HandList_Remove(&player->handlist, node);
-            break;
-        }
-        
         /* solo chain */
-        node = HandList_Find(&player->handlist, Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN));
+        if (node == NULL)
+            node = HandList_Find(&player->handlist, Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN));
         if (node != NULL)
         {
             Hand_Copy(hand, (hand_t *)node->payload);
