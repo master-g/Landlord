@@ -42,14 +42,26 @@ function ll.Player_Create()
 	return player;
 end
 
+-- setup standard AI
+function ll.Player_SetupStandardAI(player)
+    player.eventHandlers[ll.PlayerEvent_GetReady]   = ll.StandardAI_GetReady;
+    player.eventHandlers[ll.PlayerEvent_Bid]        = ll.StandardAI_Bid;
+    player.eventHandlers[ll.PlayerEvent_Play]       = ll.StandardAI_Play;
+    player.eventHandlers[ll.PlayerEvent_Beat]       = ll.StandardAI_Beat;
+end
+
+-- setup advanced AI
+function ll.Player_SetupAdvancedAI(player)
+    player.eventHandlers[ll.PlayerEvent_GetReady]   = ll.AdvancedAI_GetReady;
+    player.eventHandlers[ll.PlayerEvent_Bid]        = ll.StandardAI_Bid;
+    player.eventHandlers[ll.PlayerEvent_Play]       = ll.StandardAI_Play;
+    player.eventHandlers[ll.PlayerEvent_Beat]       = ll.AdvancedAI_Beat;
+end
+
 -- create a standard AI player
 function ll.Player_CreateStandardAI()
 	local player = ll.Player_Create();
-
-	player.eventHandlers[ll.PlayerEvent_GetReady] 	= ll.StandardAI_GetReady;
-	player.eventHandlers[ll.PlayerEvent_Bid] 		= ll.StandardAI_Bid;
-	player.eventHandlers[ll.PlayerEvent_Play] 		= ll.StandardAI_Play;
-	player.eventHandlers[ll.PlayerEvent_Beat]		= ll.StandardAI_Beat;
+	ll.Player_SetupStandardAI(player);
 
 	return player;
 end
@@ -57,11 +69,7 @@ end
 -- create a advanced AI player
 function ll.Player_CreateAdvancedAI()
 	local player = ll.Player_Create();
-
-	player.eventHandlers[ll.PlayerEvent_GetReady] 	= ll.AdvancedAI_GetReady;
-	player.eventHandlers[ll.PlayerEvent_Bid] 		= ll.StandardAI_Bid;
-	player.eventHandlers[ll.PlayerEvent_Play] 		= ll.StandardAI_Play;
-	player.eventHandlers[ll.PlayerEvent_Beat]		= ll.AdvancedAI_Beat;
+    ll.Player_SetupAdvancedAI(player);
 
 	return player;
 end

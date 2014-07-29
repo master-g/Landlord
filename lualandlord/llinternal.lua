@@ -26,7 +26,17 @@ function ll.Random_Create(seed)
 	return ctx;
 end
 
+function ll.Random_SetSeed(ctx, seed)
+	--[[
+	ctx.seed = seed;
+	ctx.sequence = 0;
+	--]]
+
+	math.randomseed(seed);
+end
+
 function ll.Random_Real(ctx)
+	--[[
 	local r = 0;
 	math.randomseed(ctx.seed);
 	for i = 1, ctx.sequence + 1 do
@@ -36,9 +46,13 @@ function ll.Random_Real(ctx)
 	ctx.sequence = ctx.sequence + 1;
 
 	return r;
+	]]
+
+	return math.random();
 end
 
 function ll.Random_Int32(ctx)
+	--[[
 	local r = 0;
 	math.randomseed(ctx.seed);
 	for i = 1, ctx.sequence + 1 do
@@ -48,9 +62,13 @@ function ll.Random_Int32(ctx)
 	ctx.sequence = ctx.sequence + 1;
 
 	return r;
+	]]
+
+	return math.random(-2147483648, 2147483647);
 end
 
 function ll.Random_UInt32(ctx)
+	--[[
 	local r = 0;
 	math.randomseed(ctx.seed);
 	for i = 1, ctx.sequence + 1 do
@@ -60,9 +78,13 @@ function ll.Random_UInt32(ctx)
 	ctx.sequence = ctx.sequence + 1;
 
 	return r;
+	]]
+
+	return math.random(0, 4294967295);
 end
 
 function ll.Random_Range(ctx, floor, ceiling)
+	--[[
 	local r = 0;
 	math.randomseed(ctx.seed);
 	for i = 1, ctx.sequence + 1 do
@@ -72,6 +94,8 @@ function ll.Random_Range(ctx, floor, ceiling)
 	ctx.sequence = ctx.sequence + 1;
 
 	return r;
+	]]
+	return math.random(floor, ceiling);
 end
 
 -----------------------------------------------------------------------------

@@ -63,7 +63,7 @@ function ll.Hand_SetKicker(hand, kicker)
 	return ll.BIT.bor(hand, kicker);
 end
 
-function ll.Hand_setChain(hand, kicker)
+function ll.Hand_SetChain(hand, kicker)
 	return ll.BIT.bor(hand, kicker);
 end
 
@@ -682,7 +682,7 @@ function ll.Hand_ToString(hand)
 		str = str .. " chain";
 	end
 
-	str = str .. "]\n" .. ll.CardArray_ToString(hand.cards);
+	str = str .. "] " .. ll.CardArray_ToString(hand.cards);
 
 	return str;
 end
@@ -1962,12 +1962,12 @@ function ll.HandList_BestBeat(array, tobeat, beat, evalfunc)
 	end
 
 	for k, v in pairs(hnodes) do
-		table.insert(newhl, 1, v);
+		table.insert(newhl, 1, v.hand);
 	end
 
 	-- select beat
 	if #newhl ~= 0 then
-		local hand = newhl[1].hand;
+		local hand = newhl[1];
 		beat.type = hand.type;
 		beat.cards = ll.CardArray_Copy(hand.cards);
 		canbeat = true;

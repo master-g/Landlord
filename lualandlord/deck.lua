@@ -25,7 +25,7 @@ function ll.shuffle(arr, randctx)
 	local j = 0;
 	for i = #arr, 1, -1 do
 		if randctx ~= nil then
-			j = ll.Random_Range(1, #arr);
+			j = ll.Random_Range(randctx, 1, #arr);
 		else
 			j = math.random(1, #arr);
 		end

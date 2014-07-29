@@ -484,7 +484,7 @@ function ll.CardArray_Sort(array, sortfunc)
 				local ra = ll.BIT.band(a, 0xF0) / 16 + ll.BIT.band(a, 0x0F) * 16;
 				local rb = ll.BIT.band(b, 0xF0) / 16 + ll.BIT.band(b, 0x0F) * 16;
 
-				return rb > ra;
+				return ra > rb;
 			end
 		);
 	end

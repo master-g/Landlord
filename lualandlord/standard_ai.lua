@@ -1,11 +1,11 @@
-require "lualandlord/game"
+require "lualandlord/hand"
 
 function ll.StandardAI_GetReady(player, game)
 	ll.CardArray_Sort(player.cards);
 	player.record = ll.CardArray_Copy(player.cards);
 	player.handlist = ll.HandList_StandardAnalyze(player.cards);
 
-	return 0
+	return 0;
 end
 
 function ll.StandardAI_Bid(player, game)
@@ -15,13 +15,13 @@ function ll.StandardAI_Bid(player, game)
 	player.handlist = ll.HandList_StandardAnalyze(player.cards);
 	handlistlen = #player.handlist;
 
-	if handlistlen > 9 then
+	if handlistlen > 12 then
 		shouldbid = 0;
-	elseif handlistlen < 9 and handlistlen > 3 then
+	elseif handlistlen == 12 then
 		shouldbid = 1;
-	elseif handlistlen <= 3 and handlistlen > 2 then
+	elseif handlistlen == 11 then
 		shouldbid = 2;
-	elseif handlistlen <= 2 then
+	elseif handlistlen < 11 then
 		shouldbid = 3;
 	end
 
@@ -108,7 +108,7 @@ function ll.StandardAI_Play(player, game)
 
 			player.handlist = rest;
 
-			ll.Hand_SetKicker(hand.type, kicker);
+			hand.type = ll.Hand_SetKicker(hand.type, kicker);
 			break;
 		end
 
@@ -148,7 +148,7 @@ function ll.StandardAI_Play(player, game)
 
 			if node ~= nil then
 				ll.CardArray_Concate(hand.cards, node.cards);
-				ll.Hand_SetKicker(hand.type, kicker);
+				hand.type = ll.Hand_SetKicker(hand.type, kicker);
 				ll.HandList_Remove(player.handlist, node);
 				break;
 			end
@@ -162,6 +162,13 @@ function ll.StandardAI_Play(player, game)
 			ll.HandList_Remove(player.handlist, node);
 			break;
 		end
+
+		-- just play
+		node = player.handlist[1];
+		hand.type = node.type;
+		hand.cards = ll.CardArray_Copy(node.cards);
+		ll.HandList_Remove(player.handlist, node);
+
 	until true;
 
 	ll.CardArray_Subtract(player.cards, hand.cards);
@@ -169,21 +176,21 @@ function ll.StandardAI_Play(player, game)
 	return 0;
 end
 
-function StandardAI_Beat(player, game)
+function ll.StandardAI_Beat(player, game)
 	-- HandList_SearchBeats can search for beat in loop mode
 	-- but we just simply find a beat here
 
 	local canbeat = false;
 	local i = 0;
 	local tobeat = nil;
-	local beat = {};
+	local beat = ll.Hand_Create();
 	local prevplayer = nil;
 	local teammate = nil;
 	local landlord = nil;
 
 	tobeat = game.lastHand;
 
-	canbeat = ll.HandList_BestBeat(player.cards, tobeat, beat);
+	canbeat = ll.HandList_SearchBeat(player.cards, tobeat, beat);
 
 	-- peasant teamwork
 	prevplayer = game.players[game.lastplay];
