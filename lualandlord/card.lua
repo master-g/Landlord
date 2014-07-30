@@ -72,13 +72,17 @@ function ll.Card_ToString(card)
 	local suit = ll.Card_Suit(card);
 
 	if suit == ll.CARD_SUIT_DIAMOND then
-		str = string.char(0xE2, 0x99, 0xA6);
+		--str = string.char(0xE2, 0x99, 0xA6);
+		str = "d";
 	elseif suit == ll.CARD_SUIT_CLUB then
-		str = string.char(0xE2, 0x99, 0xA3);
+		--str = string.char(0xE2, 0x99, 0xA3);
+		str = "c";
 	elseif suit == ll.CARD_SUIT_HEART then
-		str = string.char(0xE2, 0x99, 0xA5);
+		--str = string.char(0xE2, 0x99, 0xA5);
+		str = "h";
 	elseif suit == ll.CARD_SUIT_SPADE then
-		str = string.char(0xE2, 0x99, 0xA0);
+		--str = string.char(0xE2, 0x99, 0xA0);
+		str = "s";
 	end
 
 	local strRank = { '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'r', 'R' };
