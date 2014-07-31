@@ -36,6 +36,136 @@ ll.Phase_Query 			= 2;
 ll.Phase_Pass 			= 3;
 
 -----------------------------------------------------------------------------
+-- game event
+-----------------------------------------------------------------------------
+ll.GAME_EVENT_DEAL			= 1;
+ll.GAME_EVENT_BID_START		= 2;
+ll.GAME_EVENT_BID 			= 3;
+ll.GAME_EVENT_RESET 		= 4;
+ll.GAME_EVENT_DEALER_SET	= 5;
+ll.GAME_EVENT_DEAL_KITTY	= 6;
+ll.GAME_EVENT_START 		= 7;
+ll.GAME_EVENT_PLAY			= 8;
+ll.GAME_EVENT_BEAT 			= 9;
+ll.GAME_EVENT_PASS 			= 10;
+ll.GAME_EVENT_OVER 			= 11;
+
+function ll.GameEvent_Deal(game, player, cards)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_DEAL;
+
+	event.game = game;
+	event.player = player;
+	event.cards = cards;
+
+	return event;
+end
+
+function ll.GameEvent_BidStart(game, player)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_BID_START;
+
+	event.game = game;
+	event.player = player;
+
+	return event;
+end
+
+function ll.GameEvent_Bid(game, player, bid)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_BID;
+
+	event.game = game;
+	event.player = player;
+	event.bid = bid;
+
+	return event;
+end
+
+function ll.GameEvent_Reset(game)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_RESET;
+
+	event.game = game;
+
+	return event;
+end
+
+function ll.GameEvent_DealerSet(game, player)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_DEALER_SET;
+
+	event.game = game;
+	event.player = player;
+
+	return event;
+end
+
+function ll.GameEvent_DealKitty(game, player, kitty)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_DEAL_KITTY;
+
+	event.game = game;
+	event.player = player;
+	event.cards = kitty;
+
+	return event;
+end
+
+function ll.GameEvent_Start(game)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_START;
+
+	event.game = game;
+
+	return event;
+end
+
+function ll.GameEvent_Play(game, player, hand, cards)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_PLAY;
+
+	event.game = game;
+	event.player = player;
+	event.hand = hand;
+	event.cards = cards;
+	
+	return event;
+end
+
+function ll.GameEvent_Beat(game, player, hand, cards)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_BEAT;
+
+	event.game = game;
+	event.player = player;
+	event.hand = hand;
+	event.cards = cards;
+
+	return event;
+end
+
+function ll.GameEvent_Pass(game, player)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_PASS;
+
+	event.game = game;
+	event.player = player;
+
+	return event;
+end
+
+function ll.GameEvent_Over(game, player)
+	local event = {};
+	event.eventID = ll.GAME_EVENT_OVER;
+
+	event.game = game;
+	event.player = player;
+
+	return event;
+end
+
+-----------------------------------------------------------------------------
 -- game
 -----------------------------------------------------------------------------
 
@@ -94,6 +224,17 @@ function ll.Game_Create()
 	return game;
 end
 
+function ll.Game_SetDelegate(game, delegate, delegateFunc)
+	game.delegate = delegate;
+	game.delegateFunc = delegateFunc;
+end
+
+function ll.Game_PostEvent(game, event)
+	if game.delegate ~= nil and game.delegateFunc ~= nil then
+		game.delegateFunc(game.delegate, event);
+	end
+end
+
 function ll.Game_Clear(game)
 	for idx, player in pairs(game.players) do 
 		ll.Player_Clear(player);
@@ -119,6 +260,8 @@ function ll.Game_Reset(game)
 	ll.Deck_Shuffle(game.deck, game.random);
 	ll.CardArray_Clear(game.kittyCards);
 	ll.CardArray_Clear(game.cardRecord);
+
+	ll.Game_PostEvent(game, ll.GameEvent_Reset(game));
 end
 
 function ll.Game_Play(game, seed)
