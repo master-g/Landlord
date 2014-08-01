@@ -28,8 +28,9 @@ end
 ll.GameStatus_Halt 		= 1;
 ll.GameStatus_Bid 		= 2;
 ll.GameStatus_Ready		= 3;
-ll.GameStatus_Pause 	= 4;
-ll.GameStatus_Over 		= 5;
+ll.GameStatus_Play		= 4;
+ll.GameStatus_Pause 	= 5;
+ll.GameStatus_Over 		= 6;
 
 ll.Phase_Play 			= 1;
 ll.Phase_Query 			= 2;
@@ -200,6 +201,8 @@ function ll.Game_Create()
 	-- current bid
 	game.bid = 0;
 
+	game.bidCount = 0;
+
 	-- for the highest bidder !
 	game.highestBidder = 0;
 
@@ -248,6 +251,7 @@ function ll.Game_Reset(game)
 	end
 
 	game.bid = 0;
+	game.bidCount = 0;
 	game.playerIndex = 0;
 	game.landlord = 0;
 	game.lastplay = 0;
@@ -262,6 +266,116 @@ function ll.Game_Reset(game)
 	ll.CardArray_Clear(game.cardRecord);
 
 	ll.Game_PostEvent(game, ll.GameEvent_Reset(game));
+end
+
+function ll.Game_GetReady(game, seed)
+	seed = seed or os.time();
+
+	ll.Random_SetSeed(game.mt, seed);
+
+	game.status = ll.GameStatus_Bid;
+	game.bid = 0;
+	game.bidCount = 3;
+	game.highestBidder = 0;
+	game.playerIndex = ll.Random_Range(game.mt, 1, ll.GAME_PLAYERS);
+	ll.Game_PostEvent(game, ll.GameEvent_BidStart(game, game.players[game.playerIndex]));
+end
+
+function ll.Game_Run(game)
+	if game.status == ll.GameStatus_Bid then
+		-- still bidding
+		if game.bidCount ~= 0 then
+			local player = ll.Game_GetCurrentPlayer(game);
+			player.cards = ll.Deck_Deal(game.deck, ll.GAME_HAND_CARDS);
+
+			local bid = ll.Player_HandleEvent(player, ll.PlayerEvent_Bid, game);
+			if bid > game.bid then
+				game.bid = bid;
+				game.highestBidder = game.playerIndex;
+			end
+
+			ll.Game_PostEvent(game, ll.GameEvent_Deal(game, player, player.cards));
+			ll.Game_PostEvent(game, ll.GameEvent_Bid(game, player, bid));
+
+			game.bidCount = game.bidCount - 1;
+
+			ll.Game_IncPlayerIndex(game);
+		else
+			if game.highestBidder == 0 then
+				ll.Deck_Reset(game.deck);
+				ll.Deck_Shuffle(game.deck, game.random);
+				game.bid = 0;
+				game.bidCount = 3;
+				game.highestBidder = 0;
+				game.playerIndex = ll.Random_Range(game.mt, 1, ll.GAME_PLAYERS);
+
+				ll.Game_PostEvent(game, ll.GameEvent_Reset(game));
+			else
+				game.landlord = game.highestBidder;
+				game.players[game.landlord].identity = ll.PlayerIdentity_Landlord;
+				game.phase = ll.Phase_Play;
+				game.kittyCards = ll.Deck_Deal(game.deck, ll.GAME_REST_CARDS);
+				ll.CardArray_Concate(game.players[game.landlord].cards, game.kittyCards);
+
+				ll.Game_PostEvent(game, ll.GameEvent_DealerSet(game, game.players[game.landlord]));
+
+				ll.Game_PostEvent(game, ll.GameEvent_DealKitty(game, game.players[game.landlord], game.kittyCards));
+
+				game.status = ll.GameStatus_Play;
+			end
+		end
+	elseif game.status == ll.GameStatus_Play then
+		if game.phase == ll.Phase_Play then
+			ll.Player_HandleEvent(ll.Game_GetCurrentPlayer(game), ll.PlayerEvent_Play, game);
+			game.lastplay = game.playerIndex;
+			game.phase = ll.Phase_Query;
+
+			ll.CardArray_Concate(game.cardRecord, game.lastHand.cards);
+
+			ll.Game_PostEvent(game, ll.GameEvent_Play(game, ll.Game_GetCurrentPlayer(game), game.lastHand.type, game.lastHand.cards));
+
+			print(string.format("Player ---- %d ---- played", game.playerIndex));
+			print(ll.Hand_ToString(game.lastHand));
+		elseif game.phase == ll.Phase_Query or game.phase == ll.Phase_Pass then
+			beat = ll.Player_HandleEvent(ll.Game_GetCurrentPlayer(game), ll.PlayerEvent_Beat, game);
+			-- has beat in this phase
+			if not beat then
+				-- two player pass
+				if game.phase == ll.Phase_Pass then
+					game.phase = ll.Phase_Play;
+				else
+					game.phase = ll.Phase_Pass;
+				end
+
+				print(string.format("Player ---- %d ---- passed", game.playerIndex));
+				ll.Game_PostEvent(game, ll.GameEvent_Pass(game, ll.Game_GetCurrentPlayer(game)));
+			else
+				game.lastplay = game.playerIndex;
+				game.phase = ll.Phase_Query;
+				ll.CardArray_Concate(game.cardRecord, game.lastHand.cards);
+
+				print(string.format("Player ---- %d ---- beat", game.playerIndex));
+				print(ll.Hand_ToString(game.lastHand));
+
+				ll.Game_PostEvent(game, ll.GameEvent_Beat(game, ll.Game_GetCurrentPlayer(game), game.lastHand.type, game.lastHand.cards));
+			end
+		end
+
+		ll.Game_IncPlayerIndex(game);
+
+		-- check if there is player win
+		for k, player in pairs(game.players) do 
+			if player.cards.length == 0 then
+				game.status = ll.GameStatus_Over;
+				game.winner = player.seatId;
+
+				ll.Game_PostEvent(game, ll.GameEvent_Over(game, player));
+
+				print(string.format("Player ++++ %d ++++ wins !", player.seatId));
+				break;
+			end
+		end
+	end
 end
 
 function ll.Game_Play(game, seed)

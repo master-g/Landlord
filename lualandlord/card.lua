@@ -50,7 +50,7 @@ function ll.Card_Suit(card)
 	if card == nil then
 		return 0;
 	else
-		return ll.BIT.band(card, 0x0F);
+		return ll.BIT.band(card, 0xF0);
 	end
 end
 
