@@ -258,6 +258,7 @@ function ll.Game_Reset(game)
 	game.winner = 0;
 	game.status = 0;
 	game.phase = 0;
+	game.highestBidder = 0;
 
 	ll.Hand_Clear(game.lastHand);
 	ll.Deck_Reset(game.deck);
@@ -315,6 +316,7 @@ function ll.Game_Run(game)
 				game.players[game.landlord].identity = ll.PlayerIdentity_Landlord;
 				game.phase = ll.Phase_Play;
 				game.kittyCards = ll.Deck_Deal(game.deck, ll.GAME_REST_CARDS);
+				game.playerIndex = game.landlord;
 				ll.CardArray_Concate(game.players[game.landlord].cards, game.kittyCards);
 
 				game.status = ll.GameStatus_Play;

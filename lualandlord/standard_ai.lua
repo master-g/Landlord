@@ -128,7 +128,7 @@ function ll.StandardAI_Play(player, game)
 
 		-- trio
 		node = ll.HandList_Find(player.handlist, ll.HAND_PRIMAL_TRIO);
-		if node ~= nil and ll.Card_Rank(node.cards.cards[1]) ~= ll.CARD_RANK_2 then
+		if node ~= nil and ll.Card_Rank(node.cards.cards[1]) < ll.CARD_RANK_2 then
 			hand.type = node.type;
 			hand.cards = ll.CardArray_Copy(node.cards);
 
@@ -141,7 +141,7 @@ function ll.StandardAI_Play(player, game)
 			else
 				-- solo
 				node = ll.HandList_Find(player.handlist, ll.HAND_PRIMAL_SOLO);
-				if node ~= nil and ll.Card_Rank(node.cards.cards[1]) ~= ll.CARD_RANK_2 then
+				if node ~= nil and ll.Card_Rank(node.cards.cards[1]) < ll.CARD_RANK_2 then
 					kicker = ll.HAND_KICKER_SOLO;
 				end
 			end
@@ -156,7 +156,7 @@ function ll.StandardAI_Play(player, game)
 
 		-- pair
 		node = ll.HandList_Find(player.handlist, ll.HAND_PRIMAL_PAIR);
-		if node ~= nil and ll.Card_Rank(node.cards.cards[1]) ~= ll.CARD_RANK_2 then
+		if node ~= nil and ll.Card_Rank(node.cards.cards[1]) < ll.CARD_RANK_2 then
 			hand.type = node.type;
 			hand.cards = ll.CardArray_Copy(node.cards);
 			ll.HandList_Remove(player.handlist, node);

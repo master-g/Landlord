@@ -128,13 +128,13 @@ function ll.CardArray_CreateWithString(str)
 	    local c = str:sub(i,i)
 	    local card = 0;
 
-	    if c:byte() == 0xA6 then
+	    if c == 'd' then
 	    	card = ll.BIT.bor(card, ll.CARD_SUIT_DIAMOND);
-	    elseif c:byte() == 0xA3 then
+	    elseif c == 'c' then
 	    	card = ll.BIT.bor(card, ll.CARD_SUIT_CLUB);
-    	elseif c:byte() == 0xA5 then
+    	elseif c == 'h' then
     		card = ll.BIT.bor(card, ll.CARD_SUIT_HEART);
-    	elseif c:byte() == 0xA0 then
+    	elseif c == 's' then
     		card = ll.BIT.bor(card, ll.CARD_SUIT_SPADE);
     	elseif c == "T" then
     		card = ll.BIT.bor(card, ll.CARD_RANK_T);
