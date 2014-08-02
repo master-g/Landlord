@@ -2,5 +2,4 @@
 *.xcuserdatad
 xcuserdata
 *.exe
-
-src/a.out
+*.out

@@ -969,7 +969,7 @@ function ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, duplicate)
 	local footer = ll.Card_Rank(tobeat.cards.cards[tobeat.cards.length]);
 
 	-- search for beat chain in rank counts
-	for i = footer, ll.CARD_RANK_2 - chainlength do 
+	for i = footer + 1, ll.CARD_RANK_2 - chainlength do 
 		found = true;
 
 		for j = 1, chainlength do
@@ -985,7 +985,7 @@ function ll._HandList_SearchBeat_Chain(handctx, tobeat, beat, duplicate)
 			footer = i;			-- beat footer rank
 			k = duplicate;		-- how many cards need for each rank
 
-			i = card.length;
+			i = cards.length;
 			while i >= 0 and chainlength > 0 do
 				if ll.Card_Rank(cards.cards[i]) == footer then
 					ll.CardArray_PushFront(temp, cards.cards[i]);
@@ -1825,7 +1825,7 @@ function ll.HandList_AdvancedAnalyze(array)
 	-- no chains, fall back to standard analyze
 	if #chains == 0 then
 		handlist = {};
-		return ll.HandList_StandardAnalyze();
+		return ll.HandList_StandardAnalyze(array);
 	end
 
 	for k, v in pairs(chains) do

@@ -214,7 +214,7 @@ function ll.StandardAI_Beat(player, game)
 			canbeat = false;
 		end
 
-		if canbeat and teammate.cards.length < player.cards.length then
+		if canbeat and (teammate.cards.length < player.cards.length and teammate.cards.length < 4) then
 			canbeat = false;
 		end
 	end

@@ -294,12 +294,12 @@ function ll.Game_Run(game)
 				game.highestBidder = game.playerIndex;
 			end
 
-			ll.Game_PostEvent(game, ll.GameEvent_Deal(game, player, player.cards));
-			ll.Game_PostEvent(game, ll.GameEvent_Bid(game, player, bid));
-
 			game.bidCount = game.bidCount - 1;
 
 			ll.Game_IncPlayerIndex(game);
+			
+            ll.Game_PostEvent(game, ll.GameEvent_Deal(game, player, player.cards));
+            ll.Game_PostEvent(game, ll.GameEvent_Bid(game, player, bid));
 		else
 			if game.highestBidder == 0 then
 				ll.Deck_Reset(game.deck);
@@ -317,11 +317,12 @@ function ll.Game_Run(game)
 				game.kittyCards = ll.Deck_Deal(game.deck, ll.GAME_REST_CARDS);
 				ll.CardArray_Concate(game.players[game.landlord].cards, game.kittyCards);
 
-				ll.Game_PostEvent(game, ll.GameEvent_DealerSet(game, game.players[game.landlord]));
-
-				ll.Game_PostEvent(game, ll.GameEvent_DealKitty(game, game.players[game.landlord], game.kittyCards));
-
 				game.status = ll.GameStatus_Play;
+				
+				ll.Player_SetupAdvancedAI(game.players[game.landlord]);
+				
+                ll.Game_PostEvent(game, ll.GameEvent_DealerSet(game, game.players[game.landlord]));
+                ll.Game_PostEvent(game, ll.GameEvent_DealKitty(game, game.players[game.landlord], game.kittyCards));
 			end
 		end
 	elseif game.status == ll.GameStatus_Play then
@@ -331,7 +332,6 @@ function ll.Game_Run(game)
 			game.phase = ll.Phase_Query;
 
 			ll.CardArray_Concate(game.cardRecord, game.lastHand.cards);
-
 			ll.Game_PostEvent(game, ll.GameEvent_Play(game, ll.Game_GetCurrentPlayer(game), game.lastHand.type, game.lastHand.cards));
 
 			print(string.format("Player ---- %d ---- played", game.playerIndex));
