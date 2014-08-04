@@ -9,6 +9,10 @@
 #ifndef LANDLORD_ADVANCED_AI_H_
 #define LANDLORD_ADVANCED_AI_H_
 
+#ifdef __cplusplus
+extern 'C' {
+#endif
+
 /*
  * sort cards, analyze hands etc.
  */
@@ -29,5 +33,9 @@ int AdvancedAI_Play(void *player, void *game);
  * if there is no hand can beat last player, tobeat->type will be 0
  */
 int AdvancedAI_Beat(void *player, void *game);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LANDLORD_ADVANCED_AI_H_ */

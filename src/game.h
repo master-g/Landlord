@@ -9,6 +9,10 @@
 #ifndef LANDLORD_GAME_H_
 #define LANDLORD_GAME_H_
 
+#ifdef __cplusplus
+extern 'C' {
+#endif
+
 #include "player.h"
 #include "deck.h"
 #include "hand.h"
@@ -72,5 +76,9 @@ void Game_Destroy(game_t *game);
 void Game_Reset(game_t *game);
 
 void Game_Play(game_t *game, uint32_t seed);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LANDLORD_GAME_H_ */

@@ -3,56 +3,45 @@
 //  llcpp
 //
 //  Created by Master.G on 14-4-1.
-//  Copyright (c) 2014年 MED. All rights reserved.
+//  Copyright (c) 2014 MED. All rights reserved.
 //
 
 #include <iostream>
-#include "medlandlord.hpp"
+#include "common.h"
+#include "hand.h"
+
+void luatest()
+{
+    medlist_t *hl;
+    card_array_t cards2;
+    CardArray_Clear(&cards2);
+    CardArray_PushBack(&cards2, 0x14);
+    CardArray_PushBack(&cards2, 0x24);
+    CardArray_PushBack(&cards2, 0x15);
+    CardArray_PushBack(&cards2, 0x25);
+    CardArray_PushBack(&cards2, 0x35);
+    CardArray_PushBack(&cards2, 0x16);
+    CardArray_PushBack(&cards2, 0x26);
+    CardArray_PushBack(&cards2, 0x36);
+    CardArray_PushBack(&cards2, 0x17);
+    CardArray_PushBack(&cards2, 0x27);
+    CardArray_PushBack(&cards2, 0x37);
+    CardArray_PushBack(&cards2, 0x47);
+    CardArray_PushBack(&cards2, 0x28);
+    CardArray_PushBack(&cards2, 0x38);
+    CardArray_PushBack(&cards2, 0x29);
+    CardArray_PushBack(&cards2, 0x39);
+    
+    hl = HandList_AdvancedAnalyze(&cards2);
+    
+    HandList_Print(hl);
+    
+    HandList_Destroy(&hl);
+}
 
 int main(int argc, const char * argv[])
 {
-    int peasantwon = 0;
-    int landlordwon = 0;
-    int i = 0;
-    
-    game_t game;
-    
-    silent_printf("warning suppressor", i);
-    
-    HandList_Print(NULL);
-    
-    std::cout << "start at " << time(NULL) << std::endl;
-    
-    Game_Init(&game);
-    
-    for (i = 100000; i < 200000; i++)
-    {
-        Game_Play(&game, i);
-        
-        if (game.winner == game.landlord)
-            landlordwon++;
-        else
-            peasantwon++;
-        
-        Game_Reset(&game);
-    }
-    
-    std::cout << "peasants : " << peasantwon << std::endl;
-    std::cout << "landlord : " << landlordwon << std::endl;
-    
-    Game_Clear(&game);
-    
-    std::cout << "ended at " << time(NULL) << std::endl;
-    
-    /*
-     test_advanced_hand_analyzer();
-     */
-    
-    std::cout << std::endl;
-    
-    /*
-     memtrack_list_allocations();
-     */
+    luatest();
     
     return 0;
 }

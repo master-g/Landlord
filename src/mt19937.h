@@ -9,6 +9,10 @@
 #ifndef MT19937_H_
 #define MT19937_H_
 
+#ifdef __cplusplus
+extern 'C' {
+#endif
+
 #include "common.h"
 
 #define MT_N    624
@@ -25,5 +29,9 @@ void Random_InitWithArray(mt19937_t *context, uint32_t array[], int length);
 uint32_t Random_uint32(mt19937_t *context);
 int32_t Random_Int32(mt19937_t *context);
 double Random_real_0_1(mt19937_t *context);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MT19937_H_ */

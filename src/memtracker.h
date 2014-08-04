@@ -21,6 +21,10 @@
 #ifndef KITSUNE_MEMTRACKER_H_
 #define KITSUNE_MEMTRACKER_H_
 
+#ifdef __cplusplus
+extern 'C' {
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -43,5 +47,9 @@ void memtrack_list_allocations(void);
 #else
 
 #endif /* KITSUNE_DEBUG */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* KITSUNE_MEMTRACKER_H_ */

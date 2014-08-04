@@ -9,6 +9,10 @@
 #ifndef LANDLORD_DECK_H_
 #define LANDLORD_DECK_H_
 
+#ifdef __cplusplus
+extern 'C' {
+#endif
+
 #include "card.h"
 
 typedef struct deck_s
@@ -47,5 +51,9 @@ int Deck_Deal(deck_t *deck, card_array_t *array, int count);
  * recyle cards
  */
 int Deck_Recycle(deck_t *deck, card_array_t *array);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LANDLORD_DECK_H_ */

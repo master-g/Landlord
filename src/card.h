@@ -9,6 +9,10 @@
 #ifndef LANDLORD_CARD_H_
 #define LANDLORD_CARD_H_
 
+#ifdef __cplusplus
+extern 'C' {
+#endif
+
 #include "common.h"
 
 #define CARD_RANK_3     0x01
@@ -181,5 +185,9 @@ void CardArray_Print(card_array_t *array);
  * convert a card to string
  */
 int Card_ToString(uint8_t card, char *buf, int len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LANDLORD_CARD_H_ */

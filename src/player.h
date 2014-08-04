@@ -9,6 +9,10 @@
 #ifndef LANDLORD_PLAYER_H_
 #define LANDLORD_PLAYER_H_
 
+#ifdef __cplusplus
+extern 'C' {
+#endif
+
 #include "hand.h"
 
 typedef enum
@@ -106,5 +110,9 @@ int Player_HandleEvent(void *player, int event, void *ctx);
  *
  * int Player_Beat(void *player, void *game);
  */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LANDLORD_PLAYER_H_ */

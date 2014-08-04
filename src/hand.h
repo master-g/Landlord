@@ -9,6 +9,10 @@
 #ifndef LANDLORD_HAND_H_
 #define LANDLORD_HAND_H_
 
+#ifdef __cplusplus
+extern 'C' {
+#endif
+
 #include "card.h"
 #include "medalgo.h"
 
@@ -181,5 +185,9 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
  * print hand_list_t
  */
 void HandList_Print(medlist_t *hl);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LANDLORD_HAND_H_ */

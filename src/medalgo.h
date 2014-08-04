@@ -9,6 +9,10 @@
 #ifndef LANDLORD_MEDALGO_H_
 #define LANDLORD_MEDALGO_H_
 
+#ifdef __cplusplus
+extern 'C' {
+#endif
+
 #include "common.h"
 
 /*
@@ -95,5 +99,9 @@ void MEDTree_AddChild(medtree_t **t, medtree_t *node);
 void MEDTree_AddSibling(medtree_t **t, medtree_t *node);
 
 void MEDTree_DumpLeafToStack(medtree_t *t, medstack_t **stack);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LANDLORD_MEDALGO_H_ */

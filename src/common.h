@@ -9,6 +9,10 @@
 #ifndef LANDLORD_COMMON_H_
 #define LANDLORD_COMMON_H_
 
+#ifdef __cplusplus
+extern 'C' {
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -30,5 +34,9 @@
  */
 
 void silent_printf(const char *fmt, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* LANDLORD_COMMON_H_ */
