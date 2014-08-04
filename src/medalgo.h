@@ -9,11 +9,11 @@
 #ifndef LANDLORD_MEDALGO_H_
 #define LANDLORD_MEDALGO_H_
 
-#ifdef __cplusplus
-extern 'C' {
-#endif
-
 #include "common.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * ************************************************************

@@ -9,11 +9,11 @@
 #ifndef LANDLORD_PLAYER_H_
 #define LANDLORD_PLAYER_H_
 
-#ifdef __cplusplus
-extern 'C' {
-#endif
-
 #include "hand.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum
 {

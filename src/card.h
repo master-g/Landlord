@@ -9,11 +9,11 @@
 #ifndef LANDLORD_CARD_H_
 #define LANDLORD_CARD_H_
 
-#ifdef __cplusplus
-extern 'C' {
-#endif
-
 #include "common.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define CARD_RANK_3     0x01
 #define CARD_RANK_4     0x02

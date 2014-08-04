@@ -9,12 +9,12 @@
 #ifndef LANDLORD_HAND_H_
 #define LANDLORD_HAND_H_
 
-#ifdef __cplusplus
-extern 'C' {
-#endif
-
 #include "card.h"
 #include "medalgo.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* primal hands */
 #define HAND_PRIMAL_NONE        0x00

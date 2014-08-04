@@ -9,11 +9,11 @@
 #ifndef MT19937_H_
 #define MT19937_H_
 
-#ifdef __cplusplus
-extern 'C' {
-#endif
-
 #include "common.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define MT_N    624
 

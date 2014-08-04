@@ -9,11 +9,11 @@
 #ifndef LANDLORD_DECK_H_
 #define LANDLORD_DECK_H_
 
-#ifdef __cplusplus
-extern 'C' {
-#endif
-
 #include "card.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct deck_s
 {

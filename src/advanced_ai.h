@@ -10,7 +10,7 @@
 #define LANDLORD_ADVANCED_AI_H_
 
 #ifdef __cplusplus
-extern 'C' {
+extern "C" {
 #endif
 
 /*

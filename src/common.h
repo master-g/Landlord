@@ -9,10 +9,6 @@
 #ifndef LANDLORD_COMMON_H_
 #define LANDLORD_COMMON_H_
 
-#ifdef __cplusplus
-extern 'C' {
-#endif
-
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -20,6 +16,10 @@ extern 'C' {
 #include <time.h>
 
 #include "memtracker.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define PRINT_GAME_LOG
 

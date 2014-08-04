@@ -21,12 +21,12 @@
 #ifndef KITSUNE_MEMTRACKER_H_
 #define KITSUNE_MEMTRACKER_H_
 
-#ifdef __cplusplus
-extern 'C' {
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define KITSUNE_DEBUG
 

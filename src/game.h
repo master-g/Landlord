@@ -9,14 +9,14 @@
 #ifndef LANDLORD_GAME_H_
 #define LANDLORD_GAME_H_
 
-#ifdef __cplusplus
-extern 'C' {
-#endif
-
 #include "player.h"
 #include "deck.h"
 #include "hand.h"
 #include "mt19937.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define GAME_PLAYERS    3
 #define GAME_HAND_CARDS 17
