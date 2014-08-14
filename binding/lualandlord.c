@@ -3,10 +3,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
     
 /*
  * ************************************************************
@@ -30,11 +26,9 @@ extern "C" {
 #include "deck.h"
 #include "hand.h"
 
-/*
- * ************************************************************
- * string
- * ************************************************************
- */
+/*============================================================*\
+ * names
+\*============================================================*/
 
 #define LUALANDLORD                 "LuaLandlord"
 #define LUALANDLORD_MT19937         "MT19937"
@@ -47,11 +41,9 @@ extern "C" {
 #define LUALANDLORD_CARD_META       LUALANDLORD "." LUALANDLORD_CARD
 #define LUALANDLORD_HAND_META       LUALANDLORD "." LUALANDLORD_HAND
 
-/*
- * ************************************************************
- * C function
- * ************************************************************
- */
+/*============================================================*\
+ * utils
+\*============================================================*/
 
 #define LL_CheckType(L, idx, meta)  luaL_checkudata(L, idx, meta)
 
@@ -62,11 +54,9 @@ static void LL_Type_New(lua_State *L, size_t size, const char *meta)
     lua_setmetatable(L, -2);
 }
 
-/*
- * ************************************************************
- * MT19937 random
- * ************************************************************
- */
+/*============================================================*\
+ * MT19937
+\*============================================================*/
 
 static int LL_MT19937_New(lua_State *L)
 {
@@ -176,6 +166,26 @@ static int LL_MT19937_Real(lua_State *L)
         return luaL_error(L, "`mt19937' expected");
     }
     
+    return 1;
+}
+
+static int LL_MT19937_open(lua_State *L)
+{
+    static const struct luaL_Reg ll_MT19937[] =
+    {
+        { "new", LL_MT19937_New },
+        { NULL, NULL }
+    };
+    
+    static const struct luaL_Reg ll_MT19937_meta[] =
+    {
+        { "init",           LL_MT19937_Init },
+        { "initWithArray",  LL_MT19937_InitWithArray },
+        { "uint32",         LL_MT19937_UInt32 },
+        { "int32",          LL_MT19937_Int32 },
+        { NULL, NULL }
+    };
+
     return 1;
 }
 
@@ -361,9 +371,9 @@ int luaopen_landlord(lua_State *L)
     lua_pushvalue(L, -2);
     lua_settable(L, -3);
     
-    luaL_openlib(L, NULL, ll_MT19937_meta, 0);
+    luaL_register(L, NULL, ll_MT19937_meta);
     
-    luaL_openlib(L, LUALANDLORD, ll_MT19937, 0);
+    luaL_register(L, LUALANDLORD, ll_MT19937);
 #else
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
