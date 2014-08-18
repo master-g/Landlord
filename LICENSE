@@ -1,4 +1,3 @@
-/*
 The MIT License (MIT)
 
 Copyright (c) 2014 Master.G
@@ -20,56 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
-
-#ifndef LANDLORD_DECK_H_
-#define LANDLORD_DECK_H_
-
-#include "card.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct deck_s
-{
-    card_array_t cards;
-    card_array_t used;
-    
-} deck_t;
-
-/*
- * shuffle deck
- */
-void Deck_Shuffle(deck_t *deck, void *mtctx);
-
-/*
- * reset deck
- */
-void Deck_Reset(deck_t *deck);
-
-/*
- * deal single card
- */
-uint8_t Deck_DealSingle(deck_t *deck);
-
-/*
- * recyle single card
- */
-void Deck_RecycleSingle(deck_t *deck, uint8_t card);
-
-/*
- * deal cards
- */
-int Deck_Deal(deck_t *deck, card_array_t *array, int count);
-
-/*
- * recyle cards
- */
-int Deck_Recycle(deck_t *deck, card_array_t *array);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* LANDLORD_DECK_H_ */
