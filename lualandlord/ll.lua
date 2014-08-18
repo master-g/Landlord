@@ -1,5 +1,0 @@
-require "lualandlord/card"
-require "lualandlord/deck"
-require "lualandlord/hand"
-require "lualandlord/player"
-require "lualandlord/game"
