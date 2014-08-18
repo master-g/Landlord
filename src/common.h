@@ -26,14 +26,12 @@ extern "C" {
 #ifdef PRINT_GAME_LOG
 #define DBGLog printf
 #else
-#define DBGLog  silent_printf
+#define DBGLog
 #endif
 
 /*
 #define NICE_AND_CLEAN
  */
-
-void silent_printf(const char *fmt, ...);
 
 #ifdef __cplusplus
 }

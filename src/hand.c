@@ -21,7 +21,7 @@
  * the parse process can be simply describe as
  * 1. rank count            --  count every rank in the card array
  * 2. rank count sort       --  sort the count result
- * 3. pattern match         --  iterate throw possible patterns
+ * 3. pattern match         --  iterate through possible patterns
  */
 
 #include "hand.h"

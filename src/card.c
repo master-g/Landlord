@@ -27,6 +27,7 @@ void *CardArray_InitFromString(card_array_t *array, const char *str)
     {
         switch ((uint8_t)*p)
         {
+                /*
             case 0xA6:
                 card |= CARD_SUIT_DIAMOND;
                 break;
@@ -36,7 +37,17 @@ void *CardArray_InitFromString(card_array_t *array, const char *str)
             case 0xA5:
                 card |= CARD_SUIT_HEART;
                 break;
-            case 0xA0:
+                 */
+            case 'd':
+                card |= CARD_SUIT_DIAMOND;
+                break;
+            case 'c':
+                card |= CARD_SUIT_CLUB;
+                break;
+            case 'h':
+                card |= CARD_SUIT_HEART;
+                break;
+            case 's':
                 card |= CARD_SUIT_SPADE;
                 break;
             case 'T':

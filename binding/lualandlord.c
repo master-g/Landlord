@@ -692,6 +692,53 @@ static int LL_CardArray_Reverse(lua_State *L)
     return 0;
 }
 
+static int LL_CardArray_DumpToTable(lua_State *L)
+{
+    card_array_t *arr = (card_array_t *)LL_CheckType(L, 1, LUALANDLORD_CARDARRAY_META);
+    
+    if (arr != NULL)
+    {
+        int i = 0;
+        lua_createtable(L, arr->length, 0);
+        for (i = 0; i < arr->length; i++)
+        {
+            lua_pushinteger(L, arr->cards[i]);
+            lua_rawseti(L, -2, i + 1);
+        }
+    }
+    else
+    {
+        return luaL_error(L, "`cardarray' error");
+    }
+    
+    return 1;
+}
+
+static int LL_CardArray_InitFromTable(lua_State *L)
+{
+    card_array_t *arr = (card_array_t *)LL_CheckType(L, 1, LUALANDLORD_CARDARRAY_META);
+    
+    if (arr != NULL)
+    {
+        int i = 0;
+        int n = 0;
+        luaL_checktype(L, 2, LUA_TTABLE);
+        n = luaL_getn(L, 1);
+        for (i = 1; i <= n; i++)
+        {
+            lua_rawgeti(L, 1, i);
+            CardArray_PushBack(arr, (int)luaL_checkinteger(L, -1));
+            lua_pop(L, 1);
+        }
+    }
+    else
+    {
+        return luaL_error(L, "`cardarray' error");
+    }
+    
+    return 0;
+}
+
 static int LL_CardArray_open(lua_State *L)
 {
     static const struct luaL_Reg ll_CardArray[] =
@@ -728,6 +775,8 @@ static int LL_CardArray_open(lua_State *L)
         { "removerank",     LL_CardArray_RemoveRank     },
         { "sort",           LL_CardArray_Sort           },
         { "reverse",        LL_CardArray_Reverse        },
+        { "dump",           LL_CardArray_DumpToTable    },
+        { "initfromtable",  LL_CardArray_InitFromTable  },
         { NULL, NULL }
     };
     
@@ -900,6 +949,168 @@ static int LL_Deck_open(lua_State *L)
     return 1;
 }
 
+/*============================================================*\
+ * Hand
+\*============================================================*/
+
+static int LL_Hand_New(lua_State *L)
+{
+    LL_Type_New(L, sizeof(mt19937_t), LUALANDLORD_HAND_META);
+    
+    return 1;
+}
+
+static int LL_Hand_GetPrimal(lua_State *L)
+{
+    hand_t *hand = (hand_t *)LL_CheckType(L, 1, LUALANDLORD_HAND_META);
+    
+    if (hand != NULL)
+    {
+        lua_pushinteger(L, Hand_GetPrimal(hand->type));
+    }
+    else
+    {
+        return luaL_error(L, "`hand' error");
+    }
+    
+    return 1;
+}
+
+static int LL_Hand_GetKicker(lua_State *L)
+{
+    hand_t *hand = (hand_t *)LL_CheckType(L, 1, LUALANDLORD_HAND_META);
+    
+    if (hand != NULL)
+    {
+        lua_pushinteger(L, Hand_GetKicker(hand->type));
+    }
+    else
+    {
+        return luaL_error(L, "`hand' error");
+    }
+    
+    return 1;
+}
+
+static int LL_Hand_GetChain(lua_State *L)
+{
+    hand_t *hand = (hand_t *)LL_CheckType(L, 1, LUALANDLORD_HAND_META);
+    
+    if (hand != NULL)
+    {
+        lua_pushboolean(L, Hand_GetChain(hand->type));
+    }
+    else
+    {
+        return luaL_error(L, "`hand' error");
+    }
+    
+    return 1;
+}
+
+static int LL_Hand_SetPrimal(lua_State *L)
+{
+    hand_t *hand = (hand_t *)LL_CheckType(L, 1, LUALANDLORD_HAND_META);
+    
+    if (hand != NULL)
+    {
+        int primal = (int)luaL_checkinteger(L, 2);
+        Hand_SetPrimal(hand->type, primal);
+    }
+    else
+    {
+        return luaL_error(L, "`hand' error");
+    }
+    
+    return 0;
+}
+
+static int LL_Hand_SetKicker(lua_State *L)
+{
+    hand_t *hand = (hand_t *)LL_CheckType(L, 1, LUALANDLORD_HAND_META);
+    
+    if (hand != NULL)
+    {
+        int kicker = (int)luaL_checkinteger(L, 2);
+        Hand_SetKicker(hand->type, kicker);
+    }
+    else
+    {
+        return luaL_error(L, "`hand' error");
+    }
+    
+    return 0;
+}
+
+static int LL_Hand_SetChain(lua_State *L)
+{
+    hand_t *hand = (hand_t *)LL_CheckType(L, 1, LUALANDLORD_HAND_META);
+    
+    if (hand != NULL)
+    {
+        int chained = (int)luaL_checkinteger(L, 2);
+        Hand_SetChain(hand->type, chained);
+    }
+    else
+    {
+        return luaL_error(L, "`hand' error");
+    }
+    
+    return 0;
+}
+
+static int LL_Hand_Format(lua_State *L)
+{
+    hand_t *hand = (hand_t *)LL_CheckType(L, 1, LUALANDLORD_HAND_META);
+    
+    if (hand != NULL)
+    {
+        int primal, kicker, chain;
+        primal = (int)luaL_checkinteger(L, 2);
+        kicker = (int)luaL_checkinteger(L, 3);
+        chain = (int)luaL_checkinteger(L, 4);
+        
+        hand->type = Hand_Format(primal, kicker, chain);
+    }
+    else
+    {
+        return luaL_error(L, "`hand' error");
+    }
+    
+    return 0;
+}
+
+static int LL_Hand_open(lua_State *L)
+{
+    static const struct luaL_Reg ll_Hand[] =
+    {
+        { "new", LL_Hand_New },
+        { NULL, NULL }
+    };
+    
+    static const struct luaL_Reg ll_Hand_meta[] =
+    {
+        { "getprimal",      LL_Hand_GetPrimal   },
+        { "getkicker",      LL_Hand_GetKicker   },
+        { "getchain",       LL_Hand_GetChain    },
+        { "setprimal",      LL_Hand_SetPrimal   },
+        { "setkicker",      LL_Hand_SetKicker   },
+        { "setchain",       LL_Hand_SetChain    },
+        { "format",         LL_Hand_Format      },
+        { NULL, NULL }
+    };
+    
+    luaL_newmetatable(L, LUALANDLORD_HAND_META);
+    
+    lua_pushstring(L, "__index");
+    lua_pushvalue(L, -2);
+    lua_settable(L, -3);
+    
+    luaL_register(L, NULL, ll_Hand_meta);
+    luaL_register(L, LUALANDLORD_HAND_META, ll_Hand);
+    
+    return 1;
+}
 
 int luaopen_landlord(lua_State *L)
 {
@@ -907,6 +1118,7 @@ int luaopen_landlord(lua_State *L)
     LL_Card_open(L);
     LL_CardArray_open(L);
     LL_Deck_open(L);
+    LL_Hand_open(L);
     
     return 0;
 }
