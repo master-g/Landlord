@@ -43,7 +43,7 @@ void *CardArray_InitFromString(card_array_t *array, const char *str)
     {
         switch ((uint8_t)*p)
         {
-                /*
+#ifdef LL_GRAPHICAL_SUIT
             case 0xA6:
                 card |= CARD_SUIT_DIAMOND;
                 break;
@@ -53,7 +53,7 @@ void *CardArray_InitFromString(card_array_t *array, const char *str)
             case 0xA5:
                 card |= CARD_SUIT_HEART;
                 break;
-                 */
+#else
             case 'd':
                 card |= CARD_SUIT_DIAMOND;
                 break;
@@ -66,6 +66,7 @@ void *CardArray_InitFromString(card_array_t *array, const char *str)
             case 's':
                 card |= CARD_SUIT_SPADE;
                 break;
+#endif
             case 'T':
                 card |= CARD_RANK_T;
                 break;
@@ -452,18 +453,21 @@ void CardArray_Reverse(card_array_t *array)
     CardArray_Copy(array, &temp);
 }
 
+#ifdef LL_GRAPHICAL_SUIT
+#define CARD_STRING_LENGTH 4
 
-#define CARD_STRING_LENGTH 2
-/*
 unsigned char szDIAMOND[] = { 0xE2, 0x99, 0xA6, 0};
 unsigned char szCLUB[]    = { 0xE2, 0x99, 0xA3, 0};
 unsigned char szHEART[]   = { 0xE2, 0x99, 0xA5, 0};
 unsigned char szSPADE[]   = { 0xE2, 0x99, 0xA0, 0};
- */
+#else
+#define CARD_STRING_LENGTH 2
+
 unsigned char szDIAMOND[] = { 'd', 0, 0, 0};
 unsigned char szCLUB[]    = { 'c', 0, 0, 0};
 unsigned char szHEART[]   = { 'h', 0, 0, 0};
 unsigned char szSPADE[]   = { 's', 0, 0, 0};
+#endif
 
 char szRank[]    = { '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'r', 'R' };
 
