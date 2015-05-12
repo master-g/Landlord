@@ -653,7 +653,7 @@ void Hand_Print(hand_t *hand)
     switch (Hand_GetKicker(hand->type))
     {
         case HAND_KICKER_NONE:
-            toprint = "none";
+            toprint = NULL;
             break;
         case HAND_KICKER_SOLO:
             toprint = "solo";
@@ -668,8 +668,12 @@ void Hand_Print(hand_t *hand)
             toprint = "dual pair";
             break;
         default:
+            toprint = NULL;
             break;
     }
+    
+    if (toprint != NULL)
+        DBGLog("%s", toprint);
 
     if (Hand_GetChain(hand->type) == HAND_CHAIN)
         DBGLog(" chain");

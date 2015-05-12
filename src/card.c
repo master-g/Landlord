@@ -53,6 +53,9 @@ void *CardArray_InitFromString(card_array_t *array, const char *str)
             case 0xA5:
                 card |= CARD_SUIT_HEART;
                 break;
+            case 0xA0:
+                card |= CARD_SUIT_SPADE;
+                break;
 #else
             case 'd':
                 card |= CARD_SUIT_DIAMOND;
