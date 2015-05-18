@@ -69,7 +69,7 @@ SOFTWARE.
 #define HANDS_PATTERN_5_1   7   /* solo chain */
 #define HANDS_PATTERN_5_2   8   /* trio pair */
 #define HANDS_PATTERN_6_1   9   /* solo chain */
-#define HANDS_PATTERN_6_2   10   /* pair chain */
+#define HANDS_PATTERN_6_2   10  /* pair chain */
 #define HANDS_PATTERN_6_3   11  /* trio chain */
 #define HANDS_PATTERN_6_4   12  /* four dual solo */
 #define HANDS_PATTERN_8_1   13  /* solo chain */
