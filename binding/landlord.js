@@ -384,6 +384,11 @@ var LL = (function() {
 		this.cards = new CardArray();
 	};
 
+	// compare result
+	Hand.CMP_GREATER = 1;
+	Hand.CMP_LESS 	 = -1;
+	Hand.CMP_EQUAL	 = 0;
+
 	// primal hands
 	Hand.PRIMAL_NONE = 0x00;
 	Hand.PRIMAL_NUKE = 0x06;
@@ -567,32 +572,6 @@ var LL = (function() {
 		return (length === expectLength);
 	};
 
-
-	// distribute cards
-	// for example, Hand.Distribute(xxx, 88666644, 422, 4, 2, 8)
-	// result in 66668844
-	Hand.Distribute = function(hand, arr, count, d1, d2, length) {
-		var temp = new CardArray();
-		var cards = arr.cards;
-
-		for (var i = 0; i < cards.length; i++) {
-			var card = cards[i];
-			var num = count[Card.getRank(card)];
-
-			if (num === d1) {
-				hand.cards.push_back(card);
-			}
-			else if (num === d2) {
-				temp.push_back(card);
-			}
-
-			if (hand.cards.size() + temp.size() >= length) {
-				hand.cards.concat(temp);
-				break;
-			}
-		}
-	};
-
 	Hand.prototype = {
 		parse: function(cards) {
 			var hand_parse_1 = function(hand, arr, count, sorted) {
@@ -623,6 +602,208 @@ var LL = (function() {
 					hand.type = Hand.PRIMAL_TRIO;
 				}
 			}
+
+			var hand_parse_4 = function(hand, arr, count, sorted) {
+				if (Hand.PatternMatch(sorted, Hand.PATTERN_4_1)) {
+					// bomb, 4
+					hand.cards.copy(arr);
+					hand.format(Hand.PRIMAL_BOMB, Hand.KICKER_NONE, Hand.CHAIN_NONE);
+				}
+				else if (Hand.PatternMatch(sorted, Hand.PATTERN_4_2)) {
+					// trio solo, 3-1
+					this.distribute(arr, count, 3, 1, 4);
+					hand.format(Hand.PRIMAL_TRIO, Hand.KICKER_SOLO, Hand.CHAIN_NONE);
+				}
+			}
+
+			var hand_parse_5 = function(hand, arr, count, sorted) {
+				if (Hand.PatternMatch(sorted, Hand.PATTERN_5_2)) {
+					// trio pair, 3-2
+					this.distribute(arr, count, 3, 2, 5);
+					hand.format(Hand.PRIMAL_TRIO, Hand.KICKER_PAIR, Hand.CHAIN_NONE);
+				}
+			}
+
+			var hand_parse_6 = function(hand, arr, count, sorted) {
+				if (Hand.PatternMatch(sorted, Hand.PATTERN_6_4)) {
+					// four dual solo, 4-1-1
+					this.distribute(arr, count, 4, 1, 6);
+					hand.format(Hand.PRIMAL_FOUR, Hand.KICKER_DUAL_SOLO, Hand.CHAIN_NONE);
+				}
+			}
+
+			var hand_parse_8 = function(hand, arr, count, sorted) {
+				if (Hand.PatternMatch(sorted, Hand.PATTERN_8_3)) {
+					// trio solo chain
+					if (Hand.CheckChain(count, 3, 2)) {
+						this.distribute(arr, count, 3, 1, 8);
+						hand.format(Hand.PRIMAL_TRIO, Hand.KICKER_SOLO, Hand.CHAINED);
+					}
+				}
+				else if (Hand.PatternMatch(sorted, Hand.PATTERN_8_4)) {
+					// four dual pair, no joker
+					this.distribute(arr, count, 4, 2, 8);
+					hand.format(Hand.PRIMAL_FOUR, Hand.KICKER_DUAL_PAIR, Hand.CHAIN_NONE);
+				}
+			}
+
+			var hand_parse_10 = function(hand, arr, count, sorted) {
+				if (Hand.PatternMatch(sorted, Hand.PATTERN_10_3)) {
+					// trio pair chain, no joker
+					if (Hand.CheckChain(count, 3, 2)) {
+						hand.distribute(arr, count, 3, 2, 10);
+						hand.format(Hand.PRIMAL_TRIO, Hand.KICKER_PAIR, Hand.CHAINED);
+					}
+				}
+			}
+
+			var hand_parse_12 = function(hand, arr, count, sorted) {
+				if (Hand.PatternMatch(sorted, Hand.PATTERN_12_4)) {
+					// trio solo chain
+					if (Hand.CheckChain(count, 3, 3)) {
+						hand.distribute(arr, count, 3, 1, 12);
+						hand.format(Hand.PRIMAL_TRIO, Hand.KICKER_PAIR, Hand.CHAINED);
+					}
+				}
+				else if (Hand.PatternMatch(sorted, Hand.PATTERN_12_6)) {
+					// four dual solo chain
+					if (Hand.CheckChain(count, 4, 2)) {
+						Hand.distribute(arr, count, 4, 1, 12);
+						hand.format(Hand.PRIMAL_FOUR, Hand.KICKER_DUAL_SOLO, Hand.CHAINED);
+					}
+				}
+			}
+
+			var hand_parse_16 = function(hand, arr, count, sorted) {
+				// trio solo chain
+				if (Hand.PatternMatch(sorted, Hand.PATTERN_16_2)) {
+					if (Hand.CheckChain(count, 3, 4)) {
+						hand.distribute(arr, count, 3, 1, 16);
+						hand.format(Hand.PRIMAL_TRIO, Hand.KICKER_SOLO, Hand.CHAINED);
+					}
+				}
+				else if (Hand.PatternMatch(sorted, Hand.PATTERN_16_4)) {
+					// four dual pair chain
+					if (Hand.CheckChain(count, 4, 2)) {
+						hand.distribute(arr, count, 4, 2, 16);
+						hand.format(Hand.PRIMAL_FOUR, Hand.KICKER_DUAL_PAIR, Hand.CHAINED);
+					}
+				}
+			}
+
+			var hand_parse_18 = function(hand, arr, count, sorted) {
+				if (Hand.PatternMatch(sorted, Hand.PATTERN_18_3)) {
+					// four dual solo chain
+					if (Hand.CheckChain(count, 4, 3)) {
+						hand.distribute(arr, count, 4, 1, 18);
+						hand.format(Hand.PRIMAL_FOUR, Hand.KICKER_DUAL_SOLO, Hand.CHAINED);
+					}
+				}
+			}
+
+			var hand_parse_20 = function(hand, arr, count, sorted) {
+				if (Hand.PatternMatch(sorted, Hand.PATTERN_20_2)) {
+					if (Hand.CheckChain(count, 3, 5)) {
+						hand.distribute(arr, count, 3, 1, 20);
+						hand.format(Hand.PRIMAL_TRIO, Hand.KICKER_SOLO, Hand.CHAINED);
+					}
+				}
+			}
+
+			var hand_parse_default = function(hand, arr, count, sorted) {
+				hand.type = 0;
+			}
+
+			// parser function table
+			var parser = [];
+			parser[Hand.MIN_LENGTH + 0]     = hand_parse_1;
+		    parser[Hand.MIN_LENGTH + 1]     = hand_parse_2;
+		    parser[Hand.MIN_LENGTH + 2]     = hand_parse_3;
+		    parser[Hand.MIN_LENGTH + 3]     = hand_parse_4;
+		    parser[Hand.MIN_LENGTH + 4]     = hand_parse_5;
+		    parser[Hand.MIN_LENGTH + 5]     = hand_parse_6;
+		    parser[Hand.MIN_LENGTH + 6]     = hand_parse_default;
+		    parser[Hand.MIN_LENGTH + 7]     = hand_parse_8;
+		    parser[Hand.MIN_LENGTH + 8]     = hand_parse_default;
+		    parser[Hand.MIN_LENGTH + 9]     = hand_parse_10;
+		    parser[Hand.MIN_LENGTH + 10]    = hand_parse_default;
+		    parser[Hand.MIN_LENGTH + 11]    = hand_parse_12;
+		    parser[Hand.MIN_LENGTH + 12]    = hand_parse_default;
+		    parser[Hand.MIN_LENGTH + 13]    = hand_parse_default;
+		    parser[Hand.MIN_LENGTH + 14]    = hand_parse_default;
+		    parser[Hand.MIN_LENGTH + 15]    = hand_parse_16;
+		    parser[Hand.MIN_LENGTH + 16]    = hand_parse_default;
+		    parser[Hand.MIN_LENGTH + 17]    = hand_parse_18;
+		    parser[Hand.MIN_LENGTH + 18]    = hand_parse_default;
+		    parser[Hand.MIN_LENGTH + 19]    = hand_parse_20;
+
+		    // sort cards
+		    cards.sort();
+
+		    // count ranks
+		    var ret = Hand.CountRank(cards, true);
+		    var count = ret[0];
+		    var sorted = ret[1];
+		    var length = cards.size();
+
+		    // clear hand
+		    this.clear();
+
+		    // validate length
+		    if (length < Hand.MIN_LENGTH || length > Hand.MAX_LENGTH) {
+		    	return;
+		    }
+		    // solo chain
+		    else if (length >= Hand.SOLO_CHAIN_MIN_LENGTH && Hand.CheckChain(count, 1, length)) {
+		    	this.cards.copy(cards);
+		    	this.format(Hand.PRIMAL_SOLO, Hand.KICKER_NONE, Hand.CHAINED);
+		    }
+		    // pair chain
+		    else if (length >= Hand.PAIR_CHAIN_MIN_LENGTH && length % 2 === 0 && Hand.CheckChain(count, 2, length / 2)) {
+		    	this.cards.copy(cards);
+		    	this.format(Hand.PRIMAL_PAIR, Hand.KICKER_NONE, Hand.CHAINED);
+		    }
+		    // trio chain
+		    else if (length >= Hand.TRIO_CHAIN_MIN_LENGTH && length % 3 === 0 && Hand.CheckChain(count, 3, length / 3)) {
+		    	this.cards.copy(cards);
+		    	this.format(Hand.PRIMAL_TRIO, Hand.KICKER_NONE, Hand.CHAINED);
+		    }
+		    // four chain
+		    else if (length >= Hand.FOUR_CHAIN_MIN_LENGTH && length % 4 === 0 && Hand.CheckChain(count, 4, length / 4)) {
+		    	this.cards.copy(cards);
+		    	this.format(Hand.PRIMAL_FOUR, Hand.KICKER_NONE, Hand.CHAINED);
+		    }
+		    // other types
+		    else {
+		    	parser[length](this, cards, count, sorted);
+		    }
+		},
+
+		// distribute cards
+		// for example, distribute(xxx, 88666644, 422, 4, 2, 8)
+		// result in 66668844
+		distribute: function(arr, count, d1, d2, length) {
+			var temp = new CardArray();
+			var cards = arr.cards;
+
+			this.clear();
+
+			for (var i = 0; i < cards.length; i++) {
+				var card = cards[i];
+				var num = count[Card.getRank(card)];
+
+				if (num === d1) {
+					this.cards.push_back(card);
+				}
+				else if (num === d2) {
+					temp.push_back(card);
+				}
+
+				if (this.cards.size() + temp.size() >= length) {
+					this.cards.concat(temp);
+					break;
+				}
+			}
 		},
 
 		clear: function() {
@@ -643,7 +824,55 @@ var LL = (function() {
 		},
 
 		compare: function(rhs) {
+			var compare_bomb = function(ha, hb) {
+				var ret = undefined;
 
+				// same type same cards, equal
+				if ((ha.type === hb.type) && (ha.cards.cards[0] === hb.cards.cards[0])) {
+					ret = Hand.CMP_EQUAL;
+				}
+				// both are bombs, compare by card rank
+				else if (ha.type === Hand.PRIMAL_BOMB && hb.type === Hand.PRIMAL_BOMB) {
+					ret = Card.getRank(ha.cards.cards[0]) > Card.getRank(hb.cards.cards[0]) ? Hand.CMP_GREATER : Hand.CMP_LESS;
+				}
+				else {
+					ret = ha.getPrimal() > hb.getPrimal() ? Hand.CMP_GREATER : Hand.CMP_LESS;
+				}
+
+				return ret;
+			}
+
+			var ret = undefined;
+
+			// different hand types
+			// check for bomb and nuke
+			if (this.type !== rhs.type) {
+				if (this.type !== Hand.PRIMAL_NUKE &&
+					this.type !== Hand.PRIMAL_BOMB &&
+					rhs.type !== Hand.PRIMAL_NUKE &&
+					rhs.type !== Hand.PRIMAL_BOMB)
+					return ret;
+				else
+					ret = compare_bomb(this, rhs);
+			}
+			// same hand types and with no bombs
+			else {
+				// same hand types but different length
+				if (this.cards.size() !== rhs.cards.size()) {
+					return ret;
+				}
+				else {
+					// same hand types and same length
+					if (Card.getRank(this.cards.cards[0]) === Card.getRank(rhs.cards.cards[0])) {
+						ret = Hand.CMP_EQUAL;
+					}
+					else {
+						ret = Card.getRank(this.cards.cards[0]) > Card.getRank(rhs.cards.cards[0]) ? Hand.CMP_GREATER : Hand.CMP_LESS;
+					}
+				}
+			}
+
+			return ret;
 		},
 
 		getPrimal: function() {
@@ -688,12 +917,199 @@ var LL = (function() {
 		},
 
 		toString: function() {
+			var str = "";
+			var primalTable = {};
+			primalTable[Hand.PRIMAL_NONE] = "none";
+			primalTable[Hand.PRIMAL_SOLO] = "solo";
+			primalTable[Hand.PRIMAL_PAIR] = "pair";
+			primalTable[Hand.PRIMAL_TRIO] = "trio";
+			primalTable[Hand.PRIMAL_FOUR] = "four";
+			primalTable[Hand.PRIMAL_BOMB] = "bomb";
+			primalTable[Hand.PRIMAL_NUKE] = "nuke";
 
+			var kickerTable = {};
+			kickerTable[Hand.KICKER_NONE] = "";
+			kickerTable[Hand.KICKER_SOLO] = "solo";
+			kickerTable[Hand.KICKER_PAIR] = "pair";
+			kickerTable[Hand.KICKER_DUAL_SOLO] = "dual solo";
+			kickerTable[Hand.KICKER_DUAL_PAIR] = "dual pair";
+
+			var primal = primalTable[this.getPrimal()];
+			var kicker = kickerTable[this.getKicker()];
+			str += primal || "";
+			str += kicker ? " " + kicker : "";
+
+			if (this.getChain()) {
+				str += " chain";
+			}
+
+			return str;
 		}
 
 	};
 
 	Hand.prototype.constructor = Hand;
+
+	// next_comb(int comb[], int k, int n)
+	// Generates the next combination of n elements as k after comb
+	//
+	// comb => the previous combination ( use (0, 1, 2, ..., k) for first)
+	// k => the size of the subsets to generate
+	// n => the size of the original set
+	//
+	// Returns: 1 if a valid combination was found
+	// 0, otherwise
+	var next_comb = function(comb, k, n) {
+		var i = k - 1;
+		++comb[i];
+		while ((i > 0) && (comb[i] >= n - k + 1 + i)) {
+			--i;
+			++comb[i];
+		}
+
+		if (comb[0] > n - k)	// Combination (n-k, n-k+1, ..., n) reached
+			return 0;			// No more combinations can be generated
+
+		// comb now looks like (..., x, n, n, n, ..., n).
+     	// Turn it into (..., x, x + 1, x + 2, ...)
+		for (i = i + 1; i < k; ++i) {
+			comb[i] = comb[i - 1] + 1;
+		}
+
+		return 1;
+	}
+
+	// Beat Searching Context
+	var BeatSearchContext = function(cards) {
+		if (!cards) {
+			this.count = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+			this.cards = new CardArray();
+			this.rcards = new CardArray();
+		}
+		else {
+			this.setup(cards);
+		}
+	};
+
+	BeatSearchContext.prototype = {
+		clear: function() {
+			this.count = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+			this.cards.clear();
+			this.rcards.clear();
+		},
+
+		setup: function(cards) {
+			this.count = Hand.CountRank(cards)[0];
+			this.cards = cards.clone();
+			this.cards.sort();
+			this.rcards = this.cards.clone();
+			this.rcards.reverse();
+		}
+	};
+
+	BeatSearchContext.prototype.constructor = BeatSearchContext;
+
+	// HandList
+
+	var HandList = function() {
+		this.hands = [];
+	};
+
+	HandList.SearchBeat_Primal = function(bsc, tobeat, beat, primal) {
+		var tobeattype = tobeat.type;
+		var count = bsc.count;
+		var temp = bsc.rcards;
+		var rank = Card.getRank(tobeat.cards.cards[0]);
+
+		// search for primal
+		for (var i = 0; i < temp.size(), i++) {
+			// TODO
+		}
+	};
+
+	HandList.prototype = {
+		clear: function() {
+			this.hands = [];
+		},
+
+		push_back: function(hand) {
+			this.hands.push(hand);
+		},
+
+		push_front: function(hand) {
+			this.hands.unshift(hand);
+		},
+
+		pop_front: function() {
+			return this.hands.shift();
+		},
+
+		pop_back: function() {
+			return this.hands.pop();
+		},
+
+		remove: function(hand) {
+			for (var i in this.hands) {
+				if (this.hands[i] === hand) {
+					return this.hands.splice(i, 1)[0];
+				}
+			}
+
+			return undefined;
+		},
+
+		concat: function(hl) {
+			var l = [];
+			if (hl.constructor === Array) {
+				l = hl;
+			}
+			else if (hl.constructor === this.constructor) {
+				l = hl.hands;
+			}
+
+			this.hands = this.hands.concat(l);
+		},
+
+		find: function(type) {
+			for (var i in this.hands) {
+				if (this.hands[i].type === type) {
+					return this.hands[i];
+				}
+			}
+
+			return undefined;
+		},
+
+		size: function() {
+			return this.hands.length;
+		},
+
+		searchBeat: function(cards, tobeat, beat) {
+
+		},
+
+		searchBeatList: function(cards, tobeat) {
+
+		},
+
+		standardAnalyze: function(cards) {
+
+		},
+
+		advancedAnalyze: function(cards) {
+
+		},
+
+		bestBeat: function(cards, tobeat, beat, evalfunc) {
+
+		},
+
+		debugPrint: function() {
+
+		}
+	};
+
+	HandList.prototype.constructor = HandList;
 
 	return {
 
@@ -707,6 +1123,9 @@ var LL = (function() {
 
 		// Hand
 		Hand: Hand,
+
+		// HandList
+		HandList: HandList
 	};
 
 })();
@@ -730,9 +1149,9 @@ d.reset();
 d.shuffle();
 console.log(d.cards.toString());
 
-console.log(LL.Hand);
+var ht = "♦6 ♠6 ♥7 ♠7 ♦8 ♣8 ♣9 ♦9";
 
-var s = [3,5,2,1,6,4];
-s.sort();
-s.reverse();
-console.log(s);
+var lh = LL.Hand;
+var h = new lh();
+h.parse(new lca(ht));
+console.log(h.toString());
