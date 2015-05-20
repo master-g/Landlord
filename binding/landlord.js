@@ -84,7 +84,9 @@ var LL = (function() {
 		}
 	};
 
+	// ----------------------------------------------------------------
 	// CardArray
+	// ----------------------------------------------------------------
 
 	var CardArray = function(p) {
 		this.cards = [];
@@ -117,6 +119,18 @@ var LL = (function() {
 
 	CardArray.prototype = {
 
+		_getArray: function(p) {
+			var ret = [];
+			if (p.constructor === Array) {
+				ret = p.slice(0);
+			}
+			else if (p.constructor === this.constructor) {
+				ret = p.cards.slice(0);
+			}
+
+			return ret;
+		},
+
 		initFromString: function(str) {
 			var raw = str.split(' ');
 			this.cards = [];
@@ -143,25 +157,12 @@ var LL = (function() {
 		},
 
 		concat: function(rhs) {
-			var rcards = [];
-			if (rhs.constructor === CardArray) {
-				rcards = rhs.cards;
-			}
-			else if (rhs.constructor === Array) {
-				rcards = rhs;
-			}
-
+			var rcards = this._getArray(rhs);
 			this.cards = this.cards.concat(rcards);
 		},
 
 		subtract: function(rhs) {
-			var rcards = [];
-			if (rhs.constructor === CardArray) {
-				rcards = rhs.cards.slice(0);
-			}
-			else if (rhs.constructor === Array) {
-				rcards = rhs.slice(0);
-			}
+			var rcards = this._getArray(rhs);
 
 			while (rhs.length > 0) {
 				var f = rhs.shift();
@@ -183,13 +184,7 @@ var LL = (function() {
 				return true;
 			}
 
-			var rcards = [];
-			if (rhs.constructor === Array) {
-				rcards = rhs.slice(0);
-			}
-			else if (rhs.constructor === this.constructor) {
-				rcards = rhs.cards.slice(0);
-			}
+			var rcards = this._getArray(rhs);
 
 			if (rcards.length !== this.cards.length) {
 				return false;
@@ -213,13 +208,7 @@ var LL = (function() {
 				return true;
 			}
 
-			var rcards = [];
-			if (rhs.constructor === Array) {
-				rcards = rhs.slice(0);
-			}
-			else if (rhs.constructor === this.constructor) {
-				rcards = rhs.cards.slice(0);
-			}
+			var rcards = this._getArray(rhs);
 
 			var lcards = this.cards.slice(0);
 
@@ -260,6 +249,32 @@ var LL = (function() {
 
 		pop_back: function() {
 			return this.cards.pop();
+		},
+
+		pushBackCards: function(cards, where, count) {
+			var tmp = this._getArray(cards);
+
+			this.cards = this.cards.concat(tmp.splice(where, count));
+		},
+
+		copyRank: function(cards, rank) {
+			var tmp = this._getArray(cards);
+			for (var i = 0; i < tmp.length; i++) {
+				if (Card.getRank(tmp[i]) === rank) {
+					this.push_back(tmp[i]);
+				}
+			}
+		},
+
+		removeRank: function(rank) {
+			var tmp = [];
+			for (var i = 0; i < this.cards.length; i++) {
+				if (Card.getRank(this.cards[i]) !== rank) {
+					tmp.push(this.cards[i]);
+				}
+			}
+
+			this.cards = tmp.slice(0);
 		},
 
 		insert: function(i, card) {
@@ -329,7 +344,10 @@ var LL = (function() {
 
 	CardArray.prototype.constructor = CardArray;
 
+	// ----------------------------------------------------------------
 	// Deck
+	// ----------------------------------------------------------------
+
 	var Deck = function() {
 		this.cards = new CardArray();
 		this.cards.initFromDeck();
@@ -377,7 +395,9 @@ var LL = (function() {
 
 	Deck.prototype.constructor = Deck;
 
+	// ----------------------------------------------------------------
 	// Hand
+	// ----------------------------------------------------------------
 
 	var Hand = function() {
 		this.type = 0;
@@ -950,6 +970,7 @@ var LL = (function() {
 
 	Hand.prototype.constructor = Hand;
 
+	//
 	// next_comb(int comb[], int k, int n)
 	// Generates the next combination of n elements as k after comb
 	//
@@ -959,6 +980,7 @@ var LL = (function() {
 	//
 	// Returns: 1 if a valid combination was found
 	// 0, otherwise
+	//
 	var next_comb = function(comb, k, n) {
 		var i = k - 1;
 		++comb[i];
@@ -967,8 +989,8 @@ var LL = (function() {
 			++comb[i];
 		}
 
-		if (comb[0] > n - k)	// Combination (n-k, n-k+1, ..., n) reached
-			return 0;			// No more combinations can be generated
+		if (comb[0] > n - k)		// Combination (n-k, n-k+1, ..., n) reached
+			return false;			// No more combinations can be generated
 
 		// comb now looks like (..., x, n, n, n, ..., n).
      	// Turn it into (..., x, x + 1, x + 2, ...)
@@ -976,13 +998,16 @@ var LL = (function() {
 			comb[i] = comb[i - 1] + 1;
 		}
 
-		return 1;
+		return true;
 	}
 
+	// ----------------------------------------------------------------
 	// Beat Searching Context
+	// ----------------------------------------------------------------
+
 	var BeatSearchContext = function(cards) {
 		if (!cards) {
-			this.count = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+			this.count = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
 			this.cards = new CardArray();
 			this.rcards = new CardArray();
 		}
@@ -993,7 +1018,7 @@ var LL = (function() {
 
 	BeatSearchContext.prototype = {
 		clear: function() {
-			this.count = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+			this.count = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
 			this.cards.clear();
 			this.rcards.clear();
 		},
@@ -1009,7 +1034,9 @@ var LL = (function() {
 
 	BeatSearchContext.prototype.constructor = BeatSearchContext;
 
+	// ----------------------------------------------------------------
 	// HandList
+	// ----------------------------------------------------------------
 
 	var HandList = function() {
 		this.hands = [];
@@ -1022,9 +1049,389 @@ var LL = (function() {
 		var rank = Card.getRank(tobeat.cards.cards[0]);
 
 		// search for primal
-		for (var i = 0; i < temp.size(), i++) {
-			// TODO
+		for (var i = 0; i < temp.size(); i++) {
+			var tr = Card.getRank(temp.cards[i]);
+			if (tr > rank && count[tr] >= primal) {
+				beat.clear();
+				beat.type = tobeattype;
+				beat.cards.pushBackCards(temp, i, primal);
+				return true;
+			}
 		}
+
+		return false;
+	};
+
+	HandList.SearchBeat_Bomb = function(bsc, tobeat, beat) {
+		var cards = bsc.cards;
+		var count = bsc.count;
+		var canbeat = false;
+
+		// can't beat nuke
+		if (tobeat.type === Hand.PRIMAL_NUKE) {
+			return false;
+		}
+
+		// search for a higher rank bomb
+		if (tobeat.type === Hand.PRIMAL_BOMB) {
+			canbeat = HandList.SearchBeat_Primal(bsc, tobeat, beat, 4);
+		}
+		else {
+			// tobeat is not a nuke or bomb, search a bomb to beat it
+			for (var i = 0; i < cards.size(); i++) {
+				if (count[Card.getRank(cards.cards[i])] === 4) {
+					canbeat = true;
+					beat.clear();
+					beat.cards.copyRank(cards, Card.getRank(cards.cards[i]));
+					break;
+				}
+			}
+		}
+
+		// search for nuke
+		if (!canbeat) {
+			if (count[Card.RANK_r] !== 0 && count[Card.RANK_R] !== 0) {
+				canbeat = true;
+				beat.clear();
+				beat.format(Hand.PRIMAL_NUKE, Hand.KICKER_NONE, Hand.CHAIN_NONE);
+				beat.cards.copyRank(cards, Card.RANK_R);
+				beat.cards.copyRank(cards, Card.RANK_r);
+			}
+		}
+		else {
+			beat.format(Hand.PRIMAL_BOMB, Hand.KICKER_NONE, Hand.CHAIN_NONE);
+		}
+
+		return canbeat;
+	};
+
+	//
+	// for a standard 54 card set, each rank has four cards
+	// so it is impossible for two trio of the same rank at the same time
+	//
+	// a) player_1 SEARCH_BEAT player_2 : impossible for 333 vs 333
+	//
+	// BUT
+	//
+	// b) player_1 SEARCH_BEAT player_1_prev_beat : possible for 333 vs 333
+	//
+	HandList.SearchBeat_TrioKicker = function(bsc, tobeat, beat, kick) {
+		var canbeat = false;
+		var cantriobeat = false;
+		var tobeattype = tobeat.type;
+		var count = bsc.count;
+		var temp = bsc.rcards.clone();
+		var htrio = new Hand();
+		var hkick = new Hand();
+		var htriobeat = new Hand();
+		var hkickbeat = new Hand();
+
+		// copy hands, trio and kicker
+		htrio.cards.pushBackCards(tobeat.cards, 0, 3);
+		hkick.cards.pushBackCards(tobeat.cards, 3, kick);
+
+		// same rank trio, case b
+		if (temp.contain(htrio.cards)) {
+			// keep trio beat
+			htriobeat.cards.copy(htrio.cards);
+			temp.removeRank(Card.getRank(htriobeat.cards.cards[0]));
+
+			// search for a higher kicker
+			// round 1: only search those count[rank] === kick
+			for (var i = 0; i < temp.size(); i++) {
+				if (count[Card.getRank(temp.cards[i])] >= kick &&
+					Card.getRank(temp.cards[i]) > Card.getRank(hkick.cards.cards[0])) {
+
+					hkickbeat.cards.clear();
+					hkickbeat.cards.pushBackCards(temp, i, kick);
+					canbeat = true;
+					break;
+				}
+			}
+
+			// if kicker can't beat, restore trio
+			if (!canbeat) {
+				htriobeat.cards.clear();
+				temp = bsc.rcards.clone();
+			}
+		}
+
+		// same rank trio not found
+		// OR
+		// same rank trio found, but kicker can't beat
+		if (!canbeat) {
+			cantriobeat = HandList.SearchBeat_Primal(bsc, htrio, htriobeat, Hand.PRIMAL_TRIO);
+			// trio beat found, search for kicker beat
+			if (cantriobeat) {
+				// remove trio from temp
+				temp.removeRank(Card.getRank(htriobeat.cards.cards[0]));
+
+				// search for a kicker
+				for (var i = 0; i < temp.size(); i++) {
+					if (count[Card.getRank(temp.cards[i])] >= kick) {
+						hkickbeat.cards.pushBackCards(temp, i, kick);
+						canbeat = true;
+						break;
+					}
+				}
+			}
+		}
+
+		// beat
+		if (canbeat) {
+			beat.clear();
+			beat.cards.concat(htriobeat.cards);
+			beat.cards.concat(hkickbeat.cards);
+			beat.type = tobeattype;
+		}
+
+		return canbeat;
+	};
+
+	HandList.SearchBeat_Chain = function(bsc, tobeat, beat, duplicate) {
+		var canbeat = false;
+		var chainlength = 0;
+		var found = false;
+		var tobeattype = tobeat.type;
+		var footer = 0;
+		var count = bsc.count;
+		var cards = bsc.cards;
+		var temp = new CardArray();
+
+		chainlength = tobeat.cards.size() / duplicate;
+		footer = Card.getRank(tobeat.cards.cards[tobeat.cards.size() - 1]);
+
+		// search for beat chain in rank counts
+		for (var i = footer + 1; i <= Card.RANK_2 - chainlength; i++) {
+			found = true;
+
+			for (var j = 0; j < chainlength; j++) {
+				// check if chain breaks
+				if (count[i + j] < duplicate) {
+					found = false;
+					break;
+				}
+			}
+
+			if (found) {
+				footer = i;		 	// beat footer rank
+				var k = duplicate;	// how many cards needed for each rank
+
+				for (var i = cards.size(); i >= 0 && chainlength > 0; i--) {
+					if (Card.getRank(cards.cards[i]) === footer) {
+						temp.push_front(cards.cards[i]);
+						k--;
+
+						if (k === 0) {
+							k = duplicate;
+							chainlength--;
+							footer++;
+						}
+					}
+				}
+
+				break;
+			}
+		}
+
+		if (found) {
+			beat.type = tobeattype;
+			beat.cards.copy(temp);
+			canbeat = true;
+		}
+
+		return canbeat;
+	};
+
+	HandList.SearchBeat_TrioKickerChain = function(bsc, tobeat, beat, kc) {
+		var canbeat = false;
+		var chainlength = 0;
+		var cantriobeat = false;
+		var tobeattype = tobeat.type;
+		var count = bsc.count.slice(0);
+		var kickcount = [];
+		var combrankmap = [];
+		var rankcombmap = [];
+		var comb = [];
+		var temp = bsc.rcards.clone();
+		var htrio = new Hand();
+		var hkick = new Hand();
+		var htriobeat = new Hand();
+		var hkickbeat = new Hand();
+
+		chainlength = tobeat.cards.size() / (Hand.PRIMAL_TRIO + kc);
+
+		// copy tobeat cards
+		htrio.cards.pushBackCards(tobeat.cards, 0, 3 * chainlength);
+		hkick.cards.pushBackCards(tobeat.cards, 3 * chainlength, chainlength * kc);
+
+		htrio.format(Hand.PRIMAL_TRIO, Hand.KICKER_NONE, Hand.CHAINED);
+
+		// self beat, see HandList.SearchBeat_TrioKicker
+		if (temp.contain(htrio.cards)) {
+			var n = 0;	// combination total
+
+			// remove trio from kickcount
+			kickcount = count.slice(0);
+			for (var i = 0; i < htrio.cards.size(); i += 3) {
+				kickcount[Card.getRank(htrio.cards.cards[i])] = 0;
+			}
+
+			// remove count < kc and calculate n
+			for (var i = Card.RANK_3; i < Card.RANK_END; i++) {
+				if (kickcount[i] < kc) {
+					kickcount[i] = 0;
+				}
+				else {
+					n++;
+				}
+			}
+
+			// setup comb-rank and rank-comb map
+			var j = 0;
+			combrankmap = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+			rankcombmap = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+			for (var i = 0; i < hkick.cards.size(); i += kc) {
+				comb[j++] = rankcombmap[Card.getRank(hkick.cards.cards[i])];
+			}
+
+			// find next combination
+			if (next_comb(comb, chainlength, n)) {
+				// next combination found, copy kickers
+				for (var i = 0; i < chainlength; i++) {
+					var rank = combrankmap[comb[i]];
+					for (var j = 0; j < temp.size(); j++) {
+						if (Card.getRank(temp.cards[j]) === rank) {
+							hkickbeat.cards.pushBackCards(temp, j, kc);
+							break;
+						}
+					}
+				}
+
+				canbeat = true;
+				// copy trio to beat
+				htriobeat.cards.concat(htrio.cards);
+				hkickbeat.cards.sort();
+			}
+		}
+
+		// can't find same rank trio chain, search for higher rank trio
+		if (!canbeat) {
+			// restore rank count
+			count = bsc.count.slice(0);
+			cantriobeat = HandList.SearchBeat_Chain(bsc, htrio, htriobeat, 3);
+
+			// higher rank trio chain found, search for kickers
+			if (cantriobeat) {
+				// remove trio from temp
+				for (var i = 0; i < htriobeat.cards.size(); i += 3) {
+					temp.removeRank(Card.getRank(htriobeat.cards.cards[i]));
+					count[Card.getRank(htriobeat.cards.cards[0])] = 0;
+				}
+
+				for (var j = 0; j < chainlength; j++) {
+					for (var i = 0; i < temp.size(); i++) {
+						if (count[Card.getRank(temp.cards[i])] >= kc) {
+							hkickbeat.cards.pushBackCards(temp, i, kc);
+							temp.removeRank(Card.getRank(temp.cards[i]));
+							break;
+						}
+					}
+				}
+
+				if (hkickbeat.cards.size() === kc * chainlength) {
+					canbeat = true;
+				}
+			}
+		}
+
+		// final
+		if (canbeat) {
+			beat.clear();
+			beat.cards.concat(htriobeat.cards);
+			beat.cards.concat(hkickbeat.cards);
+			beat.type = tobeattype;
+		}
+
+		return canbeat;
+	};
+
+	HandList._SearchBeat = function(cards, tobeat, beat) {
+		var canbeat = false;
+		var bsc = new BeatSearchContext(cards);
+
+		// start search
+		switch (tobeat.type) {
+			case (Hand.PRIMAL_SOLO | Hand.KICKER_NONE | Hand.CHAIN_NONE):
+	            canbeat = HandList.SearchBeat_Primal(bsc, tobeat, beat, Hand.PRIMAL_SOLO);
+	            break;
+		    case (Hand.PRIMAL_PAIR | Hand.KICKER_NONE | Hand.CHAIN_NONE):
+		        canbeat = HandList.SearchBeat_Primal(bsc, tobeat, beat, Hand.PRIMAL_PAIR);
+		        break;
+		    case (Hand.PRIMAL_TRIO | Hand.KICKER_NONE | Hand.CHAIN_NONE):
+		        canbeat = HandList.SearchBeat_Primal(bsc, tobeat, beat, Hand.PRIMAL_TRIO);
+		        break;
+		    case (Hand.PRIMAL_TRIO | Hand.KICKER_PAIR | Hand.CHAIN_NONE):
+		        canbeat = HandList.SearchBeat_TrioKicker(bsc, tobeat, beat, Hand.PRIMAL_PAIR);
+		        break;
+		    case (Hand.PRIMAL_TRIO | Hand.KICKER_SOLO | Hand.CHAIN_NONE):
+		        canbeat = HandList.SearchBeat_TrioKicker(bsc, tobeat, beat, Hand.PRIMAL_SOLO);
+		        break;
+		    case (Hand.PRIMAL_SOLO | Hand.KICKER_NONE | Hand.CHAIN):
+		        canbeat = HandList.SearchBeat_Chain(bsc, tobeat, beat, Hand.PRIMAL_SOLO);
+		        break;
+		    case (Hand.PRIMAL_PAIR | Hand.KICKER_NONE | Hand.CHAIN):
+		        canbeat = HandList.SearchBeat_Chain(bsc, tobeat, beat, Hand.PRIMAL_PAIR);
+		        break;
+		    case (Hand.PRIMAL_TRIO | Hand.KICKER_NONE | Hand.CHAIN):
+		        canbeat = HandList.SearchBeat_Chain(bsc, tobeat, beat, Hand.PRIMAL_TRIO);
+		        break;
+		    case (Hand.PRIMAL_FOUR | Hand.KICKER_NONE | Hand.CHAIN):
+		        canbeat = HandList.SearchBeat_Chain(bsc, tobeat, beat, Hand.PRIMAL_FOUR);
+		        break;
+		    case (Hand.PRIMAL_TRIO | Hand.KICKER_PAIR | Hand.CHAIN):
+		        canbeat = HandList.SearchBeat_TrioKickerChain(bsc, tobeat, beat, Hand.PRIMAL_PAIR);
+		        break;
+		    case (Hand.PRIMAL_TRIO | Hand.KICKER_SOLO | Hand.CHAIN):
+		        canbeat = HandList.SearchBeat_TrioKickerChain(bsc, tobeat, beat, Hand.PRIMAL_SOLO);
+		        break;
+		    default:
+		        break;
+		}
+
+		// search for bomb/nuke
+		if (!canbeat) {
+			canbeat = HandList.SearchBeat_Bomb(bsc, tobeat, beat);
+		}
+
+		return canbeat;
+	};
+
+	//
+	// search for beat, result will be store in beat
+	// 1. if [beat.type] !== 0, then search [new beat] > [beat]
+	// 2. search [beat] > [tobeat], then store in [beat]
+	//
+	HandList.SearchBeat = function(cards, tobeat, beat) {
+		// already in search loop, continue
+		if (beat.type !== 0) {
+			return HandList._SearchBeat(cards, beat, beat);
+		}
+		else {
+			return HandList._SearchBeat(cards, tobeat, beat);
+		}
+	};
+
+	// ----------------------------------------------------------------
+	// Hand Analyzer
+	// ----------------------------------------------------------------
+
+	//
+	// extract hands like 34567 / 334455 / 333444555 etc
+	// array is a processed card array holds count[rank] === duplicate
+	//
+	HandList.ExtractConsecutive = function(hl, arr, duplicate) {
+
 	};
 
 	HandList.prototype = {
@@ -1033,11 +1440,11 @@ var LL = (function() {
 		},
 
 		push_back: function(hand) {
-			this.hands.push(hand);
+			this.hands.push(hand.clone());
 		},
 
 		push_front: function(hand) {
-			this.hands.unshift(hand);
+			this.hands.unshift(hand.clone());
 		},
 
 		pop_front: function() {
@@ -1084,12 +1491,23 @@ var LL = (function() {
 			return this.hands.length;
 		},
 
-		searchBeat: function(cards, tobeat, beat) {
-
-		},
-
 		searchBeatList: function(cards, tobeat) {
+			this.hands = [];
+			var htobeat = new Hand();
+			var beat = new Hand();
+			var canbeat = false;
 
+			beat.clear();
+			htobeat.copy(tobeat);
+
+			do {
+				canbeat = HandList.SearchBeat(cards, htobeat, beat);
+				if (canbeat) {
+					htobeat.copy(beat);
+					this.push_front(beat);
+				}
+
+			} while (canbeat);
 		},
 
 		standardAnalyze: function(cards) {
@@ -1110,6 +1528,8 @@ var LL = (function() {
 	};
 
 	HandList.prototype.constructor = HandList;
+
+	// ----------------------------------------------------------------
 
 	return {
 
