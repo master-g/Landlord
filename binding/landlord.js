@@ -23,6 +23,95 @@ SOFTWARE.
 */
 
 var LL = (function() {
+
+	// ----------------------------------------------------------------
+	// Tree
+	// ----------------------------------------------------------------
+
+	var Tree = function() {
+		this.child = undefined;
+		this.sibling = undefined;
+		this.parent = undefined;
+		this.data = undefined;
+	};
+
+	Tree.prototype = {
+		addChild: function(node) {
+			node.parent = this;
+			if (this.child === undefined) {
+				this.child = node
+			}
+			else {
+				var child = this.child;
+				while (child.sibling !== undefined) {
+					child = child.sibling;
+				}
+
+				child.sibling = node;
+			}
+
+			var sibling = node.sibling;
+			while (sibling !== undefined) {
+				sibling.parent = this;
+				sibling = sibling.sibling;
+			}
+		},
+
+		addSibling: function(node) {
+			node.parent = this.parent;
+			if (this.sibling === undefined) {
+				this.sibling = node;
+
+			}
+			else {
+				var sibling = this.sibling;
+				while (sibling.sibling !== undefined) {
+					sibling = sibling.sibling;
+				}
+
+				sibling.sibling = node;
+			}
+
+			var sibling = node.sibling;
+			while (sibling !== undefined) {
+				sibling.parent = this.parent;
+				sibling = sibling.sibling;
+			}
+		},
+
+		dumpLeaf: function(dataonly) {
+			var s = [];
+			var tempstack = [];
+
+			tempstack.unshift(this);
+
+			while (tempstack.length !== 0) {
+				var tnode = tempstack.shift();
+				var temp = tnode.child;
+				while (temp !== undefined) {
+					tempstack.unshift(temp);
+					temp = temp.sibling;
+				}
+
+				// leaf
+				if (tnode.child === undefined) {
+					if (dataonly)
+						s.unshift(tnode.data);
+					else
+						s.unshift(tnode);
+				}
+			}
+
+			return s;
+		}
+	};
+
+	Tree.prototype.constructor = Tree;
+
+	// ----------------------------------------------------------------
+	// Card
+	// ----------------------------------------------------------------
+
 	var Card = {
 		RANK_3 : 0x01,
 		RANK_4 : 0x02,
@@ -1057,6 +1146,12 @@ var LL = (function() {
 			this.cards.sort();
 			this.rcards = this.cards.clone();
 			this.rcards.reverse();
+		},
+
+		copy: function(bsc) {
+			this.count = bsc.count.slice(0);
+			this.cards = bsc.cards.clone();
+			this.rcards = bsc.rcards.clone();
 		}
 	};
 
@@ -1773,6 +1868,35 @@ var LL = (function() {
 		}
 	};
 
+	HandList.CreatePayLoad = function() {
+		var payload = {};
+		payload.bsc = new BeatSearchContext();
+		payload.hand = new Hand();
+		payload.weight = 0;
+	};
+
+	HandList.TreeAddHand = function(tree, hand) {
+		var olddata = tree.data;
+		var newdata = HandList.CreatePayLoad();
+
+		newdata.bsc.copy(olddata.bsc);
+		newdata.bsc.cards.subtract(hand.cards);
+		newdata.bsc.rcards.copy(newdata.bsc.cards);
+		newdata.bsc.rcards.reverse();
+		newdata.bsc.count = HandList.CountRank(newdata.bsc.cards)[0];
+		newdata.bsc.weight = olddata.weight + 1;
+
+		var node = new Tree();
+		node.data = newdata;
+		tree.addChild(node);
+
+		return node;
+	};
+
+	HandList.StackPushTreeNode = function(stack, node) {
+		stack.unshift(node);
+	};
+
 	HandList.prototype = {
 		clear: function() {
 			this.hands = [];
@@ -1883,7 +2007,7 @@ var LL = (function() {
 		},
 
 		advancedAnalyze: function(cards) {
-
+			// TODO
 		},
 
 		bestBeat: function(cards, tobeat, beat, evalfunc) {
