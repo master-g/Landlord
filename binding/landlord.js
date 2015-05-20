@@ -251,6 +251,30 @@ var LL = (function() {
 			return this.cards.pop();
 		},
 
+		drop_front: function(count) {
+			if (this.cards.length <= count) {
+				count = this.cards.length;
+				this.cards = [];
+			}
+			else {
+				this.cards.splice(0, count);
+			}
+
+			return count;
+		},
+
+		drop_back: function(count) {
+			if (this.cards.length <= count) {
+				count = this.cards.length;
+				this.cards = [];
+			}
+			else {
+				this.cards.splice(-count);
+			}
+
+			return count;
+		},
+
 		pushBackCards: function(cards, where, count) {
 			var tmp = this._getArray(cards);
 
@@ -1711,7 +1735,40 @@ var LL = (function() {
 
 			// can't find any more hands, try to reduce chain length
 			if (lasthand.type !== 0) {
-				
+				if (lasthand.type === (Hand.PRIMAL_SOLO | Hand.KICKER_NONE | Hand.CHAINED)) {
+					if (lasthand.cards.length > Hand.SOLO_CHAIN_MIN_LENGTH) {
+						lasthand.cards.drop_front(1);
+						found = true;
+					}
+					else {
+						lasthand.type = 0;
+					}
+				}
+				else if (lasthand.type === (Hand.PRIMAL_PAIR | Hand.KICKER_NONE | Hand.CHAINED)) {
+					if (lasthand.cards.length > Hand.PAIR_CHAIN_MIN_LENGTH) {
+						lasthand.cards.drop_front(2);
+						found = true;
+					}
+					else {
+						lasthand.type = 0;
+					}
+				}
+				else if (lasthand.type === (Hand.PRIMAL_TRIO | Hand.KICKER_NONE | Hand.CHAINED)) {
+					if (lasthand.cards.length > Hand.TRIO_CHAIN_MIN_LENGTH) {
+						lasthand.cards.drop_front(3);
+						found = true;
+					}
+					else {
+						lasthand.type = 0;
+					}
+				}
+
+				// still can't found, loop through hand type for more
+				if (!found) {
+					lastsearch[0]++;
+					lasthand.clear();
+					found = HandList.TraverseHands(bsc, lastsearch, lasthand);
+				}
 			}
 		}
 	};
