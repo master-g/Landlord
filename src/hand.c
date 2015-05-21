@@ -2081,8 +2081,6 @@ medlist_t *HandList_AdvancedAnalyze(card_array_t *array)
         
         if (shortest == NULL || pload->weight < ((_hltree_payload_t *)shortest->payload)->weight)
             shortest = workingtree;
-        
-        others = NULL;
     }
     
     /* extract shortest node's other hands */

@@ -51,7 +51,7 @@ void test_advanced_hand_analyzer()
     const char* str = "♠K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5";
     const char* str = "s9 d8 s7 h6 s5 c4";
      */
-    const char* str = "h7 s7 d7 d8 c8";
+    const char* str = "♣3 ♣4 ♠5 ♦6 ♠6 ♥7 ♠7 ♦7 ♦8 ♣8 ♣9 ♦9 ♦T";
     card_array_t cards;
     medlist_t *hl;
     CardArray_InitFromString(&cards, str);
@@ -63,12 +63,6 @@ void test_advanced_hand_analyzer()
     HandList_Print(hl);
 
     HandList_Destroy(&hl);
-
-    {
-        hand_t ass;
-        Hand_Parse(&ass, &cards);
-        Hand_Print(&ass);
-    }
 }
 
 void test_game()
@@ -114,7 +108,8 @@ void test_game()
 
 int main(int argc, const char * argv[])
 {
-    test_game();
+    /* test_game(); */
+    test_advanced_hand_analyzer();
     memtrack_list_allocations();
     return 0;
 }

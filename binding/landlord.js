@@ -22,6 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+// a simple javascript library for Landlord A.K.A dou di zhu, a very popular poker game in China
+// translate from C version
+
 var LL = (function() {
 
 	// ----------------------------------------------------------------
@@ -253,8 +256,8 @@ var LL = (function() {
 		subtract: function(rhs) {
 			var rcards = this._getArray(rhs);
 
-			while (rhs.length > 0) {
-				var f = rhs.shift();
+			while (rcards.length > 0) {
+				var f = rcards.shift();
 				for (var i in this.cards) {
 					if (this.cards[i] === f) {
 						this.cards.splice(i, 1);
@@ -645,7 +648,7 @@ var LL = (function() {
 	};
 
 	Hand.CountRank = function(cards, sort) {
-		var count = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+		var count = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
 		var sorted = [];
 
 		var c = [];
@@ -1122,6 +1125,7 @@ var LL = (function() {
 	// Beat Searching Context
 	// ----------------------------------------------------------------
 
+	// a data structure holds information while searching for beat
 	var BeatSearchContext = function(cards) {
 		if (!cards) {
 			this.count = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
@@ -1152,6 +1156,13 @@ var LL = (function() {
 			this.count = bsc.count.slice(0);
 			this.cards = bsc.cards.clone();
 			this.rcards = bsc.rcards.clone();
+		},
+
+		clone: function() {
+			var c = new BeatSearchContext();
+			c.copy(this);
+
+			return c;
 		}
 	};
 
@@ -1165,6 +1176,7 @@ var LL = (function() {
 		this.hands = [];
 	};
 
+	// search beat for primal type, like solo, pair, trio and four
 	HandList.SearchBeat_Primal = function(bsc, tobeat, beat, primal) {
 		var tobeattype = tobeat.type;
 		var count = bsc.count;
@@ -1185,6 +1197,7 @@ var LL = (function() {
 		return false;
 	};
 
+	// search beat for nuke or bomb
 	HandList.SearchBeat_Bomb = function(bsc, tobeat, beat) {
 		var cards = bsc.cards;
 		var count = bsc.count;
@@ -1311,6 +1324,7 @@ var LL = (function() {
 		return canbeat;
 	};
 
+	// search beat for chain (no kickers), duplicate is the chain type, 1 for solo, 2 for pair, 3 for trio
 	HandList.SearchBeat_Chain = function(bsc, tobeat, beat, duplicate) {
 		var canbeat = false;
 		var chainlength = 0;
@@ -1693,6 +1707,24 @@ var LL = (function() {
 	};
 
 	// ----------------------------------------------------------------
+	// Hand Evaluator
+	// ----------------------------------------------------------------
+
+	HandList.StandardEvaluator = function(arr) {
+		var hl = new HandList();
+		hl.standardAnalyze(arr);
+
+		return hl.length;
+	};
+
+	HandList.AdvancedEvaluator = function(arr) {
+		var hl = new HandList();
+		hl.advancedAnalyze(arr);
+
+		return hl.length;
+	};
+
+	// ----------------------------------------------------------------
 	// Advanced Hand Analyzer
 	// ----------------------------------------------------------------
 
@@ -1873,18 +1905,21 @@ var LL = (function() {
 		payload.bsc = new BeatSearchContext();
 		payload.hand = new Hand();
 		payload.weight = 0;
+
+		return payload;
 	};
 
 	HandList.TreeAddHand = function(tree, hand) {
 		var olddata = tree.data;
 		var newdata = HandList.CreatePayLoad();
 
+		newdata.hand = hand.clone();
 		newdata.bsc.copy(olddata.bsc);
 		newdata.bsc.cards.subtract(hand.cards);
 		newdata.bsc.rcards.copy(newdata.bsc.cards);
 		newdata.bsc.rcards.reverse();
-		newdata.bsc.count = HandList.CountRank(newdata.bsc.cards)[0];
-		newdata.bsc.weight = olddata.weight + 1;
+		newdata.bsc.count = Hand.CountRank(newdata.bsc.cards)[0];
+		newdata.weight = olddata.weight + 1;
 
 		var node = new Tree();
 		node.data = newdata;
@@ -1897,9 +1932,89 @@ var LL = (function() {
 		stack.unshift(node);
 	};
 
+	HandList.BestBeat = function(cards, tobeat, beat, evalfunc) {
+		var BEAT_VALUE_FACTOR = 10;
+
+		var beatnode_value_sort = function(a, b) {
+			return a.value - b.value;
+		}
+
+		var CreateBeatNode = function(hand) {
+			var node = {};
+			node.hand = hand;
+			node.value = 0;
+
+			return node;
+		}
+
+		//
+		var hbombs = [];
+		var hnodes = [];
+		var temp = new CardArray();
+		var canbeat = false;
+
+		var evalf = evalfunc || HandList.StandardEvaluator;
+
+		// search beat list
+		var hl = new HandList();
+		hl.searchBeatList(cards, tobeat);
+		
+		// separate bomb/nuke and normal hands
+		while (hl.length !== 0) {
+			var node = hl.pop_front();
+
+			if (node.type === Hand.PRIMAL_BOMB || node.type === Hand.PRIMAL_NUKE) {
+				hbombs.push(node);
+			}
+			else {
+				hnodes.push(CreateBeatNode(node));
+			}
+		}
+
+		// calculate value
+		if (hnodes.length > 1) {
+			for (var i = 0; i < hnodes.length; i++) {
+				temp.copy(cards);
+				// evaluate the value of cards left after hand was played
+				temp.subtract(hnodes[i].hand.cards);
+				hnodes[i].value = evalf(temp) * BEAT_VALUE_FACTOR + Card.getRank(hnodes[i].hand.cards.cards[0]);
+			}
+
+			// sort primal hands
+			hnodes.sort(beatnode_value_sort);
+		}
+
+		// re-build hand list
+		hl.clear();
+		for (var i = hbombs.length - 1; i >= 0; i--) {
+			hl.push_front(hbombs[i]);
+		}
+
+		for (var i = hnodes.length -1; i >= 0; i--) {
+			hl.push_front(hnodes[i].hand);
+		}
+
+		// select beat
+		if (hl.length !== 0) {
+			beat.copy(hl.hands[0]);
+			canbeat = true;
+		}
+
+		return canbeat;
+	};
+
 	HandList.prototype = {
 		clear: function() {
 			this.hands = [];
+		},
+
+		clone: function() {
+			var hl = new HandList();
+			for (var i = 0; i < this.hands.length; i++) {
+				hl.hands.push(this.hands[i].clone());
+			}
+
+			return hl;
 		},
 
 		push_back: function(hand) {
@@ -2004,18 +2119,105 @@ var LL = (function() {
 			HandList.ExtractConsecutive(this, arrtrio, 3);
 			HandList.ExtractConsecutive(this, arrpair, 2);
 			HandList.ExtractConsecutive(this, arrsolo, 1);
+
+			return this.clone();
 		},
 
 		advancedAnalyze: function(cards) {
-			// TODO
-		},
 
-		bestBeat: function(cards, tobeat, beat, evalfunc) {
+			var hl = new HandList();
 
+			// setup search context
+			var bsc = new BeatSearchContext(cards);
+
+			// extract nuke, bomb, joker and 2
+			HandList.ExtractNukeBombJokerAndTwo(hl, bsc.cards, bsc.count);
+
+			// magic goes here
+
+			// root
+			var grandtree = new Tree();
+			grandtree.data = HandList.CreatePayLoad();
+			grandtree.data.bsc.copy(bsc);
+			grandtree.data.weight = 0;
+
+			// first expansion
+			var chains = new HandList();
+			HandList.ExtractAllChains(bsc, chains);
+
+			// no chains, fall back to standard analyze
+			if (chains.length === 0) {
+				this.standardAnalyze(cards);
+				return;
+			}
+
+			var st = [];
+			for (var i = 0; i < chains.length; i++) {
+				var tnode = HandList.TreeAddHand(grandtree, chains.hands[i]);
+				st.unshift(tnode);
+			}
+
+			// loop start
+			chains.clear();
+			while (st.length !== 0) {
+				// pop stack
+				var temp = st.shift();
+
+				// extract node data
+				var data = temp.data;
+
+				// expansion
+				HandList.ExtractAllChains(data.bsc, chains);
+
+				if (chains.length !== 0) {
+					// push new nodes
+					for (var i = 0; i < chains.length; i++) {
+						var tnode = HandList.TreeAddHand(temp, chains.hands[i]);
+						st.unshift(tnode);
+					}
+
+					chains.clear();
+				}
+			}
+
+			// tree construction complete
+			st = grandtree.dumpLeaf();
+
+			// find shortest path
+			var shortest = undefined;
+			while (st.length !== 0) {
+				// pop stack
+				var workingtree = st.shift();
+				// extract node data
+				var payload = workingtree.data;
+				payload.weight += HandList.StandardEvaluator(payload.bsc.cards);
+
+				if (shortest === undefined || payload.weight < shortest.data.weight) {
+					shortest = workingtree;
+				}
+			}
+
+			// extract shorest node's other hands
+			var others = new HandList();
+			others.standardAnalyze(shortest.data.bsc.cards);
+
+			while (shortest !== undefined && shortest.data.weight !== 0) {
+				others.push_front(shortest.data.hand);
+				shortest = shortest.parent;
+			}
+
+			others.concat(hl);
+
+			this.hands = others.hands;
+
+			return this.clone();
 		},
 
 		debugPrint: function() {
-
+			for (var i in this.hands) {
+				var hand = this.hands[i];
+				console.log(hand.toString() + " " + hand.cards.toString());
+			}
 		},
 
 		get length() {
@@ -2024,6 +2226,19 @@ var LL = (function() {
 	};
 
 	HandList.prototype.constructor = HandList;
+
+	// ----------------------------------------------------------------
+	// Player
+	// ----------------------------------------------------------------
+	var Player = function() {
+		
+	};
+
+	Player.prototype = {
+
+	};
+
+	Player.prototype.constructor = Player;
 
 	// ----------------------------------------------------------------
 
@@ -2047,29 +2262,29 @@ var LL = (function() {
 })();
 
 var lca = LL.CardArray;
-var a = new lca("s9 d8 s7 h6 s5 c4");
-var card = LL.Card.make(LL.Card.RANK_2 | LL.Card.SUIT_HEART)
-a.removeCard(card);
-a.sort();
-
-var ld = LL.Deck;
-var d = new ld();
-var s = d.deal(5);
-console.log(s.toString());
-console.log(d.cards.toString());
-d.recycle(s);
-d.used.reverse();
-var c = d.used.clone();
-console.log(c.toString());
-d.reset();
-d.shuffle();
-console.log(d.cards.toString());
-
-var ht = "♦6 ♠6 ♥7 ♠7 ♦8 ♣8 ♣9 ♦9";
-
 var lh = LL.Hand;
-var h = new lh();
-h.parse(new lca(ht));
-console.log(h.toString());
+var lhl = LL.HandList;
 
-console.log(a.length);
+var cards = new lca("♣3 ♣4 ♠5 ♦6 ♠6 ♥7 ♠7 ♦7 ♦8 ♣8 ♣9 ♦9 ♦T");
+var hl = new lhl();
+var hhl = hl.advancedAnalyze(cards);
+var shl = hl.standardAnalyze(cards);
+
+shl.debugPrint();
+console.log('-----');
+hhl.debugPrint();
+console.log('=====');
+
+var tobeatCards = new lca("♥6 ♣6");
+var tobeat = new lh();
+tobeat.parse(tobeatCards);
+var beat = new lh();
+
+lhl.BestBeat(cards, tobeat, beat);
+
+var bl = shl.clone();
+bl.searchBeatList(cards, tobeat);
+
+console.log(beat.toString() + " " + beat.cards.toString());
+console.log("---");
+bl.debugPrint();
