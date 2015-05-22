@@ -27,6 +27,16 @@ SOFTWARE.
 
 var LL = (function() {
 
+	var Config = {
+		Debug : true
+	};
+
+	var dbglog = function(msg) {
+		if (Config.Debug) {
+			console.log(msg);
+		}
+	}
+
 	// ----------------------------------------------------------------
 	// Tree
 	// ----------------------------------------------------------------
@@ -2216,7 +2226,7 @@ var LL = (function() {
 		debugPrint: function() {
 			for (var i in this.hands) {
 				var hand = this.hands[i];
-				console.log(hand.toString() + " " + hand.cards.toString());
+				dbglog(hand.toString() + " " + hand.cards.toString());
 			}
 		},
 
@@ -2231,18 +2241,486 @@ var LL = (function() {
 	// Player
 	// ----------------------------------------------------------------
 	var Player = function() {
-		
+		this.cards = new CardArray();	// card array, will change during game play
+		this.record = new CardArray();	// card record, won't change until a round is over
+		this.hands = new HandList();	// the analyze result of cards
+		this.identity = 0;				// peasant / landlord
+		this.seatId = 0;				// 0, 1, 2
+		this.bid = 0;					// 0, 1, 2, 3
+
+		this.eventHandlers = [];		// event handlers
 	};
 
-	Player.prototype = {
+	// constants
 
+	Player.Event = {};
+	Player.Event.GetReady = 0;
+	Player.Event.Bid = 1;
+	Player.Event.Start = 2;
+	Player.Event.Play = 3;
+	Player.Event.Beat = 4;
+	Player.Event.Count = 5;
+
+	Player.Identity = {};
+	Player.Identity.Peasant = 0;
+	Player.Identity.Landlord = 1;
+
+	Player.Bid = {};
+	Player.Bid.Abstain = 0;
+	Player.Bid.Bid = 1;
+
+	// factory
+
+	Player.CreateStandardAI = function() {
+		var player = new Player();
+		player.eventHandlers[Player.Event.GetReady] = Player.StandardAI_GetReady;
+		player.eventHandlers[Player.Event.Bid] = Player.StandardAI_Bid;
+		player.eventHandlers[Player.Event.Play] = Player.StandardAI_Play;
+		player.eventHandlers[Player.Event.Beat] = Player.StandardAI_Beat;
+
+		return player;
+	};
+
+	Player.CreateAdvancedAI = function() {
+		var player = new Player();
+
+		return player;
+	};
+
+	// AI functions
+
+	Player.StandardAI_GetReady = function(player, context) {
+		player.cards.sort();
+		player.record.copy(player.cards);
+		player.hands.standardAnalyze(player.cards);
+
+		dbglog(player.record.toString());
+	};
+
+	Player.StandardAI_Bid = function(player, context) {
+		var shouldbid = 0;
+		var handlistlen = 0;
+
+		player.cards.sort();
+		player.hands.standardAnalyze(player.cards);
+		handlistlen = player.hands.length;
+
+		if (handlistlen > 9) {
+			shouldbid = 0;
+		}
+		else if (handlistlen < 9 && handlistlen > 3) {
+			shouldbid = 1;
+		}
+		else if (handlistlen <= 3 && handlistlen > 2) {
+			shouldbid = 2;
+		}
+		else if (handlistlen <= 2) {
+			shouldbid = 3;
+		}
+
+		if (shouldbid > context.bid)
+			return shouldbid;
+		else
+			return 0;
+	};
+
+	Player.StandardAI_Play = function(player, context) {
+		var hand = context.lasthand;
+		var temp = undefined;
+		do {
+			// empty hands
+			if (player.hands.length === 0) {
+				hand.type = 0;
+				break;
+			}
+
+			// last hand
+			if (player.hands.length === 1) {
+				hand.copy(player.hands.pop_front());
+				break;
+			}
+
+			// try to find longest hand combination
+			var node = player.hands.find(Hand.PRIMAL_TRIO | Hand.KICKER_NONE | Hand.CHAINED);
+			if (node) {
+				// copy hand
+				hand.copy(node);
+
+				// how many kickers do we need
+				var need = node.cards.length / 3;
+
+				// remove hand node from hand list
+				player.hands.remove(node);
+
+				// count solo and pair number
+				var countpair = 0;
+				var countsolo = 0;
+				for (var i = 0; i < player.hands.length; i++) {
+					temp = player.hands.hands[i];
+					if (temp.type === Hand.PRIMAL_PAIR) {
+						countpair++;
+					}
+					else if (temp.type === Hand.PRIMAL_SOLO) {
+						countsolo++;
+					}
+				}
+
+				// trio-pair-chain then trio-solo-chain
+				var searchprimal = 0;
+				var kicker = 0;
+				if (countsolo < need && countpair < need) {
+					break;
+				}
+				else if (countpair >= need) {
+					searchprimal = Hand.PRIMAL_PAIR;
+					kicker = Hand.KICKER_PAIR;
+				}
+				else {
+					searchprimal = Hand.PRIMAL_SOLO;
+					kicker = Hand.KICKER_SOLO;
+				}
+
+				// detach pairs from list
+				var i = 0;
+				temp = player.hands.hands[i];
+				while (temp && need > 0) {
+					if (temp.type === searchprimal) {
+						// copy cards
+						hand.cards.concat(temp.cards);
+						player.hands.remove(temp);
+						temp = player.hands[i];
+						need--;
+					}
+					else {
+						i++;
+						temp = player.hands.hands[i];
+					}
+				}
+
+				hand.setKicker(kicker);
+				break;
+			}
+
+			// pair chain
+			node = player.hands.find(Hand.PRIMAL_PAIR | Hand.KICKER_NONE | Hand.CHAINED);
+			// solo chain
+			if (!node)
+				node = player.hands.find(Hand.PRIMAL_SOLO | Hand.KICKER_NONE | Hand.CHAINED);
+			if (node) {
+				hand.copy(node);
+				player.hands.remove(node);
+				break;
+			}
+
+			// trio
+			node = player.hands.find(Hand.PRIMAL_TRIO | Hand.KICKER_NONE | Hand.CHAIN_NONE);
+			if (node && Card.getRank(node.cards.cards[0]) !== Card.RANK_2) {
+				hand.copy(node);
+				player.hands.remove(node);
+
+				// pair
+				node = player.hands.find(Hand.PRIMAL_PAIR | Hand.KICKER_NONE | Hand.CHAIN_NONE);
+				if (node && Card.getRank(node.cards.cards[0]) !== Card.RANK_2) {
+					kicker = Hand.KICKER_PAIR;
+				}
+				// solo
+				else {
+					node = player.hands.find(Hand.PRIMAL_SOLO | Hand.KICKER_NONE | Hand.CHAIN_NONE);
+					if (node && Card.getRank(node.cards.cards[0]) !== Card.RANK_2) {
+						kicker = Hand.KICKER_SOLO;
+					}
+				}
+
+				if (node) {
+					hand.cards.concat(node.cards);
+					hand.setKicker(kicker);
+					player.hands.remove(node);
+					break;
+				}
+
+				// no solo nor pair, return with trio
+				break;
+			}
+
+			// pair
+			node = player.hands.find(Hand.PRIMAL_PAIR | Hand.KICKER_NONE | Hand.CHAIN_NONE);
+			if (node && Card.getRank(node.cards.cards[0]) !== Card.RANK_2) {
+				hand.copy(node);
+				player.hands.remove(node);
+				break;
+			}
+
+			// just play
+			node = player.hands.pop_front();
+			hand.copy(node);
+		} while (0);
+
+		player.cards.subtract(hand.cards);
+	};
+
+	Player.StandardAI_Beat = function(player, context) {
+		// HandList.SearchBeat can search for beat in loop mode
+		// but we just simply find a beat here
+		var canbeat = false;
+		var beat = new Hand();
+		var tobeat = context.lasthand;
+		var prevplayer, teammate, landlord;
+		canbeat = HandList.BestBeat(player.cards, tobeat, beat);
+
+		// peasant cooperation
+		prevplayer = context.getLastHandPlayer();
+		if (canbeat && (player.identity === Player.Identity.Peasant) && (prevplayer.identity === Player.Identity.Peasant)) {
+			// find teammate and landlord
+			for (var i = 0; i < Game.PLAYERS; i++) {
+				if (context.players[i].identity === Player.Identity.Landlord) {
+					landlord = context.players[i];
+				}
+
+				if ((context.players[i].identity === Player.Identity.Peasant) && (context.players[i].seatId !== player.seatId)) {
+					teammate = context.players[i];
+				}
+			}
+
+			// don't nuke/bomb teammate
+			if (canbeat && ((beat.type === Hand.PRIMAL_BOMB) || beat.type === Hand.PRIMAL_NUKE)) {
+				canbeat = false;
+			}
+
+			if (canbeat && teammate.cards.length < player.cards.length) {
+				canbeat = false;
+			}
+		}
+
+		if (canbeat) {
+			player.cards.subtract(beat.cards);
+			player.hands.standardAnalyze(player.cards);
+			tobeat.copy(beat);
+		}
+
+		return canbeat;
+	}
+
+	// prototype
+
+	Player.prototype = {
+		clear: function() {
+			this.cards.clear();
+			this.record.clear();
+			this.hands.clear();
+			this.identity = Player.Identity.Peasant;
+			this.seatId = 0;
+			this.bid = 0;
+		},
+
+		handleEvent: function(event, context) {
+			if (this.eventHandlers[event]) {
+				return this.eventHandlers[event](this, context);
+			}
+		}
 	};
 
 	Player.prototype.constructor = Player;
 
 	// ----------------------------------------------------------------
+	// Game
+	// ----------------------------------------------------------------
+
+	var Game = function() {
+		this.players = [];
+		this.deck = new Deck();
+		this.lasthand = new Hand();
+		this.cardRecord = new CardArray();
+		this.kittyCards = new CardArray();
+		this.bid = 0;
+		this.highestBidder = 0;
+		this.playerIndex = 0;
+		this.landlord = 0;
+		this.lastplay = 0;
+		this.winner = 0;
+		this.status = 0;
+		this.phase = 0;
+	};
+
+	Game.PLAYERS = 3;
+	Game.HAND_CARDS = 17;
+	Game.REST_CARDS = 3;
+	Game.BID_1 = 1;
+	Game.BID_2 = 2;
+	Game.BID_3 = 3;
+
+	Game.Status = {};
+	Game.Status.Halt = 0;
+	Game.Status.Bid = 1;
+	Game.Status.Ready = 2;
+	Game.Status.Pause = 3;
+	Game.Status.Over = 4;
+
+	Game.StagePhase = {};
+	Game.StagePhase.Play = 0;
+	Game.StagePhase.Query = 1;
+	Game.StagePhase.Pass = 2;
+
+	Game.prototype = {
+		getCurrentPlayer: function() {
+			return this.players[this.playerIndex];
+		},
+
+		getLastHandPlayer: function() {
+			return this.players[this.lastplay];
+		},
+
+		incPlayerIndex: function() {
+			this.playerIndex = (this.playerIndex + 1) % Game.PLAYERS;
+		},
+
+		init: function() {
+			for (var i = 0; i < Game.PLAYERS; i++) {
+				this.players[i] = Player.CreateStandardAI();
+				this.players[i].identity = Player.Identity.Peasant;
+				this.players[i].seatId = i;
+			}
+
+			this.bid = 0;
+			this.playerIndex = 0;
+			this.landlord = 0;
+			this.lastplay = 0;
+			this.winner = 0;
+			this.status = 0;
+			this.phase = 0;
+
+			this.deck.reset();
+			this.deck.shuffle();
+			this.cardRecord.clear();
+			this.kittyCards.clear();
+		},
+
+		clear: function() {
+			for (var i = 0; i < Game.PLAYERS; i++) {
+				this.players[i].clear();
+			}
+		},
+
+		reset: function() {
+			for (var i = 0; i < Game.PLAYERS; i++) {
+				// this.players[i] = Player.CreateStandardAI();
+				this.players[i].clear();
+				this.players[i].seatId = i;
+			}
+
+			this.bid = 0;
+			this.playerIndex = 0;
+			this.landlord = 0;
+			this.lastplay = 0;
+			this.winner = 0;
+			this.status = 0;
+			this.phase = 0;
+
+			this.deck.reset();
+			this.deck.shuffle();
+			this.cardRecord.clear();
+			this.kittyCards.clear();
+		},
+
+		play: function() {
+			this.status = Game.Status.Bid;
+			this.bid = 0;
+			this.highestBidder = -1;
+
+			while (this.status === Game.Status.Bid) {
+				this.playerIndex = Math.floor(Math.random() * Game.PLAYERS);
+				for (var i = 0; i < Game.PLAYERS; i++) {
+					this.getCurrentPlayer().cards = this.deck.deal(Game.HAND_CARDS);
+					var bid = this.getCurrentPlayer().handleEvent(Player.Event.Bid, this);
+					if (bid > this.bid) {
+						dbglog("Player ---- " + this.playerIndex + " ---- bid for " + bid);
+						this.highestBidder = this.playerIndex;
+						this.bid = bid;
+					}
+
+					this.incPlayerIndex();
+				}
+
+				// check if bid stage is done
+				if (this.bid === 0) {
+					this.deck.reset();
+				}
+				else {
+					// setup landlord, game start!
+					this.landlord = this.highestBidder;
+					this.players[this.landlord].identity = Player.Identity.Landlord;
+					this.playerIndex = this.landlord;
+					this.phase = Game.StagePhase.Play;
+					this.kittyCards = this.deck.deal(Game.REST_CARDS);
+					this.players[this.landlord].cards.concat(this.kittyCards);
+					this.status = Game.Status.Ready;
+
+					// 
+				}
+			}
+
+			for (var i = 0; i < Game.PLAYERS; i++) {
+				this.players[i].handleEvent(Player.Event.GetReady, this);
+			}
+
+			// game play
+			while (this.status !== Game.Status.Over) {
+				if (this.phase === Game.StagePhase.Play) {
+					this.getCurrentPlayer().handleEvent(Player.Event.Play, this);
+					this.lastplay = this.playerIndex;
+					this.phase = Game.StagePhase.Query;
+
+					this.cardRecord.concat(this.lasthand.cards);
+
+					dbglog("Player ---- " + this.playerIndex + " played");
+					dbglog(this.lasthand.toString() + " " + this.lasthand.cards.toString());
+				}
+				else if (this.phase === Game.StagePhase.Query || this.phase === Game.StagePhase.Pass) {
+					var beat = this.getCurrentPlayer().handleEvent(Player.Event.Beat, this);
+					// has beat in the phase
+					if (!beat) {
+						// two player pass
+						if (this.phase === Game.StagePhase.Pass) {
+							this.phase = Game.StagePhase.Play;
+						}
+						else {
+							this.phase = Game.StagePhase.Pass;
+						}
+
+						dbglog("Player ---- " + this.playerIndex + " ---- passed");
+					}
+					else {
+						this.lastplay = this.playerIndex;
+						this.phase = Game.StagePhase.Query;
+						this.cardRecord.concat(this.lasthand.cards);
+
+						dbglog("Player ---- " + this.playerIndex + " beat");
+						dbglog(this.lasthand.toString() + " " + this.lasthand.cards.toString());
+					}
+				}
+
+				this.incPlayerIndex();
+
+				// check if there is player win
+				for (var i = 0; i < Game.PLAYERS; i++) {
+					if (this.players[i].cards.length === 0) {
+						this.status = Game.Status.Over;
+						this.winner = i;
+
+						dbglog("Player ---- " + i + " wins !");
+						break;
+					}
+				}
+			}
+		}
+	};
+
+	Game.prototype.constructor = Game;
+
+	// ----------------------------------------------------------------
 
 	return {
+
+		Config: Config,
 
 		Card: Card,
 
@@ -2256,11 +2734,18 @@ var LL = (function() {
 		Hand: Hand,
 
 		// HandList
-		HandList: HandList
+		HandList: HandList,
+
+		// Player
+		Player: Player,
+
+		// Game
+		Game: Game
 	};
 
 })();
 
+/*
 var lca = LL.CardArray;
 var lh = LL.Hand;
 var lhl = LL.HandList;
@@ -2288,3 +2773,36 @@ bl.searchBeatList(cards, tobeat);
 console.log(beat.toString() + " " + beat.cards.toString());
 console.log("---");
 bl.debugPrint();
+ */
+
+var peasantwon = 0;
+var landlordwon = 0;
+
+var game = new LL.Game();
+
+LL.Config.Debug = false;
+
+game.init();
+
+for (var i = 0; i < 10000; i++) {
+	game.play();
+
+	if (game.winner === game.landlord) {
+		landlordwon++;
+	}
+	else {
+		peasantwon++;
+	}
+
+	if (i !== 0 && (i % 100 === 0)) {
+		console.log(Math.floor(i / 10000.0 * 100) + "% complete.");
+	}
+
+	game.reset();
+}
+
+console.log("peasants : " + peasantwon);
+console.log("landlord : " + landlordwon);
+
+
+

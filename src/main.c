@@ -77,7 +77,7 @@ void test_game()
     
     Game_Init(&game);
     
-    for (i = 100000; i < 200000; i++)
+    for (i = 10000; i < 20000; i++)
     {
         Game_Play(&game, i);
         
@@ -90,7 +90,7 @@ void test_game()
         
         if (i % 10000 == 0)
         {
-            printf("%.1f%%\n", (i - 100000) / 100000.0f * 100.0f);
+            printf("%.1f%%\n", (i - 10000) / 10000.0f * 100.0f);
         }
     }
     
@@ -108,8 +108,8 @@ void test_game()
 
 int main(int argc, const char * argv[])
 {
-    /* test_game(); */
-    test_advanced_hand_analyzer();
+    test_game();
+    /* test_advanced_hand_analyzer(); */
     memtrack_list_allocations();
     return 0;
 }

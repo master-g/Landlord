@@ -136,7 +136,7 @@ void Game_Play(game_t *game, uint32_t seed)
             CardArray_Concate(&game->players[game->landlord].cards, &game->kittyCards);
             game->status = GameStatus_Ready;
             
-            Player_SetupAdvancedAI(&game->players[game->landlord]);
+            /* Player_SetupAdvancedAI(&game->players[game->landlord]); */
         }
     }
 

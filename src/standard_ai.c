@@ -208,7 +208,7 @@ int StandardAI_Play(void *p, void *game)
                 break;
             }
             
-            /* no solo and pair, return with trio */
+            /* no solo nor pair, return with trio */
             break;
         }
         
