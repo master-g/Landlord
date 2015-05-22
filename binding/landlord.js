@@ -2269,25 +2269,9 @@ var LL = (function() {
 	Player.Bid.Abstain = 0;
 	Player.Bid.Bid = 1;
 
-	// factory
-
-	Player.CreateStandardAI = function() {
-		var player = new Player();
-		player.eventHandlers[Player.Event.GetReady] = Player.StandardAI_GetReady;
-		player.eventHandlers[Player.Event.Bid] = Player.StandardAI_Bid;
-		player.eventHandlers[Player.Event.Play] = Player.StandardAI_Play;
-		player.eventHandlers[Player.Event.Beat] = Player.StandardAI_Beat;
-
-		return player;
-	};
-
-	Player.CreateAdvancedAI = function() {
-		var player = new Player();
-
-		return player;
-	};
-
-	// AI functions
+	// ----------------------------------------------------------------
+	// Standard AI Event Handler
+	// ----------------------------------------------------------------
 
 	Player.StandardAI_GetReady = function(player, context) {
 		player.cards.sort();
@@ -2500,6 +2484,71 @@ var LL = (function() {
 		return canbeat;
 	}
 
+	// ----------------------------------------------------------------
+	// Advanced AI Event Handler
+	// ----------------------------------------------------------------
+
+	Player.AdvancedAI_GetReady = function(player, context) {
+		player.cards.sort();
+		player.record.copy(player.cards);
+		player.hands.advancedAnalyze(player.cards);
+
+		dbglog(player.record.toString());
+	};
+
+	Player.AdvancedAI_Bid = function(player, context) {
+		// TODO
+		return 0;
+	};
+
+	Player.AdvancedAI_Play = function(player, context) {
+
+	};
+
+	// player must play a hand that can beat last player
+	// if there is no hand can beat last player, tobeat.type will be 0
+	Player.AdvancedAI_Beat = function(player, context) {
+		// HandList.SearchBeat can search for beat in loop mode
+		// but we just simply find a beat here
+		var canbeat = false;
+		var beat = new Hand();
+		var tobeat = context.lasthand;
+		var prevplayer, teammate, landlord;
+		canbeat = HandList.BestBeat(player.cards, tobeat, beat);
+
+		// peasant cooperation
+		prevplayer = context.getLastHandPlayer();
+		if (canbeat && (player.identity === Player.Identity.Peasant) && (prevplayer.identity === Player.Identity.Peasant)) {
+			// find teammate and landlord
+			for (var i = 0; i < Game.PLAYERS; i++) {
+				if (context.players[i].identity === Player.Identity.Landlord) {
+					landlord = context.players[i];
+				}
+
+				if ((context.players[i].identity === Player.Identity.Peasant) && (context.players[i].seatId !== player.seatId)) {
+					teammate = context.players[i];
+				}
+			}
+
+			// don't nuke/bomb teammate
+			if (canbeat && ((beat.type === Hand.PRIMAL_BOMB) || beat.type === Hand.PRIMAL_NUKE)) {
+				canbeat = false;
+			}
+
+			if (canbeat && teammate.cards.length < player.cards.length) {
+				canbeat = false;
+			}
+		}
+
+		if (canbeat) {
+			player.cards.subtract(beat.cards);
+			player.hands.advancedAnalyze(player.cards);
+			tobeat.copy(beat);
+		}
+
+		return canbeat;
+	};
+
 	// prototype
 
 	Player.prototype = {
@@ -2516,7 +2565,21 @@ var LL = (function() {
 			if (this.eventHandlers[event]) {
 				return this.eventHandlers[event](this, context);
 			}
-		}
+		},
+
+		setStandardAI: function() {
+			this.eventHandlers[Player.Event.GetReady] = Player.StandardAI_GetReady;
+			this.eventHandlers[Player.Event.Bid] = Player.StandardAI_Bid;
+			this.eventHandlers[Player.Event.Play] = Player.StandardAI_Play;
+			this.eventHandlers[Player.Event.Beat] = Player.StandardAI_Beat;
+		},
+
+		setAdvancedAI: function() {
+			this.eventHandlers[Player.Event.GetReady] = Player.AdvancedAI_GetReady;
+			this.eventHandlers[Player.Event.Bid] = Player.StandardAI_Bid;
+			this.eventHandlers[Player.Event.Play] = Player.StandardAI_Play;
+			this.eventHandlers[Player.Event.Beat] = Player.AdvancedAI_Beat;
+		},
 	};
 
 	Player.prototype.constructor = Player;
@@ -2575,7 +2638,8 @@ var LL = (function() {
 
 		init: function() {
 			for (var i = 0; i < Game.PLAYERS; i++) {
-				this.players[i] = Player.CreateStandardAI();
+				this.players[i] = new Player();
+				this.players[i].setStandardAI();
 				this.players[i].identity = Player.Identity.Peasant;
 				this.players[i].seatId = i;
 			}
@@ -2602,7 +2666,7 @@ var LL = (function() {
 
 		reset: function() {
 			for (var i = 0; i < Game.PLAYERS; i++) {
-				// this.players[i] = Player.CreateStandardAI();
+				this.players[i].setStandardAI();
 				this.players[i].clear();
 				this.players[i].seatId = i;
 			}
@@ -2654,7 +2718,7 @@ var LL = (function() {
 					this.players[this.landlord].cards.concat(this.kittyCards);
 					this.status = Game.Status.Ready;
 
-					// 
+					this.players[this.landlord].setAdvancedAI();
 				}
 			}
 
