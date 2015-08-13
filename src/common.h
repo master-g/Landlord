@@ -40,7 +40,7 @@ SOFTWARE.
 extern "C" {
 #endif
 
-#define PRINT_GAME_LOG_
+#define PRINT_GAME_LOG
 
 #ifdef PRINT_GAME_LOG
 #define DBGLog printf

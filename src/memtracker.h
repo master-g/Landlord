@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-#define KITSUNE_DEBUG
+/* #define KITSUNE_DEBUG */
 
 #ifdef KITSUNE_DEBUG
     #ifndef INTERNAL
@@ -38,15 +38,13 @@ extern "C" {
         #define free(ptr)           memtrack_free(ptr, #ptr, __FILE__, __LINE__)
     #endif /* INTERNAL */
 
+#endif /* KITSUNE_DEBUG */
+    
 void* memtrack_malloc(size_t size, const char* expr, const char* file, int line);
 void* memtrack_calloc(size_t count, size_t elem_size, const char* expr, const char* file, int line);
 void* memtrack_realloc(void* ptr, const char* eptr, size_t size, const char* expr, const char* file, int line);
 void memtrack_free(void* ptr, const char* expr, const char* file, int line);
 void memtrack_list_allocations(void);
-
-#else
-
-#endif /* KITSUNE_DEBUG */
 
 #ifdef __cplusplus
 }

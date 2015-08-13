@@ -113,7 +113,7 @@ int CardArray_Concate(card_array_t *head, card_array_t *tail);
 void CardArray_Subtract(card_array_t *from, card_array_t *sub);
 
 /*
- * check for identity, 0: identity otherwise: not identity
+ * check for identity
  */
 int CardArray_IsIdentity(card_array_t *a, card_array_t *b);
 

@@ -188,11 +188,11 @@ void CardArray_Subtract(card_array_t *from, card_array_t *sub)
 int CardArray_IsIdentity(card_array_t *a, card_array_t *b)
 {
     int i = 0;
-    int identity = 0;
+    int identity = 1;
     card_array_t ta, tb;
     
     if (a == b)
-        return 0;
+        return 1;
     
     identity = a->length - b->length;
     if (identity == 0)
@@ -206,7 +206,7 @@ int CardArray_IsIdentity(card_array_t *a, card_array_t *b)
         {
             if (ta.cards[i] != tb.cards[i])
             {
-                identity = -1;
+                identity = 0;
                 break;
             }
         }
