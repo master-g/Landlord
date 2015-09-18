@@ -12,7 +12,6 @@ config.h
 config.h.in
 config.log
 config.status
-configure
 configure.scan
 coverage_report
 depcomp
