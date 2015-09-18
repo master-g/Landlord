@@ -1,4 +1,4 @@
-Landlord
+Landlord [![Build Status](https://travis-ci.org/master-g/Landlord.svg?branch=master)](https://travis-ci.org/master-g/Landlord)
 ========
 
 Dou Dizhu is the most popular poker game in China, here is a C implementation  
@@ -12,4 +12,3 @@ better AI
 interface / lib  
 documentation  
 optimization  
-
