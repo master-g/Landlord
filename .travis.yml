@@ -5,4 +5,5 @@ before_install:
   - sudo apt-get update -qq
 script:
   - ./configure
+  - automake --add-missing
   - make
