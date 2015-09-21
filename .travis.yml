@@ -4,5 +4,6 @@ before_script:
   - sudo apt-get update -q
   - sudo apt-get install --only-upgrade autoconf
 script:
+  - autoreconf -iv
   - ./configure
   - make
