@@ -5,5 +5,4 @@ before_script:
   - sudo apt-get install --only-upgrade autoconf
 script:
   - ./configure
-  - automake --add-missing
   - make
