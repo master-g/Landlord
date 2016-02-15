@@ -8,7 +8,7 @@
  *  Created:  2013/02/11
  *  Company:  SNSTEAM.inc
  *  (C) Copyright 2013 SNSTEAM.inc All rights reserved.
- * 
+ *
  * This file is a part of kitsune
  *
  * The copyright to the contents herein is the property of SNSTEAM.inc
@@ -39,7 +39,7 @@ extern "C" {
     #endif /* INTERNAL */
 
 #endif /* KITSUNE_DEBUG */
-    
+
 void* memtrack_malloc(size_t size, const char* expr, const char* file, int line);
 void* memtrack_calloc(size_t count, size_t elem_size, const char* expr, const char* file, int line);
 void* memtrack_realloc(void* ptr, const char* eptr, size_t size, const char* expr, const char* file, int line);
