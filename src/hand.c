@@ -363,7 +363,7 @@ void _Hand_Parse_6(hand_t *hand, card_array_t *array, int *count, int *sorted)
   }
 }
 
-/* length 7 only got solo chain avaliable, skip */
+/* length 7 only got solo chain available, skip */
 void _Hand_Parse_8(hand_t *hand, card_array_t *array, int *count, int *sorted)
 {
   /* trio solo chain */
@@ -386,7 +386,7 @@ void _Hand_Parse_8(hand_t *hand, card_array_t *array, int *count, int *sorted)
   }
 }
 
-/* length 9 only got solo chain and trio chain avaliable, skip */
+/* length 9 only got solo chain and trio chain available, skip */
 void _Hand_Parse_10(hand_t *hand, card_array_t *array, int *count, int *sorted)
 {
   /* trio pair chain */
@@ -401,7 +401,7 @@ void _Hand_Parse_10(hand_t *hand, card_array_t *array, int *count, int *sorted)
   }
 }
 
-/* length 11 only got solo chain avaliable, skip */
+/* length 11 only got solo chain available, skip */
 void _Hand_Parse_12(hand_t *hand, card_array_t *array, int *count, int *sorted)
 {
   /* trio solo chain */
