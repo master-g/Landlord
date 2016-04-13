@@ -35,7 +35,7 @@ int AdvancedAI_GetReady(void *p, void *game)
 
   CardArray_Sort(&player->cards, NULL);
   CardArray_Copy(&player->record, &player->cards);
-#ifdef PRINT_GAME_LOG
+#if (PRINT_GAME_LOG == 1)
   CardArray_Print(&player->record);
 #endif /* ifdef PRINT_GAME_LOG */
   player->handlist = HandList_AdvancedAnalyze(&player->cards);

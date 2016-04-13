@@ -40,12 +40,12 @@ SOFTWARE.
 extern "C" {
 #endif
 
-#define PRINT_GAME_LOG
+#define PRINT_GAME_LOG 0
 
-#ifdef PRINT_GAME_LOG
+#if (PRINT_GAME_LOG == 1)
 #define DBGLog printf
 #else
-#define DBGLog
+#define DBGLog (void)
 #endif
 
 /*
