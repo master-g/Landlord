@@ -38,7 +38,7 @@ extern "C" {
  */
 
 /* search function */
-typedef int (*MEDAlgoFunc_Find)(void* payload, void* context);
+typedef int (*MEDAlgoFunc_Find)(void *payload, void *context);
 
 /* destroy function */
 typedef void (*MEDAlgoFunc_Delete)(void *payload);
@@ -51,11 +51,10 @@ void MEDAlgo_StandardFree(void *payload);
  * ************************************************************
  */
 
-typedef struct medlist_s
-{
-    void *payload;
-    struct medlist_s *next;
-    
+typedef struct medlist_s {
+  void *payload;
+  struct medlist_s *next;
+
 } medlist_t;
 
 /* functions */
@@ -97,13 +96,12 @@ medstack_t *MEDStack_Pop(medstack_t **s);
  * ************************************************************
  */
 
-typedef struct medtree_s
-{
-    void *payload;
-    struct medtree_s *root;
-    struct medtree_s *child;
-    struct medtree_s *sibling;
-    
+typedef struct medtree_s {
+  void *payload;
+  struct medtree_s *root;
+  struct medtree_s *child;
+  struct medtree_s *sibling;
+
 } medtree_t;
 
 medtree_t *MEDTree_Create(void);

@@ -33,91 +33,79 @@
 #define FULL_MASK   0xFFFFFFFF
 #define DEF_SEED    0x012BD6AA
 
-void Random_Init(mt19937_t *context, uint32_t seed)
-{
+void Random_Init(mt19937_t *context, uint32_t seed) {
   context->mt[0] = seed & FULL_MASK;
 
-  for (context->mti = 1; context->mti < MT_N; context->mti++)
-  {
+  for (context->mti = 1; context->mti < MT_N; context->mti++) {
     /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
     context->mt[context->mti] =
-      (1812433253 *
-       (context->mt[context->mti - 1] ^ (context->mt[context->mti - 1] >> 30)) +
-       context->mti);
+        (1812433253 *
+            (context->mt[context->mti - 1] ^ (context->mt[context->mti - 1] >> 30)) +
+            context->mti);
     context->mt[context->mti] &= FULL_MASK;
   }
 }
 
-void Random_InitWithArray(mt19937_t *context, uint32_t initarr[], int length)
-{
+void Random_InitWithArray(mt19937_t *context, uint32_t initarr[], int length) {
   int i, j, k;
 
   Random_Init(context, DEF_SEED);
   i = 1, j = 0;
   k = (MT_N > length ? MT_N : length);
 
-  for (; k; k--)
-  {
+  for (; k; k--) {
     context->mt[i] =
-      (context->mt[i] ^
-       ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1664525)) +
-      initarr[j] +
-      j;
+        (context->mt[i] ^
+            ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1664525)) +
+            initarr[j] +
+            j;
     context->mt[i] &= FULL_MASK;
     i++;
     j++;
 
-    if (j >= MT_N)
-    {
+    if (j >= MT_N) {
       context->mt[0] = context->mt[MT_N - 1];
-      i              = 1;
+      i = 1;
     }
 
-    if (j >= length)
-    {
+    if (j >= length) {
       j = 0;
     }
   }
 
-  for (k = MT_N - 1; k; k--)
-  {
+  for (k = MT_N - 1; k; k--) {
     context->mt[i] =
-      (context->mt[i] ^
-       ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1566083941)) - i;
+        (context->mt[i] ^
+            ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1566083941)) - i;
     context->mt[i] &= FULL_MASK;
     i++;
 
-    if (i >= MT_N)
-    {
+    if (i >= MT_N) {
       context->mt[0] = context->mt[MT_N - 1];
-      i              = 1;
+      i = 1;
     }
   }
 
   context->mt[0] = UPPER_MASK;
 }
 
-uint32_t Random_uint32(mt19937_t *context)
-{
+uint32_t Random_uint32(mt19937_t *context) {
   uint32_t y;
   int kk;
-  static uint32_t mag01[2] = { 0x0, MATRIX_A };
+  static uint32_t mag01[2] = {0x0, MATRIX_A};
 
   /* mag01[x] = x * MATRIX_A for x = 0, 1 */
 
-  if (context->mti >= MT_N)
-  {
+  if (context->mti >= MT_N) {
     if (context->mti == MT_N + 1) Random_Init(context, 5489);
 
-    for (kk = 0; kk < MT_N - M; kk++)
-    {
+    for (kk = 0; kk < MT_N - M; kk++) {
       y = (context->mt[kk] & UPPER_MASK) |
           (context->mt[kk + 1] & LOWER_MASK);
       context->mt[kk] = context->mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1];
     }
 
-    for (; kk < MT_N - 1; kk++)
-    {
+    for (; kk < MT_N - 1; kk++) {
       y = (context->mt[kk] & UPPER_MASK) |
           (context->mt[kk + 1] & LOWER_MASK);
       context->mt[kk] = context->mt[kk + (M - MT_N)] ^ (y >> 1) ^ mag01[y & 0x1];
@@ -140,12 +128,10 @@ uint32_t Random_uint32(mt19937_t *context)
   return y;
 }
 
-int32_t Random_Int32(mt19937_t *context)
-{
-  return (int32_t)(Random_uint32(context) >> 1);
+int32_t Random_Int32(mt19937_t *context) {
+  return (int32_t) (Random_uint32(context) >> 1);
 }
 
-double Random_real_0_1(mt19937_t *context)
-{
-  return (double)(Random_uint32(context) * (1.0 / 4294967296.0));
+double Random_real_0_1(mt19937_t *context) {
+  return (double) (Random_uint32(context) * (1.0 / 4294967296.0));
 }

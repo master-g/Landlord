@@ -26,8 +26,7 @@
 #include "common.h"
 #include "medalgo.h"
 
-void MEDAlgo_StandardFree(void *payload)
-{
+void MEDAlgo_StandardFree(void *payload) {
   free(payload);
 }
 
@@ -36,20 +35,17 @@ void MEDAlgo_StandardFree(void *payload)
  * list
  * ************************************************************
  */
-medlist_t* MEDList_Create(void)
-{
-  medlist_t *l = (medlist_t *)malloc(sizeof(medlist_t));
+medlist_t *MEDList_Create(void) {
+  medlist_t *l = (medlist_t *) malloc(sizeof(medlist_t));
 
   return l;
 }
 
-void MEDList_Destroy(medlist_t **l, MEDAlgoFunc_Delete delfunc)
-{
+void MEDList_Destroy(medlist_t **l, MEDAlgoFunc_Delete delfunc) {
   medlist_t *current = *l;
   medlist_t *next;
 
-  while (current != NULL)
-  {
+  while (current != NULL) {
     next = current->next;
 
     if (delfunc != NULL) delfunc(current->payload);
@@ -60,13 +56,11 @@ void MEDList_Destroy(medlist_t **l, MEDAlgoFunc_Delete delfunc)
   *l = NULL;
 }
 
-int MEDList_Length(medlist_t *l)
-{
-  int length    = 0;
+int MEDList_Length(medlist_t *l) {
+  int length = 0;
   medlist_t *tl = l;
 
-  while (tl != NULL)
-  {
+  while (tl != NULL) {
     length++;
     tl = tl->next;
   }
@@ -74,35 +68,29 @@ int MEDList_Length(medlist_t *l)
   return length;
 }
 
-void MEDList_PushFront(medlist_t **l, medlist_t *node)
-{
+void MEDList_PushFront(medlist_t **l, medlist_t *node) {
   node->next = *l;
-  *l         = node;
+  *l = node;
 }
 
-void MEDList_PushBack(medlist_t **l, medlist_t *node)
-{
+void MEDList_PushBack(medlist_t **l, medlist_t *node) {
   medlist_t *tail = *l;
 
-  if (*l == NULL)
-  {
+  if (*l == NULL) {
     *l = node;
   }
-  else
-  {
+  else {
     while (tail->next != NULL) tail = tail->next;
 
     tail->next = node;
   }
 }
 
-int MEDList_Remove(medlist_t **l, medlist_t *node)
-{
+int MEDList_Remove(medlist_t **l, medlist_t *node) {
   int found = 0;
   medlist_t *temp, *prev;
 
-  if (*l == node)
-  {
+  if (*l == node) {
     (*l) = (*l)->next;
     return 1;
   }
@@ -112,12 +100,10 @@ int MEDList_Remove(medlist_t **l, medlist_t *node)
   prev = *l;
   temp = (*l)->next;
 
-  while (temp != NULL)
-  {
-    if (temp == node)
-    {
+  while (temp != NULL) {
+    if (temp == node) {
       prev->next = temp->next;
-      found      = 1;
+      found = 1;
       break;
     }
 
@@ -128,17 +114,14 @@ int MEDList_Remove(medlist_t **l, medlist_t *node)
   return found;
 }
 
-medlist_t* MEDList_Find(medlist_t *l, void *context, MEDAlgoFunc_Find finder)
-{
-  int found         = 0;
+medlist_t *MEDList_Find(medlist_t *l, void *context, MEDAlgoFunc_Find finder) {
+  int found = 0;
   medlist_t *result = NULL;
 
   result = l;
 
-  while (result != NULL)
-  {
-    if (finder(result->payload, context))
-    {
+  while (result != NULL) {
+    if (finder(result->payload, context)) {
       found = 1;
       break;
     }
@@ -154,8 +137,7 @@ medlist_t* MEDList_Find(medlist_t *l, void *context, MEDAlgoFunc_Find finder)
  * stack
  * ************************************************************
  */
-medstack_t* MEDStack_Pop(medstack_t **s)
-{
+medstack_t *MEDStack_Pop(medstack_t **s) {
   medstack_t *node = *s;
 
   *s = (*s)->next;
@@ -174,41 +156,36 @@ medstack_t* MEDStack_Pop(medstack_t **s)
  * tree
  * ************************************************************
  */
-medtree_t* MEDTree_Create(void)
-{
-  return (medtree_t *)calloc(1, sizeof(medtree_t));
+medtree_t *MEDTree_Create(void) {
+  return (medtree_t *) calloc(1, sizeof(medtree_t));
 }
 
-void _MEDTreeStack_PushNode(medstack_t **s, medtree_t *node)
-{
-  medstack_t *snode = (medstack_t *)malloc(sizeof(medstack_t));
+void _MEDTreeStack_PushNode(medstack_t **s, medtree_t *node) {
+  medstack_t *snode = (medstack_t *) malloc(sizeof(medstack_t));
 
   snode->payload = node;
   MEDStack_Push(s, snode);
 }
 
-void MEDTree_Destroy(medtree_t **t, MEDAlgoFunc_Delete delfunc)
-{
-  medstack_t *s     = NULL;
+void MEDTree_Destroy(medtree_t **t, MEDAlgoFunc_Delete delfunc) {
+  medstack_t *s = NULL;
   medstack_t *snode = NULL;
-  medtree_t  *tnode = NULL;
-  medtree_t  *temp  = NULL;
+  medtree_t *tnode = NULL;
+  medtree_t *temp = NULL;
 
   tnode = *t;
   _MEDTreeStack_PushNode(&s, tnode);
 
-  while (s != NULL)
-  {
+  while (s != NULL) {
     snode = MEDStack_Pop(&s);
-    tnode = (medtree_t *)snode->payload;
+    tnode = (medtree_t *) snode->payload;
 
     if (delfunc != NULL) delfunc(tnode->payload);
     free(snode);
 
     temp = tnode->child;
 
-    while (temp != NULL)
-    {
+    while (temp != NULL) {
       _MEDTreeStack_PushNode(&s, temp);
       temp = temp->sibling;
     }
@@ -217,39 +194,32 @@ void MEDTree_Destroy(medtree_t **t, MEDAlgoFunc_Delete delfunc)
   }
 }
 
-void MEDTree_AddChild(medtree_t **t, medtree_t *node)
-{
+void MEDTree_AddChild(medtree_t **t, medtree_t *node) {
   medtree_t *child = NULL;
 
   node->root = *t;
 
-  if (*t != NULL)
-  {
+  if (*t != NULL) {
     child = (*t)->child;
 
-    if (child == NULL)
-    {
+    if (child == NULL) {
       (*t)->child = node;
     }
-    else
-    {
+    else {
       while (child->sibling != NULL) child = child->sibling;
 
       child->sibling = node;
     }
   }
-  else
-  {
+  else {
     *t = node;
   }
 }
 
-void MEDTree_AddSibling(medtree_t **t, medtree_t *node)
-{
+void MEDTree_AddSibling(medtree_t **t, medtree_t *node) {
   medtree_t *sibling = NULL;
 
-  if (*t != NULL)
-  {
+  if (*t != NULL) {
     node->root = (*t)->root;
 
     sibling = *t;
@@ -258,33 +228,29 @@ void MEDTree_AddSibling(medtree_t **t, medtree_t *node)
 
     sibling->sibling = node;
   }
-  else
-  {
+  else {
     node->root = NULL;
-    (*t)       = node;
+    (*t) = node;
   }
 }
 
-void MEDTree_DumpLeafToStack(medtree_t *t, medstack_t **s)
-{
+void MEDTree_DumpLeafToStack(medtree_t *t, medstack_t **s) {
   medstack_t *tempstack = NULL;
-  medstack_t *snode     = NULL;
-  medtree_t  *tnode     = NULL;
-  medtree_t  *temp      = NULL;
+  medstack_t *snode = NULL;
+  medtree_t *tnode = NULL;
+  medtree_t *temp = NULL;
 
   tnode = t;
   _MEDTreeStack_PushNode(&tempstack, tnode);
 
-  while (tempstack != NULL)
-  {
+  while (tempstack != NULL) {
     snode = MEDStack_Pop(&tempstack);
-    tnode = (medtree_t *)snode->payload;
+    tnode = (medtree_t *) snode->payload;
     free(snode);
 
     temp = tnode->child;
 
-    while (temp != NULL)
-    {
+    while (temp != NULL) {
       _MEDTreeStack_PushNode(&tempstack, temp);
       temp = temp->sibling;
     }
@@ -299,5 +265,4 @@ void MEDTree_DumpLeafToStack(medtree_t *t, medstack_t **s)
  * silencer
  * ************************************************************
  */
-void silent_printf(const char *fmt, ...)
-{}
+void silent_printf(const char *fmt, ...) { }

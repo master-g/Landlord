@@ -31,45 +31,47 @@ SOFTWARE.
 extern "C" {
 #endif
 
-typedef enum
-{
-    Player_Event_GetReady = 0,
-    Player_Event_Bid,
-    Player_Event_Start,
-    Player_Event_Play,
-    Player_Event_Beat,
-    
-    Player_Event_Count
-    
+typedef enum {
+  Player_Event_GetReady = 0,
+  Player_Event_Bid,
+  Player_Event_Start,
+  Player_Event_Play,
+  Player_Event_Beat,
+
+  Player_Event_Count
+
 } PlayerEvent;
 
-typedef enum
-{
-    PlayerIdentity_Peasant = 0,
-    PlayerIdentity_Landlord
-    
+typedef enum {
+  PlayerIdentity_Peasant = 0,
+  PlayerIdentity_Landlord
+
 } PlayerIdentity;
 
-typedef enum
-{
-    Player_Bid_Abstain  = 0,
-    Player_Bid_Bid
+typedef enum {
+  Player_Bid_Abstain = 0,
+  Player_Bid_Bid
 
 } PlayerBidAction;
 
 typedef int (*PlayerEventHandler)(void *player, void *context);
 
-typedef struct player_s
-{
-    card_array_t    cards;      /* card array, will change during game play */
-    card_array_t    record;     /* card record */
-    medlist_t       *handlist;  /* the analyze result of cards */
-    int             identity;   /* 0: peasant, 1: landlord */
-    int             seatId;     /* 0, 1, 2 */
-    int             bid;        /* 0, 1, 2, 3 */
-    
-    PlayerEventHandler  eventHandlers[Player_Event_Count];
-    
+typedef struct player_s {
+  card_array_t cards;
+  /* card array, will change during game play */
+  card_array_t record;
+  /* card record */
+  medlist_t *handlist;
+  /* the analyze result of cards */
+  int identity;
+  /* 0: peasant, 1: landlord */
+  int seatId;
+  /* 0, 1, 2 */
+  int bid;
+  /* 0, 1, 2, 3 */
+
+  PlayerEventHandler eventHandlers[Player_Event_Count];
+
 } player_t;
 
 /*

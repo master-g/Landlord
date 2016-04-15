@@ -57,7 +57,7 @@ extern "C" {
 
 #define CARD_SET_LENGTH     54
 
-#define	CARD_RANK(x)		((x) & 0x0F)
+#define    CARD_RANK(x)        ((x) & 0x0F)
 #define CARD_SUIT(x)        ((x) & 0xF0)
 
 #define CARD_RED(x)         (CARD_SUIT(x) == CARD_SUIT_CLUB || CARD_SUIT(x) == CARD_SUIT_HEART)
@@ -76,17 +76,16 @@ extern "C" {
 #define CardArray_GetBack(a)    ((a)->cards[(a)->lenth])
 #define CardArray_Peek(a, i)    ((a)->cards[(i)])
 #define CardArray_Clear(a)      (memset((a), 0, sizeof(card_array_t)))
-#define CardArray_Copy(d,s)     (memcpy((d), (s), sizeof(card_array_t)))
+#define CardArray_Copy(d, s)     (memcpy((d), (s), sizeof(card_array_t)))
 #define CardArray_IsFull(a)     ((a)->length >= CARD_SET_LENGTH)
 #define CardArray_IsEmpty(a)    ((a)->length == 0)
 #define CardArray_Capacity(a)   (CARD_ARRAY_PRESET_LENGTH - (a)->length)
 #define CardArray_Set(array, where, what, count)    (memset((array->cards + where), (what), (count) * sizeof(uint8_t)))
 
-typedef struct card_array_s
-{
-    int     length;
-    uint8_t cards[CARD_ARRAY_PRESET_LENGTH];
-    
+typedef struct card_array_s {
+  int length;
+  uint8_t cards[CARD_ARRAY_PRESET_LENGTH];
+
 } card_array_t;
 
 /* sort function */

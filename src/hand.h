@@ -59,33 +59,31 @@ extern "C" {
 #define Hand_GetKicker(h)       ((h)&0x70)
 #define Hand_GetChain(h)        ((h)&0x80)
 
-#define Hand_SetPrimal(h,p)     ((h)|=(p))
-#define Hand_SetKicker(h,k)     Hand_SetPrimal(h,k)
-#define Hand_SetChain(h,c)      Hand_SetPrimal(h,c)
+#define Hand_SetPrimal(h, p)     ((h)|=(p))
+#define Hand_SetKicker(h, k)     Hand_SetPrimal(h,k)
+#define Hand_SetChain(h, c)      Hand_SetPrimal(h,c)
 
-#define Hand_Format(p,k,c)      ((p)|(k)|(c))
+#define Hand_Format(p, k, c)      ((p)|(k)|(c))
 #define Hand_ClearPrimal(h)     ((h)&0xF0)
 #define Hand_ClearKicker(h)     ((h)&0x8F)
 #define Hand_ClearChain(h)      ((h)&0x7F)
 
-typedef enum
-{
-    HAND_CMP_ILLEGAL = -3,
-    HAND_CMP_LESS    = -1,
-    HAND_CMP_EQUAL   = 0,
-    HAND_CMP_GREATER = 1
-    
+typedef enum {
+  HAND_CMP_ILLEGAL = -3,
+  HAND_CMP_LESS = -1,
+  HAND_CMP_EQUAL = 0,
+  HAND_CMP_GREATER = 1
+
 } HandCompareResult;
 
 /*
  * hand is a valid card set that can play.
  * cards format must be like 12345/112233/111222/1112223344/11122234 etc
  */
-typedef struct hand_s
-{
-    uint8_t         type;
-    card_array_t    cards;
-    
+typedef struct hand_s {
+  uint8_t type;
+  card_array_t cards;
+
 } hand_t;
 
 /* 

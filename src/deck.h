@@ -31,11 +31,10 @@ SOFTWARE.
 extern "C" {
 #endif
 
-typedef struct deck_s
-{
-    card_array_t cards;
-    card_array_t used;
-    
+typedef struct deck_s {
+  card_array_t cards;
+  card_array_t used;
+
 } deck_t;
 
 /*

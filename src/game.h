@@ -46,41 +46,51 @@ extern "C" {
 #define Game_GetCurrentPlayer(g)    (&(g)->players[(g)->playerIndex])
 #define Game_IncPlayerIndex(g)      ((g)->playerIndex = IncPlayerIdx((g)->playerIndex))
 
-typedef enum
-{
-    GameStatus_Halt = 0,
-    GameStatus_Bid,
-    GameStatus_Ready,
-    GameStatus_Pause,
-    GameStatus_Over
-    
+typedef enum {
+  GameStatus_Halt = 0,
+  GameStatus_Bid,
+  GameStatus_Ready,
+  GameStatus_Pause,
+  GameStatus_Over
+
 } GameStatus;
 
-typedef enum
-{
-    Phase_Play = 0,
-    Phase_Query,
-    Phase_Pass
-    
+typedef enum {
+  Phase_Play = 0,
+  Phase_Query,
+  Phase_Pass
+
 } StagePhase;
 
-typedef struct game_s
-{
-    player_t        players[GAME_PLAYERS];      /* player array */
-    deck_t          deck;                       /* deck */
-    mt19937_t       mt;                         /* random context */
-    hand_t          lastHand;                   /* last played hand */
-    card_array_t    cardRecord;                 /* card record */
-    card_array_t    kittyCards;                 /* kitty cards */
-    int             bid;                        /* current bid */
-    int             highestBidder;              /* for the highest bidder! */
-    int             playerIndex;                /* current player index */
-    int             landlord;                   /* landlord index */
-    int             lastplay;                   /* who played the last hand */
-    int             winner;                     /* who win the last game */
-    int             status;                     /* game status */
-    int             phase;                      /* game phase */
-    
+typedef struct game_s {
+  player_t players[GAME_PLAYERS];
+  /* player array */
+  deck_t deck;
+  /* deck */
+  mt19937_t mt;
+  /* random context */
+  hand_t lastHand;
+  /* last played hand */
+  card_array_t cardRecord;
+  /* card record */
+  card_array_t kittyCards;
+  /* kitty cards */
+  int bid;
+  /* current bid */
+  int highestBidder;
+  /* for the highest bidder! */
+  int playerIndex;
+  /* current player index */
+  int landlord;
+  /* landlord index */
+  int lastplay;
+  /* who played the last hand */
+  int winner;
+  /* who win the last game */
+  int status;
+  /* game status */
+  int phase;                      /* game phase */
+
 } game_t;
 
 void Game_Init(game_t *game);
