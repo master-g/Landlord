@@ -23,11 +23,52 @@ SOFTWARE.
 */
 
 #include "ruiko_algorithm.h"
+#include "memtracker.h"
 #include <stdlib.h>
 
-void rk_algo_def_free(void *payload) {
-  free(payload);
+/*
+ * ************************************************************
+ * memory
+ * ************************************************************
+ */
+
+void *_rk_def_malloc(size_t size) {
+  return malloc(size);
 }
+
+void *_rk_def_realloc(void *ptr, size_t newsize) {
+  return realloc(ptr, newsize);
+}
+
+void _rk_def_free(void *ptr) {
+  free(ptr);
+}
+
+rk_mallocfunc rk_def_malloc = _rk_def_malloc;
+rk_reallocfunc rk_def_realloc = _rk_def_realloc;
+rk_freefunc rk_def_free = _rk_def_free;
+
+void rk_algo_set_malloc(rk_mallocfunc func) {
+  rk_def_malloc = func;
+}
+
+void rk_algo_set_realloc(rk_reallocfunc func) {
+  rk_def_realloc = func;
+}
+
+void rk_algo_set_free(rk_freefunc func) {
+  rk_def_free = func;
+}
+
+void rk_algo_def_free(void* ptr) {
+  free(ptr);
+}
+
+/*
+ * ************************************************************
+ * helper function
+ * ************************************************************
+ */
 
 /*
    https://compprog.wordpress.com/2007/10/17/generating-combinations-1/
@@ -68,7 +109,9 @@ int rk_next_comb(int comb[], int k, int n) {
  */
 
 rk_list_t *rk_list_new(void) {
-  rk_list_t *l = (rk_list_t *) malloc(sizeof(rk_list_t));
+  rk_list_t *l = (rk_list_t *) rk_def_malloc(sizeof(rk_list_t));
+  l->next = NULL;
+  l->prev = NULL;
 
   return l;
 }
@@ -81,7 +124,7 @@ void rk_list_delete(rk_list_t **l, rk_algo_free delfunc) {
     next = current->next;
 
     if (delfunc != NULL) delfunc(current->payload);
-    free(current);
+    rk_def_free(current);
     current = next;
   }
 
@@ -239,14 +282,21 @@ rk_stack_t *rk_stack_pop(rk_stack_t **s) {
  */
 
 void _rk_tree_stack_push(rk_stack_t **s, rk_tree_t *node) {
-  rk_stack_t *snode = (rk_stack_t *) malloc(sizeof(rk_stack_t));
+  rk_stack_t *snode = (rk_stack_t *) rk_def_malloc(sizeof(rk_stack_t));
+  snode->prev = NULL;
+  snode->next = NULL;
 
   snode->payload = node;
   rk_stack_push(s, snode);
 }
 
 rk_tree_t *rk_tree_new(void) {
-  return (rk_tree_t *) calloc(1, sizeof(rk_tree_t));
+  rk_tree_t *tree = (rk_tree_t *) rk_def_malloc(sizeof(rk_tree_t));
+  tree->root = NULL;
+  tree->child = NULL;
+  tree->sibling = NULL;
+
+  return tree;
 }
 
 void rk_tree_delete(rk_tree_t **t, rk_algo_free delfunc) {
@@ -263,7 +313,7 @@ void rk_tree_delete(rk_tree_t **t, rk_algo_free delfunc) {
     tnode = (rk_tree_t *) snode->payload;
 
     if (delfunc != NULL) delfunc(tnode->payload);
-    free(snode);
+    rk_def_free(snode);
 
     temp = tnode->child;
 
@@ -272,7 +322,7 @@ void rk_tree_delete(rk_tree_t **t, rk_algo_free delfunc) {
       temp = temp->sibling;
     }
 
-    free(tnode);
+    rk_def_free(tnode);
   }
 }
 
@@ -328,7 +378,7 @@ void rk_tree_dump_leaf(rk_tree_t *t, rk_stack_t **s) {
   while (tempstack != NULL) {
     snode = rk_stack_pop(&tempstack);
     tnode = (rk_tree_t *) snode->payload;
-    free(snode);
+    rk_def_free(snode);
 
     temp = tnode->child;
 

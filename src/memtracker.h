@@ -28,9 +28,11 @@
 extern "C" {
 #endif
 
-/* #define KITSUNE_DEBUG */
+#define RK_MEMDBG_ENABLE 1
+#define RK_MEMDBG_DISABLE 0
+#define KITSUNE_DEBUG RK_MEMDBG_DISABLE
 
-#ifdef KITSUNE_DEBUG
+#if (KITSUNE_DEBUG == RK_MEMDBG_ENABLE)
 #ifndef INTERNAL
 #define malloc(size)        memtrack_malloc(size, #size, __FILE__, __LINE__)
 #define calloc(count, size) memtrack_calloc(count, size, #size, __FILE__, __LINE__)

@@ -46,6 +46,24 @@ void rk_algo_def_free(void *payload);
 
 /*
  * ************************************************************
+ * memory
+ * ************************************************************
+ */
+
+typedef void* (*rk_mallocfunc)(unsigned long);
+typedef void* (*rk_reallocfunc)(void*, unsigned long);
+typedef void (*rk_freefunc)(void*);
+
+extern rk_mallocfunc rk_def_malloc;
+extern rk_reallocfunc rk_def_realloc;
+extern rk_freefunc rk_def_free;
+
+void rk_algo_set_malloc(rk_mallocfunc);
+void rk_algo_set_realloc(rk_reallocfunc);
+void rk_algo_set_free(rk_freefunc);
+
+/*
+ * ************************************************************
  * helper function
  * ************************************************************
  */
