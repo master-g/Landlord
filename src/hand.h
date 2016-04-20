@@ -10,8 +10,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in 
+all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,7 +26,7 @@ SOFTWARE.
 #define LANDLORD_HAND_H_
 
 #include "card.h"
-#include "medalgo.h"
+#include "ruiko_algorithm.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,7 +63,7 @@ extern "C" {
 #define Hand_SetKicker(h, k)     Hand_SetPrimal(h,k)
 #define Hand_SetChain(h, c)      Hand_SetPrimal(h,c)
 
-#define Hand_Format(p, k, c)      ((p)|(k)|(c))
+#define Hand_Format(p, k, c)      (uint8_t)((p)|(k)|(c))
 #define Hand_ClearPrimal(h)     ((h)&0xF0)
 #define Hand_ClearKicker(h)     ((h)&0x8F)
 #define Hand_ClearChain(h)      ((h)&0x7F)
@@ -80,7 +80,7 @@ typedef enum {
  * hand is a valid card set that can play.
  * cards format must be like 12345/112233/111222/1112223344/11122234 etc
  */
-typedef struct hand_s {
+typedef struct _hand_s {
   uint8_t type;
   card_array_t cards;
 
@@ -127,32 +127,27 @@ typedef int (*HandList_EvaluateFunc)(card_array_t *);
 /*
  * push a hand into the front of hand list
  */
-void HandList_PushFront(medlist_t **hl, hand_t *hand);
+void HandList_PushFront(rk_list_t **hl, hand_t *hand);
 
 /*
  * remove a hand from hand list
  */
-void HandList_Remove(medlist_t **hl, medlist_t *node);
-
-/*
- * concate two hand list
- */
-void HandList_Concate(medlist_t **head, medlist_t *tail);
+void HandList_Remove(rk_list_t **hl, rk_list_t *node);
 
 /*
  * search a specific hand type from hand list
  */
-medlist_t *HandList_Find(medlist_t **hl, int handtype);
+rk_list_t *HandList_Find(rk_list_t **hl, int handtype);
 
 /*
  * destroy a hand list
  */
-void HandList_Destroy(medlist_t **hl);
+void HandList_Destroy(rk_list_t **hl);
 
 /*
  * get payload as hand_t
  */
-hand_t *HandList_GetHand(medlist_t *node);
+hand_t *HandList_GetHand(rk_list_t *node);
 
 /*
  * ************************************************************
@@ -168,12 +163,12 @@ int HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat);
 /*
  * search all the beats
  */
-medlist_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat);
+rk_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat);
 
 /*
  * standard analyze a card array into hand list
  */
-medlist_t *HandList_StandardAnalyze(card_array_t *array);
+rk_list_t *HandList_StandardAnalyze(card_array_t *array);
 
 /*
  * count how many primal hands in array
@@ -183,7 +178,7 @@ int HandList_StandardEvaluator(card_array_t *array);
 /*
  * advanced hand analyze
  */
-medlist_t *HandList_AdvancedAnalyze(card_array_t *array);
+rk_list_t *HandList_AdvancedAnalyze(card_array_t *array);
 
 /*
  * advanced hand evaluator
@@ -198,7 +193,7 @@ int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandLis
 /*
  * print hand_list_t
  */
-void HandList_Print(medlist_t *hl);
+void HandList_Print(rk_list_t *hl);
 
 #ifdef __cplusplus
 }

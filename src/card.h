@@ -10,8 +10,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in 
+all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -57,10 +57,11 @@ extern "C" {
 
 #define CARD_SET_LENGTH     54
 
-#define    CARD_RANK(x)        ((x) & 0x0F)
+#define CARD_RANK(x)        (uint8_t)((x) & 0x0F)
 #define CARD_SUIT(x)        ((x) & 0xF0)
 
-#define CARD_RED(x)         (CARD_SUIT(x) == CARD_SUIT_CLUB || CARD_SUIT(x) == CARD_SUIT_HEART)
+#define CARD_IS_RED(x)      (CARD_SUIT(x) == CARD_SUIT_DIAMOND || CARD_SUIT(x) == CARD_SUIT_HEART)
+#define CARD_IS_BLACK(x)    (CARD_SUIT(x) == CARD_SUIT_CLUB || CARD_SUIT(x) == CARD_SUIT_SPADE)
 
 #define Card_Make(suit, rank) ((suit)|(rank))
 
@@ -82,7 +83,7 @@ extern "C" {
 #define CardArray_Capacity(a)   (CARD_ARRAY_PRESET_LENGTH - (a)->length)
 #define CardArray_Set(array, where, what, count)    (memset((array->cards + where), (what), (count) * sizeof(uint8_t)))
 
-typedef struct card_array_s {
+typedef struct _card_arr_s {
   int length;
   uint8_t cards[CARD_ARRAY_PRESET_LENGTH];
 
@@ -102,9 +103,9 @@ void *CardArray_InitFromString(card_array_t *array, const char *str);
 void CardArray_Reset(card_array_t *array);
 
 /*
- * concate two card arrays
+ * concatenates two card arrays
  */
-int CardArray_Concate(card_array_t *head, card_array_t *tail);
+int CardArray_Concat(card_array_t *head, card_array_t *tail);
 
 /*
  * subtract two card arrays

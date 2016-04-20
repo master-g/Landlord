@@ -3,7 +3,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/card.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/medalgo.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/ruiko_algorithm.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/common.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/game.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/mt19937.h" isTestSource="false" />
@@ -17,13 +17,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/deck.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/standard_ai.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/deck.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/medalgo.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/advanced_ai.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/player.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/hand.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/advanced_ai.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/memtracker.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/card.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/advanced_ai.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/ruiko_algorithm.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

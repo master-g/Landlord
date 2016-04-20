@@ -10,8 +10,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in 
+all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -61,7 +61,7 @@ typedef struct player_s {
   /* card array, will change during game play */
   card_array_t record;
   /* card record */
-  medlist_t *handlist;
+  rk_list_t *handlist;
   /* the analyze result of cards */
   int identity;
   /* 0: peasant, 1: landlord */

@@ -1,27 +1,26 @@
 /*
-   The MIT License (MIT)
+The MIT License (MIT)
 
-   Copyright (c) 2014 Master.G
+Copyright (c) 2014 Master.G
 
-   Permission is hereby granted, free of charge, to any person obtaining a copy
-   of this software and associated documentation files (the "Software"), to deal
-   in the Software without restriction, including without limitation the rights
-   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-   copies of the Software, and to permit persons to whom the Software is
-   furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-   The above copyright notice and this permission notice shall be included in
-      all
-   copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in 
+all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-   SOFTWARE.
- */
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 #include "card.h"
 
@@ -112,7 +111,8 @@ void *CardArray_InitFromString(card_array_t *array, const char *str) {
         break;
     }
 
-    if ((*p <= '9') && (*p >= '3')) card |= CARD_RANK_3 + (uint8_t) (*p) - '3';
+    if ((*p <= '9') && (*p >= '3'))
+      card |= CARD_RANK_3 + (uint8_t) (*p) - '3';
 
     if ((CARD_RANK(card) != 0) && (CARD_SUIT(card) != 0)) {
       CardArray_PushBack(array, card);
@@ -126,31 +126,28 @@ void *CardArray_InitFromString(card_array_t *array, const char *str) {
 }
 
 void CardArray_Reset(card_array_t *array) {
-#ifdef NICE_AND_CLEAN
+#if (NICE_AND_CLEAN == 1)
   int rank = 0;
 
   /* 52 standard cards */
-  for (rank = CARD_RANK_3; rank < CARD_RANK_r; rank++)
-  {
-    array->cards[rank - CARD_RANK_3 + 13 * 0] = Card_Make(CARD_SUIT_CLUB, rank);
-    array->cards[rank - CARD_RANK_3 + 13 *
-                 1]                           =
-      Card_Make(CARD_SUIT_DIAMOND, rank);
-    array->cards[rank - CARD_RANK_3 + 13 * 2] = Card_Make(CARD_SUIT_HEART, rank);
-    array->cards[rank - CARD_RANK_3 + 13 * 3] = Card_Make(CARD_SUIT_SPADE, rank);
+  for (rank = CARD_RANK_3; rank < CARD_RANK_r; rank++) {
+    array->cards[rank - CARD_RANK_3 + 13 * 0] = (uint8_t) Card_Make(CARD_SUIT_CLUB, rank);
+    array->cards[rank - CARD_RANK_3 + 13 * 1] = (uint8_t) Card_Make(CARD_SUIT_DIAMOND, rank);
+    array->cards[rank - CARD_RANK_3 + 13 * 2] = (uint8_t) Card_Make(CARD_SUIT_HEART, rank);
+    array->cards[rank - CARD_RANK_3 + 13 * 3] = (uint8_t) Card_Make(CARD_SUIT_SPADE, rank);
   }
 
   /* jokers */
   array->cards[CARD_SET_LENGTH - 2] = Card_Make(CARD_SUIT_CLUB, CARD_RANK_r);
   array->cards[CARD_SET_LENGTH - 1] = Card_Make(CARD_SUIT_DIAMOND, CARD_RANK_R);
-#else /* ifdef NICE_AND_CLEAN */
+#else
   memcpy(array->cards, _card_set, sizeof(uint8_t) * CARD_SET_LENGTH);
-#endif /* ifdef NICE_AND_CLEAN */
+#endif /* if NICE_AND_CLEAN == 1 */
 
   array->length = CARD_SET_LENGTH;
 }
 
-int CardArray_Concate(card_array_t *head, card_array_t *tail) {
+int CardArray_Concat(card_array_t *head, card_array_t *tail) {
   int length = 0;
   int slot = 0;
 

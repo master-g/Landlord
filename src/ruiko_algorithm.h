@@ -10,8 +10,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in 
+all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,10 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef LANDLORD_MEDALGO_H_
-#define LANDLORD_MEDALGO_H_
-
-#include "common.h"
+#ifndef RUIKO_ALGORITHM_H
+#define RUIKO_ALGORITHM_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,17 +31,26 @@ extern "C" {
 
 /*
  * ************************************************************
- * function
+ * function type
  * ************************************************************
  */
 
 /* search function */
-typedef int (*MEDAlgoFunc_Find)(void *payload, void *context);
+typedef int (*rk_algo_search)(void *payload, void *context);
 
-/* destroy function */
-typedef void (*MEDAlgoFunc_Delete)(void *payload);
+/* free function */
+typedef void (*rk_algo_free)(void *payload);
 
-void MEDAlgo_StandardFree(void *payload);
+/* default dealloctor */
+void rk_algo_def_free(void *payload);
+
+/*
+ * ************************************************************
+ * helper function
+ * ************************************************************
+ */
+
+int rk_next_comb(int comb[], int k, int n);
 
 /*
  * ************************************************************
@@ -51,38 +58,45 @@ void MEDAlgo_StandardFree(void *payload);
  * ************************************************************
  */
 
-typedef struct medlist_s {
+typedef struct _rk_list_s {
   void *payload;
-  struct medlist_s *next;
+  struct _rk_list_s *prev;
+  struct _rk_list_s *next;
 
-} medlist_t;
+} rk_list_t;
 
 /* functions */
 
-medlist_t *MEDList_Create(void);
+rk_list_t *rk_list_new(void);
 
-void MEDList_Destroy(medlist_t **l, MEDAlgoFunc_Delete delfunc);
+void rk_list_delete(rk_list_t **l, rk_algo_free delfunc);
 
-int MEDList_Length(medlist_t *l);
+int rk_list_len(rk_list_t *l);
 
-void MEDList_PushFront(medlist_t **l, medlist_t *node);
+rk_list_t *rk_list_tail(rk_list_t *l);
 
-void MEDList_PushBack(medlist_t **l, medlist_t *node);
+void rk_list_push_front(rk_list_t **l, rk_list_t *node);
 
-int MEDList_Remove(medlist_t **l, medlist_t *node);
+void rk_list_push_back(rk_list_t **l, rk_list_t *node);
 
-medlist_t *MEDList_Find(medlist_t *l, void *context, MEDAlgoFunc_Find finder);
+void rk_list_append(rk_list_t *l, rk_list_t *node);
+
+void rk_list_concat(rk_list_t **l, rk_list_t *seg);
+
+int rk_list_remove(rk_list_t **l, rk_list_t *node);
+
+rk_list_t *rk_list_search(rk_list_t *l, void *context, rk_algo_search search);
 
 /*
  * ************************************************************
  * stack
  * ************************************************************
  */
-#define MEDStack_Push(s, n) MEDList_PushFront((s), (n))
+#define rk_stack_push(s, n) rk_list_push_front((s), (n))
 
-typedef medlist_t medstack_t;
+typedef rk_list_t rk_stack_t;
 
-medstack_t *MEDStack_Pop(medstack_t **s);
+rk_stack_t *rk_stack_pop(rk_stack_t **s);
 
 /*
  * ************************************************************
@@ -96,26 +110,26 @@ medstack_t *MEDStack_Pop(medstack_t **s);
  * ************************************************************
  */
 
-typedef struct medtree_s {
+typedef struct _rk_tree_s {
   void *payload;
-  struct medtree_s *root;
-  struct medtree_s *child;
-  struct medtree_s *sibling;
+  struct _rk_tree_s *root;
+  struct _rk_tree_s *child;
+  struct _rk_tree_s *sibling;
 
-} medtree_t;
+} rk_tree_t;
 
-medtree_t *MEDTree_Create(void);
+rk_tree_t *rk_tree_new(void);
 
-void MEDTree_Destroy(medtree_t **t, MEDAlgoFunc_Delete delfunc);
+void rk_tree_delete(rk_tree_t **t, rk_algo_free delfunc);
 
-void MEDTree_AddChild(medtree_t **t, medtree_t *node);
+void rk_tree_add_child(rk_tree_t **t, rk_tree_t *node);
 
-void MEDTree_AddSibling(medtree_t **t, medtree_t *node);
+void rk_tree_add_sibling(rk_tree_t **t, rk_tree_t *node);
 
-void MEDTree_DumpLeafToStack(medtree_t *t, medstack_t **stack);
+void rk_tree_dump_leaf(rk_tree_t *t, rk_stack_t **stack);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LANDLORD_MEDALGO_H_ */
+#endif /* RUIKO_ALGORITHM_H */
