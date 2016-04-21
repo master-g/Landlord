@@ -24,7 +24,7 @@ SOFTWARE.
 
 #include "common.h"
 #include "game.h"
-#include "ruiko_algorithm.h"
+#include <pthread.h>
 
 char szr[] =
     {'3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'R'};
@@ -65,6 +65,83 @@ void test_advanced_hand_analyzer() {
   HandList_Destroy(&hl);
 }
 
+struct work_ctx {
+  game_t game;
+  int peasantwon;
+  int landlordwon;
+  int index;
+  int status;
+  pthread_t pid;
+};
+
+static struct work_ctx works[4];
+
+void cleanup(void *arg) {
+  int i = 0;
+  int pwon, lwon;
+  for (i = 0; i < 4; i++) {
+    if (works[i].status == 0) {
+      return;
+    }
+  }
+
+  pwon = 0;
+  lwon = 0;
+  for (i = 0; i < 4; i++) {
+    pwon += works[i].peasantwon;
+    lwon += works[i].landlordwon;
+  }
+
+  printf("peasants : %d\n", pwon);
+  printf("landlord : %d\n", lwon);
+
+  printf("ended at %ld\n", time(NULL));
+}
+
+void work_func(void *arg) {
+  int i = 0;
+  struct work_ctx *ctx = (struct work_ctx *) arg;
+  game_t *game = &ctx->game;
+
+  printf("%lx starts at %d\n", pthread_self(), time(0));
+
+  pthread_cleanup_push(cleanup, arg);
+
+    Game_Init(game);
+    ctx->peasantwon = 0;
+    ctx->landlordwon = 0;
+
+    for (i = ctx->index; i < ctx->index + 2500; i++) {
+      Game_Play(game, i);
+
+      if (game->winner == game->landlord)
+        ctx->landlordwon++;
+      else
+        ctx->peasantwon++;
+
+      Game_Reset(game);
+    }
+
+    ctx->status = 1;
+
+  pthread_exit(arg);
+  pthread_cleanup_pop(0);
+}
+
+void test_game_mt() {
+  int i = 0;
+
+  for (i = 0; i < 4; i++) {
+    works[i].status = 0;
+    works[i].index = 10000 + i * 2500;
+    pthread_create(&works[i].pid, NULL, work_func, &works[i]);
+  }
+
+  for (i = 0; i < 4; i++) {
+    pthread_join(works[i].pid, NULL);
+  }
+}
+
 void test_game() {
   int peasantwon = 0;
   int landlordwon = 0;
@@ -100,7 +177,7 @@ void test_game() {
 }
 
 int main(int argc, const char *argv[]) {
-  test_game();
+  test_game_mt();
 
   /* test_advanced_hand_analyzer(); */
   memtrack_list_allocations();
