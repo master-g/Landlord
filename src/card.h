@@ -47,7 +47,7 @@ extern "C" {
 #define CARD_RANK_r     0x0E
 #define CARD_RANK_R     0x0F
 
-#define CARD_RANK_BEG   0x01
+#define CARD_RANK_BEG   CARD_RANK_3
 #define CARD_RANK_END   (CARD_RANK_R + 1)
 
 #define CARD_SUIT_CLUB      0x10
