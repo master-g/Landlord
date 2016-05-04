@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4)
 project(Landlord)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --std=gnu99 -O3")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --std=gnu99 -O0")
 
 set(SOURCE_FILES
         src/advanced_ai.c

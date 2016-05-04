@@ -104,7 +104,7 @@ void Hand_CountRank(card_array_t *array, int *count, int *sort);
 /*
  * parse a card array to hand
  */
-void Hand_Parse(hand_t *hand, card_array_t *array);
+int Hand_Parse(hand_t *hand, card_array_t *array);
 
 /*
  * compare two hands

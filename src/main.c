@@ -124,7 +124,7 @@ void work_func(void *arg) {
 
     ctx->status = 1;
 
-  pthread_exit(arg);
+    pthread_exit(arg);
   pthread_cleanup_pop(0);
 }
 
@@ -176,8 +176,46 @@ void test_game() {
   printf("\n");
 }
 
+// "♣3 ♣4 ♠5 ♠6 ♥7 ♦8"
+
+const char *hand_strings[] = {
+    "♣3",    /* solo */
+    "♣3 ♠3", /* pair */
+    "♠r ♠R", /* nuke */
+    "♠6 ♥6 ♦6", /* trio */
+    "♣3 ♠3 ♥3 ♥7", /* trio solo */
+    "♣7 ♠7 ♥7 ♥7", /* bomb */
+    "♣3 ♣4 ♠5 ♠6 ♥7", /* solo chain */
+    "♣3 ♣5 ♠5 ♠3 ♥5", /* trio pair */
+    "♣3 ♣4 ♠5 ♠6 ♥7 ♦8", /* solo chain */
+    "♣4 ♠4 ♠5 ♥6 ♥5 ♦6", /* pair chain */
+    "♣4 ♠4 ♦4 ♥5 ♠5 ♦5", /* trio chain */
+    "♣4 ♠4 ♦4 ♥4 ♠5 ♦6", /* four dual solo */
+    "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9", /* solo chain */
+    "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9 ♦T", /* solo chain */
+    "♣3 ♠3 ♦4 ♥4 ♠6 ♦6 ♦5 ♦5", /* pair chain */
+    "♣3 ♠3 ♦3 ♥4 ♠6 ♦6 ♦6 ♦9", /* trio solo chain */
+    "♣3 ♠3 ♦3 ♥3 ♠6 ♦6 ♦9 ♦9", /* trio solo chain */
+    "♣3 ♠3 ♦3 ♥3 ♠4 ♦4 ♦4 ♦4", /* four chain */
+    "♣3 ♠3 ♦3 ♥4 ♠4 ♦4 ♦5 ♠5 ♥5", /* trio chain */
+    "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J", /* solo chain */
+    NULL
+};
+
+void test_hands() {
+  int i = 0;
+  card_array_t cards;
+  hand_t hand;
+  for (; hand_strings[i] != NULL; i++) {
+    CardArray_InitFromString(&cards, hand_strings[i]);
+    Hand_Parse(&hand, &cards);
+    Hand_Print(&hand);
+    printf("\n");
+  }
+}
+
 int main(int argc, const char *argv[]) {
-  test_game_mt();
+  test_hands();
 
   /* test_advanced_hand_analyzer(); */
   memtrack_list_allocations();
