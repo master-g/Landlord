@@ -50,7 +50,7 @@ void test_advanced_hand_analyzer() {
      const char* str = "♠K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5";
      const char* str = "s9 d8 s7 h6 s5 c4";
    */
-  const char *str = "♣3 ♣4 ♠5 ♦6 ♠6 ♥7 ♠7 ♦7 ♦8 ♣8 ♣9 ♦9 ♦T";
+  const char *str = "♦2 ♥K ♦Q ♥J ♣J ♠T ♦T ♦9 ♠8 ♥8 ♦8 ♣8 ♠7 ♣6 ♦4 ♠3 ♦3";
   card_array_t cards;
   rk_list_t *hl;
 
@@ -58,7 +58,9 @@ void test_advanced_hand_analyzer() {
 
   CardArray_Print(&cards);
 
-  hl = HandList_AdvancedAnalyze(&cards);
+  hl = HandList_StandardAnalyze(&cards);
+
+//  hl = HandList_AdvancedAnalyze(&cards);
 
   HandList_Print(hl);
 
@@ -199,6 +201,7 @@ const char *hand_strings[] = {
     "♣3 ♠3 ♦3 ♥3 ♠4 ♦4 ♦4 ♦4", /* four chain */
     "♣3 ♠3 ♦3 ♥4 ♠4 ♦4 ♦5 ♠5 ♥5", /* trio chain */
     "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J", /* solo chain */
+    "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J ♦Q ♦K ♦A ♦2 ♦r ♦R", /* none */
     NULL
 };
 
@@ -215,9 +218,9 @@ void test_hands() {
 }
 
 int main(int argc, const char *argv[]) {
-  test_hands();
-
-  /* test_advanced_hand_analyzer(); */
+//  test_hands();
+//  test_game();
+  test_advanced_hand_analyzer();
   memtrack_list_allocations();
   return 0;
 }
