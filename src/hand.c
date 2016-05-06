@@ -781,7 +781,7 @@ int _HandList_SearchBeat_TrioKicker(hand_ctx_t *ctx,
   CardArray_PushBackCards(&htrio.cards, &tobeat->cards, 0, 3);
   CardArray_PushBackCards(&hkick.cards, &tobeat->cards, 3, kick);
 
-  /* same rank trio , case b*/
+  /* same rank trio , case b */
   if (CardArray_IsContain(&temp, &htrio.cards)) {
     /* keep trio beat */
     CardArray_Copy(&htriobeat.cards, &htrio.cards);
@@ -849,11 +849,8 @@ int _HandList_SearchBeat_Chain(hand_ctx_t *ctx,
                                hand_t *beat,
                                int duplicate) {
   int canbeat = 0;
-  int i = 0;
-  int j = 0;
-  int k = 0;
-  int chainlength = 0;
   int found = 0;
+  int i, j, k, chainlength;
   int tobeattype = tobeat->type;
   uint8_t footer = 0;
   int *count = NULL;
@@ -913,10 +910,8 @@ int _HandList_SearchBeat_TrioKickerChain(hand_ctx_t *ctx,
                                          hand_t *beat,
                                          int kc) {
   int canbeat = 0;
-  int i = 0;
-  int j = 0;
-  int chainlength = 0;
   int cantriobeat = 0;
+  int i, j, chainlength;
   int tobeattype = tobeat->type;
   int count[CARD_RANK_END];
   int kickcount[CARD_RANK_END];
@@ -956,8 +951,7 @@ int _HandList_SearchBeat_TrioKickerChain(hand_ctx_t *ctx,
     /* remove trio from kickcount */
     memcpy(kickcount, count, sizeof(int) * CARD_RANK_END);
 
-    for (i = 0; i < htrio.cards.length;
-         i += 3)
+    for (i = 0; i < htrio.cards.length; i += 3)
       kickcount[CARD_RANK(htrio.cards.cards[i])] = 0;
 
     /* remove count < kc and calculate n */
@@ -1259,6 +1253,7 @@ void _HandList_ExtractConsecutive(rk_list_t **hl,
   }
 }
 
+/* extract nuke/bomb/2 from array, these cards will be removed from array */
 void _HandList_ExtractNukeBomb2(rk_list_t **hl, card_array_t *array, int *count) {
   int i = 0;
   hand_t hand;
@@ -1765,6 +1760,7 @@ typedef struct _hltree_payload_s {
   hand_t hand;
   /* hand */
   int weight; /* evaluation weight */
+
 } _hltree_payload_t;
 
 rk_tree_t *_HLAA_TreeAddHand(rk_tree_t **tree, rk_list_t *hand) {

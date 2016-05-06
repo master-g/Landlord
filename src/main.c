@@ -58,9 +58,7 @@ void test_advanced_hand_analyzer() {
 
   CardArray_Print(&cards);
 
-  hl = HandList_StandardAnalyze(&cards);
-
-//  hl = HandList_AdvancedAnalyze(&cards);
+  hl = HandList_AdvancedAnalyze(&cards);
 
   HandList_Print(hl);
 
@@ -219,8 +217,8 @@ void test_hands() {
 
 int main(int argc, const char *argv[]) {
 //  test_hands();
-//  test_game();
-  test_advanced_hand_analyzer();
+  test_game();
+//  test_advanced_hand_analyzer();
   memtrack_list_allocations();
   return 0;
 }
