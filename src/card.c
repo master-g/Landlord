@@ -157,8 +157,7 @@ int CardArray_Concat(card_array_t *head, card_array_t *tail) {
     length = slot >= tail->length ? tail->length : slot;
     memcpy(&head->cards[head->length], tail->cards, length);
     head->length += length;
-  }
-  else {
+  } else {
     length = 0;
   }
 

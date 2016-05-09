@@ -29,6 +29,8 @@ SOFTWARE.
 extern "C" {
 #endif
 
+#include "memtracker.h"
+
 /*
  * ************************************************************
  * function type

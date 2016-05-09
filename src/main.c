@@ -24,7 +24,7 @@ SOFTWARE.
 
 #include "common.h"
 #include "game.h"
-#include "ruiko_algorithm.h"
+#include <pthread.h>
 
 char szr[] =
     {'3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'R'};
@@ -50,7 +50,7 @@ void test_advanced_hand_analyzer() {
      const char* str = "♠K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5";
      const char* str = "s9 d8 s7 h6 s5 c4";
    */
-  const char *str = "♣3 ♣4 ♠5 ♦6 ♠6 ♥7 ♠7 ♦7 ♦8 ♣8 ♣9 ♦9 ♦T";
+  const char *str = "♦2 ♥K ♦Q ♥J ♣J ♠T ♦T ♦9 ♠8 ♥8 ♦8 ♣8 ♠7 ♣6 ♦4 ♠3 ♦3";
   card_array_t cards;
   rk_list_t *hl;
 
@@ -63,6 +63,83 @@ void test_advanced_hand_analyzer() {
   HandList_Print(hl);
 
   HandList_Destroy(&hl);
+}
+
+struct work_ctx {
+  game_t game;
+  int peasantwon;
+  int landlordwon;
+  int index;
+  int status;
+  pthread_t pid;
+};
+
+static struct work_ctx works[4];
+
+void cleanup(void *arg) {
+  int i = 0;
+  int pwon, lwon;
+  for (i = 0; i < 4; i++) {
+    if (works[i].status == 0) {
+      return;
+    }
+  }
+
+  pwon = 0;
+  lwon = 0;
+  for (i = 0; i < 4; i++) {
+    pwon += works[i].peasantwon;
+    lwon += works[i].landlordwon;
+  }
+
+  printf("peasants : %d\n", pwon);
+  printf("landlord : %d\n", lwon);
+
+  printf("ended at %ld\n", time(NULL));
+}
+
+void work_func(void *arg) {
+  int i = 0;
+  struct work_ctx *ctx = (struct work_ctx *) arg;
+  game_t *game = &ctx->game;
+
+  printf("%lx starts at %d\n", pthread_self(), time(0));
+
+  pthread_cleanup_push(cleanup, arg);
+
+    Game_Init(game);
+    ctx->peasantwon = 0;
+    ctx->landlordwon = 0;
+
+    for (i = ctx->index; i < ctx->index + 2500; i++) {
+      Game_Play(game, i);
+
+      if (game->winner == game->landlord)
+        ctx->landlordwon++;
+      else
+        ctx->peasantwon++;
+
+      Game_Reset(game);
+    }
+
+    ctx->status = 1;
+
+    pthread_exit(arg);
+  pthread_cleanup_pop(0);
+}
+
+void test_game_mt() {
+  int i = 0;
+
+  for (i = 0; i < 4; i++) {
+    works[i].status = 0;
+    works[i].index = 10000 + i * 2500;
+    pthread_create(&works[i].pid, NULL, work_func, &works[i]);
+  }
+
+  for (i = 0; i < 4; i++) {
+    pthread_join(works[i].pid, NULL);
+  }
 }
 
 void test_game() {
@@ -99,10 +176,49 @@ void test_game() {
   printf("\n");
 }
 
-int main(int argc, const char *argv[]) {
-  test_game();
+// "♣3 ♣4 ♠5 ♠6 ♥7 ♦8"
 
-  /* test_advanced_hand_analyzer(); */
+const char *hand_strings[] = {
+    "♣3",    /* solo */
+    "♣3 ♠3", /* pair */
+    "♠r ♠R", /* nuke */
+    "♠6 ♥6 ♦6", /* trio */
+    "♣3 ♠3 ♥3 ♥7", /* trio solo */
+    "♣7 ♠7 ♥7 ♥7", /* bomb */
+    "♣3 ♣4 ♠5 ♠6 ♥7", /* solo chain */
+    "♣3 ♣5 ♠5 ♠3 ♥5", /* trio pair */
+    "♣3 ♣4 ♠5 ♠6 ♥7 ♦8", /* solo chain */
+    "♣4 ♠4 ♠5 ♥6 ♥5 ♦6", /* pair chain */
+    "♣4 ♠4 ♦4 ♥5 ♠5 ♦5", /* trio chain */
+    "♣4 ♠4 ♦4 ♥4 ♠5 ♦6", /* four dual solo */
+    "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9", /* solo chain */
+    "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9 ♦T", /* solo chain */
+    "♣3 ♠3 ♦4 ♥4 ♠6 ♦6 ♦5 ♦5", /* pair chain */
+    "♣3 ♠3 ♦3 ♥4 ♠6 ♦6 ♦6 ♦9", /* trio solo chain */
+    "♣3 ♠3 ♦3 ♥3 ♠6 ♦6 ♦9 ♦9", /* trio solo chain */
+    "♣3 ♠3 ♦3 ♥3 ♠4 ♦4 ♦4 ♦4", /* four chain */
+    "♣3 ♠3 ♦3 ♥4 ♠4 ♦4 ♦5 ♠5 ♥5", /* trio chain */
+    "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J", /* solo chain */
+    "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J ♦Q ♦K ♦A ♦2 ♦r ♦R", /* none */
+    NULL
+};
+
+void test_hands() {
+  int i = 0;
+  card_array_t cards;
+  hand_t hand;
+  for (; hand_strings[i] != NULL; i++) {
+    CardArray_InitFromString(&cards, hand_strings[i]);
+    Hand_Parse(&hand, &cards);
+    Hand_Print(&hand);
+    printf("\n");
+  }
+}
+
+int main(int argc, const char *argv[]) {
+//  test_hands();
+  test_game();
+//  test_advanced_hand_analyzer();
   memtrack_list_allocations();
   return 0;
 }
