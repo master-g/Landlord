@@ -1230,9 +1230,7 @@ void _HandList_ExtractConsecutive(rk_list_t **hl,
       hand.type = Hand_Format(primal[duplicate], HAND_KICKER_NONE, HAND_CHAIN);
 
       for (j = 0; j < i - duplicate; j++)
-        CardArray_PushBack(&hand.cards,
-                           CardArray_PopFront(
-                               array));
+        CardArray_PushBack(&hand.cards, CardArray_PopFront(array));
 
       HandList_PushFront(hl, &hand);
     } else {
@@ -1243,9 +1241,7 @@ void _HandList_ExtractConsecutive(rk_list_t **hl,
                                 HAND_CHAIN_NONE);
 
         for (i = 0; i < duplicate; i++)
-          CardArray_PushBack(&hand.cards,
-                             CardArray_PopFront(
-                                 array));
+          CardArray_PushBack(&hand.cards, CardArray_PopFront(array));
 
         HandList_PushFront(hl, &hand);
       }
