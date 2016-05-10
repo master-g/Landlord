@@ -1332,9 +1332,8 @@ rk_list_t *HandList_AdvancedAnalyze(card_array_t *array) {
 int HandList_AdvancedEvaluator(card_array_t *array) {
   int value = 0;
   rk_list_t *hl = HandList_AdvancedAnalyze(array);
-
-  value = rk_list_len(hl);
-  HandList_Destroy(&hl);
+  value = rk_list_count(hl);
+  rk_list_clear_destroy(hl);
 
   return value;
 }
@@ -1349,7 +1348,7 @@ int HandList_AdvancedEvaluator(card_array_t *array) {
 
 /* nodes for beat list sort */
 typedef struct beat_node_s {
-  rk_list_t *node;
+  rk_list_node_t *node;
   int value;
 } beat_node_t;
 
@@ -1367,22 +1366,22 @@ int HandList_BestBeat(card_array_t *array,
   int bombi = 0;
   int canbeat = 0;
   rk_list_t *hl = NULL;
-  rk_list_t *node = NULL;
+  rk_list_node_t *node = NULL;
   card_array_t temp;
   beat_node_t *hnodes[BEAT_NODE_CAPACITY];
-  rk_list_t *hbombs[BEAT_NODE_CAPACITY];
+  rk_list_node_t *hbombs[BEAT_NODE_CAPACITY];
   HandList_EvaluateFunc evalFunc;
 
   evalFunc = (func == NULL) ? HandList_StandardEvaluator : func;
 
   memset(hnodes, 0, sizeof(beat_node_t *) * BEAT_NODE_CAPACITY);
-  memset(hbombs, 0, sizeof(rk_list_t *) * BEAT_NODE_CAPACITY);
+  memset(hbombs, 0, sizeof(rk_list_node_t *) * BEAT_NODE_CAPACITY);
 
   /* search beat list */
   hl = HandList_SearchBeatList(array, tobeat);
 
   /* separate bomb/nuke and normal hands */
-  node = hl;
+  node = hl->first;
 
   while (node != NULL) {
     if ((HandList_GetHand(node)->type ==
@@ -1425,41 +1424,39 @@ int HandList_BestBeat(card_array_t *array,
   for (i = bombi; i >= 0; i--) {
     if (hbombs[i]) {
       hbombs[i]->next = NULL;
-      rk_list_push_front(&hl, hbombs[i]);
+      rk_list_push(hl, hbombs[i]);
     }
   }
 
   for (i = nodei; i >= 0; i--) {
     if (hnodes[i]) {
       hnodes[i]->node->next = NULL;
-      rk_list_push_front(&hl, hnodes[i]->node);
+      rk_list_push(hl, hnodes[i]->node);
     }
   }
 
   /* select beat */
-  if (hl != NULL) {
-    Hand_Copy(beat, HandList_GetHand(hl));
+  if (!rk_list_empty(hl)) {
+    Hand_Copy(beat, HandList_GetHand(hl->first));
     canbeat = 1;
   }
 
   /* clean up */
   for (i = 0; i < nodei; i++) free(hnodes[i]);
 
-  HandList_Destroy(&hl);
+  rk_list_clear_destroy(hl);
 
   return canbeat;
 }
 
 void HandList_Print(rk_list_t *hl) {
-  rk_list_t *node = hl;
+  rk_list_node_t *node = NULL;
 
-  if ((node == NULL) || (HandList_GetHand(node) == NULL) ||
-    (HandList_GetHand(node)->type == 0))
+  if (hl == NULL || rk_list_empty(hl) || HandList_GetHand(hl->first)->type == 0)
     return;
 
   DBGLog ("-----hand_list_t begin---------\n");
-
-  for (node = hl; node != NULL; node = node->next) {
+  for (node = hl->first; node != NULL; node = node->next) {
     Hand_Print(HandList_GetHand(node));
   }
   DBGLog ("-----hand_list_t ended---------\n");

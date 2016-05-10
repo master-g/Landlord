@@ -61,7 +61,7 @@ void test_advanced_hand_analyzer() {
 
   HandList_Print(hl);
 
-  HandList_Destroy(&hl);
+  rk_list_clear_destroy(hl);
 }
 
 struct work_ctx {
@@ -216,8 +216,10 @@ void test_hands() {
 
 int main(int argc, const char *argv[]) {
 //  test_hands();
-  test_game();
-//  test_advanced_hand_analyzer();
+//  test_game();
+
+  printf("hello world\n");
+  test_advanced_hand_analyzer();
   memtrack_list_allocations();
   return 0;
 }

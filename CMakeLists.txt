@@ -25,6 +25,9 @@ set(SOURCE_FILES
         src/player.c
         src/player.h
         src/standard_ai.c
-        src/standard_ai.h src/handlist.h src/handlist.c src/landlord.h)
+        src/standard_ai.h
+        src/handlist.h
+        src/handlist.c
+        src/landlord.h)
 
 add_executable(Landlord ${SOURCE_FILES})
