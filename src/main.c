@@ -22,8 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "common.h"
-#include "game.h"
+#include "landlord.h"
 #include <pthread.h>
 
 char szr[] =

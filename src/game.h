@@ -28,6 +28,7 @@ SOFTWARE.
 #include "player.h"
 #include "deck.h"
 #include "hand.h"
+#include "handlist.h"
 #include "mt19937.h"
 
 #ifdef __cplusplus

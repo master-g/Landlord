@@ -38,9 +38,10 @@ void Random_Init(mt19937_t *context, uint32_t seed) {
   for (context->mti = 1; context->mti < MT_N; context->mti++) {
     /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
     context->mt[context->mti] =
-        (1812433253 *
-            (context->mt[context->mti - 1] ^ (context->mt[context->mti - 1] >> 30)) +
-            context->mti);
+      (1812433253 *
+        (context->mt[context->mti - 1] ^ (context->mt[context->mti - 1] >> 30))
+        +
+          context->mti);
     context->mt[context->mti] &= FULL_MASK;
   }
 }
@@ -54,10 +55,10 @@ void Random_InitWithArray(mt19937_t *context, uint32_t initarr[], int length) {
 
   for (; k; k--) {
     context->mt[i] =
-        (context->mt[i] ^
-            ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1664525)) +
-            initarr[j] +
-            j;
+      (context->mt[i] ^
+        ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1664525)) +
+        initarr[j] +
+        j;
     context->mt[i] &= FULL_MASK;
     i++;
     j++;
@@ -74,8 +75,8 @@ void Random_InitWithArray(mt19937_t *context, uint32_t initarr[], int length) {
 
   for (k = MT_N - 1; k; k--) {
     context->mt[i] =
-        (context->mt[i] ^
-            ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1566083941)) - i;
+      (context->mt[i] ^
+        ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1566083941)) - i;
     context->mt[i] &= FULL_MASK;
     i++;
 
@@ -100,17 +101,18 @@ uint32_t Random_uint32(mt19937_t *context) {
 
     for (kk = 0; kk < MT_N - M; kk++) {
       y = (context->mt[kk] & UPPER_MASK) |
-          (context->mt[kk + 1] & LOWER_MASK);
+        (context->mt[kk + 1] & LOWER_MASK);
       context->mt[kk] = context->mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1];
     }
 
     for (; kk < MT_N - 1; kk++) {
       y = (context->mt[kk] & UPPER_MASK) |
-          (context->mt[kk + 1] & LOWER_MASK);
-      context->mt[kk] = context->mt[kk + (M - MT_N)] ^ (y >> 1) ^ mag01[y & 0x1];
+        (context->mt[kk + 1] & LOWER_MASK);
+      context->mt[kk] =
+        context->mt[kk + (M - MT_N)] ^ (y >> 1) ^ mag01[y & 0x1];
     }
     y = (context->mt[MT_N - 1] & UPPER_MASK) |
-        (context->mt[0] & LOWER_MASK);
+      (context->mt[0] & LOWER_MASK);
     context->mt[MT_N - 1] = context->mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1];
 
     context->mti = 0;

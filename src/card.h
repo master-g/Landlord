@@ -31,21 +31,21 @@ SOFTWARE.
 extern "C" {
 #endif
 
-#define CARD_RANK_3     0x01
-#define CARD_RANK_4     0x02
-#define CARD_RANK_5     0x03
-#define CARD_RANK_6     0x04
-#define CARD_RANK_7     0x05
-#define CARD_RANK_8     0x06
-#define CARD_RANK_9     0x07
-#define CARD_RANK_T     0x08
-#define CARD_RANK_J     0x09
-#define CARD_RANK_Q     0x0A
-#define CARD_RANK_K     0x0B
-#define CARD_RANK_A     0x0C
-#define CARD_RANK_2     0x0D
-#define CARD_RANK_r     0x0E
-#define CARD_RANK_R     0x0F
+#define CARD_RANK_3     (uint8_t)0x01
+#define CARD_RANK_4     (uint8_t)0x02
+#define CARD_RANK_5     (uint8_t)0x03
+#define CARD_RANK_6     (uint8_t)0x04
+#define CARD_RANK_7     (uint8_t)0x05
+#define CARD_RANK_8     (uint8_t)0x06
+#define CARD_RANK_9     (uint8_t)0x07
+#define CARD_RANK_T     (uint8_t)0x08
+#define CARD_RANK_J     (uint8_t)0x09
+#define CARD_RANK_Q     (uint8_t)0x0A
+#define CARD_RANK_K     (uint8_t)0x0B
+#define CARD_RANK_A     (uint8_t)0x0C
+#define CARD_RANK_2     (uint8_t)0x0D
+#define CARD_RANK_r     (uint8_t)0x0E
+#define CARD_RANK_R     (uint8_t)0x0F
 
 #define CARD_RANK_BEG   CARD_RANK_3
 #define CARD_RANK_END   (CARD_RANK_R + 1)
@@ -170,7 +170,8 @@ uint8_t CardArray_RemoveCard(card_array_t *array, uint8_t card);
 /*
  * push back multiple cards from array
  */
-int CardArray_PushBackCards(card_array_t *array, card_array_t *from, int where, int count);
+int CardArray_PushBackCards
+  (card_array_t *array, card_array_t *from, int where, int count);
 
 /*
  * transfer specific rank cards from array to array
@@ -185,7 +186,8 @@ void CardArray_RemoveRank(card_array_t *array, uint8_t rank);
 /*
  * sort cards
  */
-void CardArray_Sort(card_array_t *array, int (*comparator)(const void *, const void *));
+void CardArray_Sort
+  (card_array_t *array, int (*comparator)(const void *, const void *));
 
 /*
  * reverse cards
@@ -201,6 +203,14 @@ void CardArray_Print(card_array_t *array);
  * convert a card to string
  */
 int Card_ToString(uint8_t card, char *buf, int len);
+
+/*
+ * ************************************************************
+ * helper function
+ * ************************************************************
+ */
+
+int rk_next_comb(int comb[], int k, int n);
 
 #ifdef __cplusplus
 }

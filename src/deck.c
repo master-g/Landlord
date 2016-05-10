@@ -57,23 +57,6 @@ void Deck_RecycleSingle(deck_t *deck, uint8_t card) {
 }
 
 int Deck_Deal(deck_t *deck, card_array_t *array, int count) {
-#if (NICE_AND_CLEAN == 1)
-  int i = 0;
-  uint8_t card = 0;
-
-  CardArray_Clear(array);
-
-  for (i = 0; i < count; i++) {
-    card = Deck_DealSingle(deck);
-
-    if (card == 0) break;
-
-    CardArray_PushBack(array, card);
-  }
-
-  return i;
-
-#else
   int actualDealt = 0;
 
   CardArray_Clear(array);
@@ -85,35 +68,16 @@ int Deck_Deal(deck_t *deck, card_array_t *array, int count) {
   array->length = actualDealt;
 
   return actualDealt;
-
-#endif /* DEAL_PEDANTIC */
 }
 
 int Deck_Recycle(deck_t *deck, card_array_t *array) {
-#if (NICE_AND_CLEAN == 1)
-  int i = 0;
-  uint8_t card = 0;
-
-  for (i = 0; i < array->length; i++) {
-    card = CardArray_PopBack(array);
-
-    if (card == 0) break;
-
-    Deck_RecycleSingle(deck, card);
-  }
-
-  return i;
-
-#else
   int actualRecycled = 0;
 
   actualRecycled = CardArray_Capacity(&deck->used) <
-      array->length ? CardArray_Capacity(&deck->used) : array->length;
+    array->length ? CardArray_Capacity(&deck->used) : array->length;
 
   memcpy(&deck->used.cards[deck->used.length], array->cards, actualRecycled);
   deck->used.length += actualRecycled;
 
   return actualRecycled;
-
-#endif /* DECK_PEDANTIC */
 }

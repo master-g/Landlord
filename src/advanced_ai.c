@@ -93,27 +93,27 @@ int AdvancedAI_Beat(void *p, void *g) {
   prevplayer = &game->players[game->lastplay];
 
   if (canbeat &&
-      (player->identity == PlayerIdentity_Peasant) &&
-      (prevplayer->identity == PlayerIdentity_Peasant)) {
+    (player->identity == PlayerIdentity_Peasant) &&
+    (prevplayer->identity == PlayerIdentity_Peasant)) {
     /* find teammate and landlord */
     for (i = 0; i < GAME_PLAYERS; i++) {
       if (game->players[i].identity ==
-          PlayerIdentity_Landlord)
+        PlayerIdentity_Landlord)
         landlord = &game->players[i];
 
       if ((game->players[i].identity == PlayerIdentity_Peasant) &&
-          (game->players[i].seatId !=
-              player->seatId))
+        (game->players[i].seatId !=
+          player->seatId))
         teammate = &game->players[i];
     }
 
     /* don't bomb/nuke teammate */
     if (canbeat &&
-        (((beat.type ==
-            Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAIN_NONE)) ||
-            (beat.type ==
-                Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE,
-                            HAND_CHAIN_NONE)))))
+      (((beat.type ==
+        Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAINLESS)) ||
+        (beat.type ==
+          Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE,
+                      HAND_CHAINLESS)))))
       canbeat = 0;
 
     if (canbeat && (teammate->cards.length < player->cards.length)) canbeat = 0;
@@ -121,7 +121,7 @@ int AdvancedAI_Beat(void *p, void *g) {
 
   if (canbeat) {
     CardArray_Subtract(&player->cards, &beat.cards);
-    HandList_Destroy(&player->handlist);
+    rk_list_clear_destroy(player->handlist);
     player->handlist = HandList_AdvancedAnalyze(&player->cards);
     Hand_Copy(tobeat, &beat);
   }
