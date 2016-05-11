@@ -97,6 +97,9 @@ void history_unmark(void *addr) {}
 void history_purge() {}
 #endif
 
+#define rk_check(A, ...) if(!(A)) { goto error; }
+#define rk_check_mem(A) rk_check(A, "out of memory")
+
 /* ************************************************************
  * list
  * ************************************************************/
@@ -110,9 +113,11 @@ rk_list_t *rk_list_create(void) {
 void rk_list_destroy(rk_list_t *list) {
   history_unmark(list);
 
-  rk_list_foreach(list, first, next, cur) {
-    if (cur->prev) {
-      free(cur->prev);
+  {
+    rk_list_foreach(list, first, next, cur) {
+      if (cur->prev) {
+        free(cur->prev);
+      }
     }
   }
 
@@ -135,7 +140,7 @@ void rk_list_clear_destroy(rk_list_t *list) {
 
 void rk_list_push(rk_list_t *list, void *payload) {
   rk_list_node_t *node = calloc(1, sizeof(rk_list_node_t));
-  check_mem(node);
+  rk_check_mem(node);
 
   node->payload = payload;
 
@@ -161,7 +166,7 @@ void *rk_list_pop(rk_list_t *list) {
 
 void rk_list_unshift(rk_list_t *list, void *payload) {
   rk_list_node_t *node = calloc(1, sizeof(rk_list_node_t));
-  check_mem(node);
+  rk_check_mem(node);
 
   node->payload = payload;
   if (list->last == NULL) {
@@ -204,19 +209,19 @@ void rk_list_concat(rk_list_t *head, rk_list_t *tail) {
 void *rk_list_remove(rk_list_t *list, rk_list_node_t *node) {
   void *result = NULL;
 
-  check(list->first && list->last, "remove from an empty list");
-  check(node, "remove NULL from list");
+  rk_check(list->first && list->last, "remove from an empty list");
+  rk_check(node, "remove NULL from list");
 
   if (node == list->first && node == list->last) {
     list->first = NULL;
     list->last = NULL;
   } else if (node == list->first) {
     list->first = node->next;
-    check(list->first != NULL, "invalid list with non-null first");
+    rk_check(list->first != NULL, "invalid list with non-null first");
     list->first->prev = NULL;
   } else if (node == list->last) {
     list->last = node->prev;
-    check(list->last != NULL, "invalid list with non-null last");
+    rk_check(list->last != NULL, "invalid list with non-null last");
     list->last->next = NULL;
   } else {
     rk_list_node_t *after = node->next;
@@ -236,7 +241,7 @@ void *rk_list_remove(rk_list_t *list, rk_list_node_t *node) {
 void *rk_list_search(rk_list_t *list, void *context, rk_algo_search search) {
   int found = 0;
 
-  check(list->first && list->last, "search from an empty list");
+  rk_check(list->first && list->last, "search from an empty list");
 
   {
     rk_list_foreach(list, first, next, cur) {
@@ -257,7 +262,7 @@ void *rk_list_search(rk_list_t *list, void *context, rk_algo_search search) {
 
 rk_tree_t *rk_tree_create(void *payload) {
   rk_tree_t *tree = (rk_tree_t *) calloc(1, sizeof(rk_tree_t));
-  check_mem(tree);
+  rk_check_mem(tree);
   tree->payload = payload;
 
   error:
@@ -301,7 +306,7 @@ void rk_tree_clear_destroy(rk_tree_t *tree) {
 
 rk_tree_t *rk_tree_add_child(rk_tree_t *node, void *payload) {
   rk_tree_t *newnode = calloc(1, sizeof(rk_tree_t));
-  check_mem(newnode);
+  rk_check_mem(newnode);
 
   newnode->payload = payload;
   if (node->child) {
@@ -317,7 +322,7 @@ rk_tree_t *rk_tree_add_child(rk_tree_t *node, void *payload) {
 
 rk_tree_t *rk_tree_add_sibling(rk_tree_t *node, void *payload) {
   rk_tree_t *newnode = calloc(1, sizeof(rk_tree_t));
-  check_mem(newnode);
+  rk_check_mem(newnode);
 
   newnode->payload = payload;
   newnode->sibling = node->sibling;
@@ -356,7 +361,7 @@ void rk_tree_dump_leaves(rk_tree_t *tree, rk_list_t *list) {
   rk_tree_t *temp = NULL;
 
   stack = rk_list_create();
-  check_mem(stack);
+  rk_check_mem(stack);
 
   rk_list_push(stack, tree);
 

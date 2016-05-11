@@ -1416,7 +1416,7 @@ int HandList_BestBeat(card_array_t *array,
       CardArray_Copy(&temp, array);
 
       /* evaluate the value of cards left after hand was played */
-      leftover = hnodes[i]->hand; // HandList_GetHand(hnodes[i]->node);
+      leftover = hnodes[i]->hand;
       CardArray_Subtract(&temp, &leftover->cards);
 
       hnodes[i]->value = evalFunc(&temp) *
