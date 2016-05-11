@@ -25,8 +25,7 @@ SOFTWARE.
 #include "ruiko_algorithm.h"
 #include "common.h"
 
-#define WINVER
-#ifndef WINVER
+#ifdef RKALGO_TRACE_MEM
 #include <execinfo.h>
 
 /* ************************************************************
@@ -97,8 +96,8 @@ void history_unmark(void *addr) {}
 void history_purge() {}
 #endif
 
-#define rk_check(A, ...) if(!(A)) { goto error; }
-#define rk_check_mem(A) rk_check(A, "out of memory")
+#define rk_check(A) if(!(A)) { goto error; }
+#define rk_check_mem(A) rk_check(A)
 
 /* ************************************************************
  * list
@@ -209,19 +208,19 @@ void rk_list_concat(rk_list_t *head, rk_list_t *tail) {
 void *rk_list_remove(rk_list_t *list, rk_list_node_t *node) {
   void *result = NULL;
 
-  rk_check(list->first && list->last, "remove from an empty list");
-  rk_check(node, "remove NULL from list");
+  rk_check(list->first && list->last); /* remove from an empty list */
+  rk_check(node); /* remove NULL from list */
 
   if (node == list->first && node == list->last) {
     list->first = NULL;
     list->last = NULL;
   } else if (node == list->first) {
     list->first = node->next;
-    rk_check(list->first != NULL, "invalid list with non-null first");
+    rk_check(list->first != NULL); /* invalid list with non-null first */
     list->first->prev = NULL;
   } else if (node == list->last) {
     list->last = node->prev;
-    rk_check(list->last != NULL, "invalid list with non-null last");
+    rk_check(list->last != NULL); /* invalid list with non-null last */
     list->last->next = NULL;
   } else {
     rk_list_node_t *after = node->next;
@@ -241,7 +240,7 @@ void *rk_list_remove(rk_list_t *list, rk_list_node_t *node) {
 void *rk_list_search(rk_list_t *list, void *context, rk_algo_search search) {
   int found = 0;
 
-  rk_check(list->first && list->last, "search from an empty list");
+  rk_check(list->first && list->last); /* search from an empty list */
 
   {
     rk_list_foreach(list, first, next, cur) {
@@ -334,9 +333,7 @@ rk_tree_t *rk_tree_add_sibling(rk_tree_t *node, void *payload) {
 }
 
 void rk_tree_dump(rk_tree_t *tree, rk_list_t *list) {
-  rk_list_t *q = NULL;
-
-  q = rk_list_create();
+  rk_list_t *q = rk_list_create();
   rk_list_unshift(q, tree);
 
   while (!rk_list_empty(q)) {
