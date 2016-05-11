@@ -177,8 +177,7 @@ void Game_Play(game_t *game, uint32_t seed) {
         else game->phase = Phase_Pass;
 
         DBGLog ("\nPlayer ---- %d ---- passed\n", game->playerIndex);
-      }
-      else {
+      } else {
         game->lastplay = game->playerIndex;
         game->phase = Phase_Query;
         CardArray_Concat(&game->cardRecord, &game->lastHand.cards);

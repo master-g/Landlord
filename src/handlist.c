@@ -37,8 +37,15 @@ void HandList_PushFront(rk_list_t *hl, hand_t *hand) {
   rk_list_push(hl, payload);
 }
 
-void HandList_Remove(rk_list_t *hl, rk_list_node_t *node) {
-  void *payload = rk_list_remove(hl, node);
+void HandList_Remove(rk_list_t *hl, hand_t *hand) {
+  void *payload = NULL;
+  rk_list_foreach(hl, first, next, cur) {
+    if (cur->payload == hand) {
+      payload = rk_list_remove(hl, cur);
+      break;
+    }
+  }
+
   free(payload);
 }
 
@@ -46,7 +53,7 @@ int _HandList_FindFunc(void *payload, void *context) {
   return ((hand_t *) payload)->type == *(int *) context ? 1 : 0;
 }
 
-rk_list_node_t *HandList_Find(rk_list_t *hl, int handtype) {
+hand_t *HandList_Find(rk_list_t *hl, int handtype) {
   return rk_list_search(hl, &handtype, _HandList_FindFunc);
 }
 
@@ -555,8 +562,8 @@ rk_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat) {
   Hand_Clear(&beat);
   Hand_Copy(&htobeat, tobeat);
 
+  hl = rk_list_create();
   do {
-    hl = rk_list_create();
     canbeat = _HandList_SearchBeat(cards, &htobeat, &beat);
 
     if (canbeat) {
@@ -1307,6 +1314,8 @@ rk_list_t *HandList_AdvancedAnalyze(card_array_t *array) {
       shortest = workingtree;
   }
 
+  rk_list_clear_destroy(st);
+
   /* extract shortest node's other hands */
   others =
     HandList_StandardAnalyze(&((_hltree_payload_t *) (shortest->payload))->ctx.cards);
@@ -1348,8 +1357,9 @@ int HandList_AdvancedEvaluator(card_array_t *array) {
 
 /* nodes for beat list sort */
 typedef struct beat_node_s {
-  rk_list_node_t *node;
+  hand_t *hand;
   int value;
+
 } beat_node_t;
 
 /* sort function */
@@ -1369,13 +1379,13 @@ int HandList_BestBeat(card_array_t *array,
   rk_list_node_t *node = NULL;
   card_array_t temp;
   beat_node_t *hnodes[BEAT_NODE_CAPACITY];
-  rk_list_node_t *hbombs[BEAT_NODE_CAPACITY];
+  hand_t *hbombs[BEAT_NODE_CAPACITY];
   HandList_EvaluateFunc evalFunc;
 
   evalFunc = (func == NULL) ? HandList_StandardEvaluator : func;
 
   memset(hnodes, 0, sizeof(beat_node_t *) * BEAT_NODE_CAPACITY);
-  memset(hbombs, 0, sizeof(rk_list_node_t *) * BEAT_NODE_CAPACITY);
+  memset(hbombs, 0, sizeof(hand_t *) * BEAT_NODE_CAPACITY);
 
   /* search beat list */
   hl = HandList_SearchBeatList(array, tobeat);
@@ -1388,11 +1398,11 @@ int HandList_BestBeat(card_array_t *array,
       Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAINLESS)) ||
       (HandList_GetHand(node)->type ==
         Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAINLESS))) {
-      hbombs[bombi++] = node;
+      hbombs[bombi++] = node->payload;
     }
     else {
       hnodes[nodei] = (beat_node_t *) malloc(sizeof(beat_node_t));
-      hnodes[nodei]->node = node;
+      hnodes[nodei]->hand = node->payload;
       nodei++;
     }
 
@@ -1406,7 +1416,7 @@ int HandList_BestBeat(card_array_t *array,
       CardArray_Copy(&temp, array);
 
       /* evaluate the value of cards left after hand was played */
-      leftover = HandList_GetHand(hnodes[i]->node);
+      leftover = hnodes[i]->hand; // HandList_GetHand(hnodes[i]->node);
       CardArray_Subtract(&temp, &leftover->cards);
 
       hnodes[i]->value = evalFunc(&temp) *
@@ -1419,19 +1429,18 @@ int HandList_BestBeat(card_array_t *array,
   }
 
   /* re-build hand list */
-  hl = NULL;
+  rk_list_destroy(hl);
+  hl = rk_list_create();
 
   for (i = bombi; i >= 0; i--) {
     if (hbombs[i]) {
-      hbombs[i]->next = NULL;
       rk_list_push(hl, hbombs[i]);
     }
   }
 
   for (i = nodei; i >= 0; i--) {
     if (hnodes[i]) {
-      hnodes[i]->node->next = NULL;
-      rk_list_push(hl, hnodes[i]->node);
+      rk_list_push(hl, hnodes[i]->hand);
     }
   }
 

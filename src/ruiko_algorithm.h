@@ -123,6 +123,8 @@ void rk_tree_dump_leaves(rk_tree_t *tree, rk_list_t *list);
 
 void rk_tree_levelorder(rk_tree_t *tree, rk_tree_visitor visitor);
 
+void history_purge();
+
 #ifdef __cplusplus
 }
 #endif

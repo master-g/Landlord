@@ -25,15 +25,91 @@ SOFTWARE.
 #include "ruiko_algorithm.h"
 #include "common.h"
 
+#define WINVER
+#ifndef WINVER
+#include <execinfo.h>
+
+/* ************************************************************
+ * debug
+ * ************************************************************/
+
+typedef struct _history_entry_s {
+  void *addr;
+  void *callstack[128];
+  int frames;
+  struct _history_entry_s *next;
+
+} history_entry_t;
+
+typedef struct _history_s {
+  history_entry_t *first;
+
+} history_t;
+
+static history_t history = {NULL};
+
+void history_mark(void *addr) {
+  history_entry_t *entry = calloc(1, sizeof(history_entry_t));
+  entry->addr = addr;
+  entry->frames = backtrace(entry->callstack, 128);
+  entry->next = history.first;
+  history.first = entry;
+}
+
+void history_unmark(void *addr) {
+  history_entry_t *prev = NULL, *iter = history.first;
+
+  while (iter != NULL && iter->addr != addr) {
+    prev = iter;
+    iter = iter->next;
+  }
+
+  if (iter != NULL) {
+    if (prev != NULL) {
+      prev->next = iter->next;
+    } else {
+      history.first = iter->next;
+    }
+
+    free(iter);
+  }
+}
+
+void history_purge() {
+  history_entry_t *iter = history.first;
+
+  while (iter != NULL) {
+    int i;
+    char **strs = backtrace_symbols(iter->callstack, iter->frames);
+
+    printf("-------------------------------\n");
+    for (i = 0; i < iter->frames; i++) {
+      printf("%s\n", strs[i]);
+    }
+    free(strs);
+
+    iter = iter->next;
+  }
+}
+#else
+void history_mark(void *addr) {}
+void history_unmark(void *addr) {}
+void history_purge() {}
+#endif
+
 /* ************************************************************
  * list
  * ************************************************************/
 
 rk_list_t *rk_list_create(void) {
-  return calloc(1, sizeof(rk_list_t));
+  rk_list_t *list = calloc(1, sizeof(rk_list_t));
+  history_mark(list);
+  return list;
 }
 
 void rk_list_destroy(rk_list_t *list) {
+  history_unmark(list);
+
   rk_list_foreach(list, first, next, cur) {
     if (cur->prev) {
       free(cur->prev);
@@ -51,8 +127,10 @@ void rk_list_clear(rk_list_t *list) {
 }
 
 void rk_list_clear_destroy(rk_list_t *list) {
-  rk_list_clear(list);
-  rk_list_destroy(list);
+  if (list) {
+    rk_list_clear(list);
+    rk_list_destroy(list);
+  }
 }
 
 void rk_list_push(rk_list_t *list, void *payload) {
@@ -107,6 +185,10 @@ void *rk_list_shift(rk_list_t *list) {
 }
 
 void rk_list_concat(rk_list_t *head, rk_list_t *tail) {
+  if (tail->count == 0) {
+    return;
+  }
+
   if (head->last == NULL) {
     head->first = tail->first;
     head->last = tail->last;

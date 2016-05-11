@@ -42,12 +42,12 @@ void HandList_PushFront(rk_list_t *hl, hand_t *hand);
 /*
  * remove a hand from hand list
  */
-void HandList_Remove(rk_list_t *hl, rk_list_node_t *node);
+void HandList_Remove(rk_list_t *hl, hand_t *hand);
 
 /*
  * search a specific hand type from hand list
  */
-rk_list_node_t *HandList_Find(rk_list_t *hl, int handtype);
+hand_t *HandList_Find(rk_list_t *hl, int handtype);
 
 /*
  * get payload as hand_t
