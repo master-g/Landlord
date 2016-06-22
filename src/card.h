@@ -92,13 +92,19 @@ typedef struct _card_arr_s {
 /* sort function */
 typedef int (*CardSortFunc)(void *, void *);
 
-/*
- * parse a string to card array
+/**
+ * Initialize a card array from string
+ * 
+ * @param  array The result card array
+ * @param  str   The source string
+ * @return       For method chaining
  */
 void *CardArray_InitFromString(card_array_t *array, const char *str);
 
-/*
- * reset a card array with 54 cards
+/**
+ * Reset a card array with 54 cards
+ * 
+ * @param array The card array to reset with
  */
 void CardArray_Reset(card_array_t *array);
 
