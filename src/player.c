@@ -42,12 +42,12 @@ void Player_SetupAdvancedAI(player_t *player) {
 }
 
 void Player_Destroy(player_t *player) {
-  HandList_Destroy(&player->handlist);
+  rk_list_clear_destroy(player->handlist);
   free(player);
 }
 
 void Player_Clear(player_t *player) {
-  HandList_Destroy(&player->handlist);
+  rk_list_clear_destroy(player->handlist);
   player->handlist = NULL;
   player->identity = PlayerIdentity_Peasant;
   CardArray_Clear(&player->cards);

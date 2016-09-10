@@ -106,7 +106,7 @@ void Game_Play(game_t *game, uint32_t seed) {
       Deck_Deal(&game->deck, &Game_GetCurrentPlayer(game)->cards,
                 GAME_HAND_CARDS);
       bid =
-          Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Bid, game);
+        Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Bid, game);
 
       if (bid > game->bid) {
         DBGLog ("\nPlayer ---- %d ---- bid for %d\n", game->playerIndex, bid);
@@ -168,7 +168,7 @@ void Game_Play(game_t *game, uint32_t seed) {
     }
     else if ((game->phase == Phase_Query) || (game->phase == Phase_Pass)) {
       beat = Player_HandleEvent(Game_GetCurrentPlayer(
-                                    game), Player_Event_Beat, game);
+                                  game), Player_Event_Beat, game);
 
       /* has beat in this phase */
       if (beat == 0) {
@@ -177,8 +177,7 @@ void Game_Play(game_t *game, uint32_t seed) {
         else game->phase = Phase_Pass;
 
         DBGLog ("\nPlayer ---- %d ---- passed\n", game->playerIndex);
-      }
-      else {
+      } else {
         game->lastplay = game->playerIndex;
         game->phase = Phase_Query;
         CardArray_Concat(&game->cardRecord, &game->lastHand.cards);

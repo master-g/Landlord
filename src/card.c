@@ -25,11 +25,11 @@ SOFTWARE.
 #include "card.h"
 
 const uint8_t _card_set[] = {
-    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D,
-    0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D,
-    0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D,
-    0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D,
-    0x1E, 0x2F
+  0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D,
+  0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D,
+  0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D,
+  0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D,
+  0x1E, 0x2F
 };
 
 void *CardArray_InitFromString(card_array_t *array, const char *str) {
@@ -126,24 +126,7 @@ void *CardArray_InitFromString(card_array_t *array, const char *str) {
 }
 
 void CardArray_Reset(card_array_t *array) {
-#if (NICE_AND_CLEAN == 1)
-  int rank = 0;
-
-  /* 52 standard cards */
-  for (rank = CARD_RANK_3; rank < CARD_RANK_r; rank++) {
-    array->cards[rank - CARD_RANK_3 + 13 * 0] = (uint8_t) Card_Make(CARD_SUIT_CLUB, rank);
-    array->cards[rank - CARD_RANK_3 + 13 * 1] = (uint8_t) Card_Make(CARD_SUIT_DIAMOND, rank);
-    array->cards[rank - CARD_RANK_3 + 13 * 2] = (uint8_t) Card_Make(CARD_SUIT_HEART, rank);
-    array->cards[rank - CARD_RANK_3 + 13 * 3] = (uint8_t) Card_Make(CARD_SUIT_SPADE, rank);
-  }
-
-  /* jokers */
-  array->cards[CARD_SET_LENGTH - 2] = Card_Make(CARD_SUIT_CLUB, CARD_RANK_r);
-  array->cards[CARD_SET_LENGTH - 1] = Card_Make(CARD_SUIT_DIAMOND, CARD_RANK_R);
-#else
   memcpy(array->cards, _card_set, sizeof(uint8_t) * CARD_SET_LENGTH);
-#endif /* if NICE_AND_CLEAN == 1 */
-
   array->length = CARD_SET_LENGTH;
 }
 
@@ -379,7 +362,8 @@ void CardArray_CopyRank(card_array_t *dst, card_array_t *src, uint8_t rank) {
   int i = 0;
 
   for (i = 0; i < src->length; i++) {
-    if (CARD_RANK(src->cards[i]) == rank) CardArray_PushBack(dst, src->cards[i]);
+    if (CARD_RANK(src->cards[i]) == rank)
+      CardArray_PushBack(dst, src->cards[i]);
   }
 }
 
@@ -392,8 +376,7 @@ void CardArray_RemoveRank(card_array_t *array, uint8_t rank) {
 
   for (i = 0; i < array->length; i++) {
     if (CARD_RANK(array->cards[i]) != rank)
-      CardArray_PushBack(&temp,
-                         array->cards[i]);
+      CardArray_PushBack(&temp, array->cards[i]);
   }
 
   CardArray_Copy(array, &temp);
@@ -448,7 +431,7 @@ unsigned char szSPADE[] = { 's', 0, 0, 0 };
 #endif /* ifdef LL_GRAPHICAL_SUIT */
 
 char szRank[] =
-    {'3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'r', 'R'};
+  {'3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'r', 'R'};
 
 int Card_ToString(uint8_t card, char *buf, int len) {
   if ((buf != NULL) && (len >= CARD_STRING_LENGTH)) {
@@ -497,4 +480,40 @@ void CardArray_Print(card_array_t *array) {
   }
 
   DBGLog ("\n");
+}
+
+/* ************************************************************
+ * helper function
+ * ************************************************************/
+
+/*
+   https://compprog.wordpress.com/2007/10/17/generating-combinations-1/
+   next_comb(int comb[], int k, int n)
+   Generates the next combination of n elements as k after comb
+
+   comb => the previous combination ( use (0, 1, 2, ..., k) for first)
+   k => the size of the subsets to generate
+   n => the size of the original set
+
+   Returns: 1 if a valid combination was found
+   0, otherwise
+ */
+int rk_next_comb(int comb[], int k, int n) {
+  int i = k - 1;
+
+  ++comb[i];
+
+  while ((i > 0) && (comb[i] >= n - k + 1 + i)) {
+    --i;
+    ++comb[i];
+  }
+
+  if (comb[0] > n - k) /* Combination (n-k, n-k+1, ..., n) reached */
+    return 0;          /* No more combinations can be generated */
+
+  /* comb now looks like (..., x, n, n, n, ..., n).
+     Turn it into (..., x, x + 1, x + 2, ...) */
+  for (i = i + 1; i < k; ++i) comb[i] = comb[i - 1] + 1;
+
+  return 1;
 }

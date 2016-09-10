@@ -10,7 +10,7 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in 
+The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -22,35 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef LANDLORD_COMMON_H_
-#define LANDLORD_COMMON_H_
+#ifndef LANDLORD_LANDLORD_H
+#define LANDLORD_LANDLORD_H
 
-#define LL_GRAPHICAL_SUIT
-
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <math.h>
-#include <errno.h>
-
+#include "common.h"
+#include "card.h"
+#include "deck.h"
+#include "hand.h"
+#include "handlist.h"
+#include "player.h"
+#include "game.h"
+#include "standard_ai.h"
+#include "advanced_ai.h"
+#include "ruiko_algorithm.h"
+#include "mt19937.h"
 #include "memtracker.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#define PRINT_GAME_LOG 0
-
-#if (PRINT_GAME_LOG == 1)
-#define DBGLog printf
-#else
-#define DBGLog (void)
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* LANDLORD_COMMON_H_ */
+#endif /* LANDLORD_LANDLORD_H */

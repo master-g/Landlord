@@ -51,7 +51,10 @@ static void memblock_print_info(struct memblock *mb) {
          mb->line);
 }
 
-void *memtrack_malloc(size_t size, const char *expr, const char *file, int line) {
+void *memtrack_malloc(size_t size,
+                      const char *expr,
+                      const char *file,
+                      int line) {
   struct memblock *mb = (struct memblock *) malloc(size + sizeof(*mb));
 
   if (!mb) {
@@ -80,7 +83,7 @@ void *memtrack_calloc(size_t count,
                       const char *file,
                       int line) {
   struct memblock *mb =
-      (struct memblock *) malloc(count * elem_size + sizeof(*mb));
+    (struct memblock *) malloc(count * elem_size + sizeof(*mb));
 
   memset(mb, 0, count * elem_size + sizeof(*mb));
 
@@ -122,11 +125,11 @@ void *memtrack_realloc(void *ptr,
       return NULL;
     } else if (mb->magic != MAGIC1) {
       printf(
-          "Memory is not allocated in memtracker : %p (expr = \"%s\" from %s:%d\n",
-          ptr,
-          eptr,
-          file,
-          line);
+        "Memory is not allocated in memtracker : %p (expr = \"%s\" from %s:%d\n",
+        ptr,
+        eptr,
+        file,
+        line);
       return NULL;
     }
 

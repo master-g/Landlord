@@ -26,6 +26,7 @@ SOFTWARE.
 #define LANDLORD_PLAYER_H_
 
 #include "hand.h"
+#include "handlist.h"
 
 #ifdef __cplusplus
 extern "C" {

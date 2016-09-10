@@ -22,12 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "common.h"
-#include "game.h"
+#include "landlord.h"
 #include <pthread.h>
 
 char szr[] =
-    {'3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'R'};
+  {'3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'R'};
 
 void Count_Print(int *count) {
   int i = 0;
@@ -62,7 +61,7 @@ void test_advanced_hand_analyzer() {
 
   HandList_Print(hl);
 
-  HandList_Destroy(&hl);
+  rk_list_clear_destroy(hl);
 }
 
 struct work_ctx {
@@ -179,28 +178,28 @@ void test_game() {
 // "♣3 ♣4 ♠5 ♠6 ♥7 ♦8"
 
 const char *hand_strings[] = {
-    "♣3",    /* solo */
-    "♣3 ♠3", /* pair */
-    "♠r ♠R", /* nuke */
-    "♠6 ♥6 ♦6", /* trio */
-    "♣3 ♠3 ♥3 ♥7", /* trio solo */
-    "♣7 ♠7 ♥7 ♥7", /* bomb */
-    "♣3 ♣4 ♠5 ♠6 ♥7", /* solo chain */
-    "♣3 ♣5 ♠5 ♠3 ♥5", /* trio pair */
-    "♣3 ♣4 ♠5 ♠6 ♥7 ♦8", /* solo chain */
-    "♣4 ♠4 ♠5 ♥6 ♥5 ♦6", /* pair chain */
-    "♣4 ♠4 ♦4 ♥5 ♠5 ♦5", /* trio chain */
-    "♣4 ♠4 ♦4 ♥4 ♠5 ♦6", /* four dual solo */
-    "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9", /* solo chain */
-    "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9 ♦T", /* solo chain */
-    "♣3 ♠3 ♦4 ♥4 ♠6 ♦6 ♦5 ♦5", /* pair chain */
-    "♣3 ♠3 ♦3 ♥4 ♠6 ♦6 ♦6 ♦9", /* trio solo chain */
-    "♣3 ♠3 ♦3 ♥3 ♠6 ♦6 ♦9 ♦9", /* trio solo chain */
-    "♣3 ♠3 ♦3 ♥3 ♠4 ♦4 ♦4 ♦4", /* four chain */
-    "♣3 ♠3 ♦3 ♥4 ♠4 ♦4 ♦5 ♠5 ♥5", /* trio chain */
-    "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J", /* solo chain */
-    "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J ♦Q ♦K ♦A ♦2 ♦r ♦R", /* none */
-    NULL
+  "♣3",    /* solo */
+  "♣3 ♠3", /* pair */
+  "♠r ♠R", /* nuke */
+  "♠6 ♥6 ♦6", /* trio */
+  "♣3 ♠3 ♥3 ♥7", /* trio solo */
+  "♣7 ♠7 ♥7 ♥7", /* bomb */
+  "♣3 ♣4 ♠5 ♠6 ♥7", /* solo chain */
+  "♣3 ♣5 ♠5 ♠3 ♥5", /* trio pair */
+  "♣3 ♣4 ♠5 ♠6 ♥7 ♦8", /* solo chain */
+  "♣4 ♠4 ♠5 ♥6 ♥5 ♦6", /* pair chain */
+  "♣4 ♠4 ♦4 ♥5 ♠5 ♦5", /* trio chain */
+  "♣4 ♠4 ♦4 ♥4 ♠5 ♦6", /* four dual solo */
+  "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9", /* solo chain */
+  "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9 ♦T", /* solo chain */
+  "♣3 ♠3 ♦4 ♥4 ♠6 ♦6 ♦5 ♦5", /* pair chain */
+  "♣3 ♠3 ♦3 ♥4 ♠6 ♦6 ♦6 ♦9", /* trio solo chain */
+  "♣3 ♠3 ♦3 ♥3 ♠6 ♦6 ♦9 ♦9", /* trio solo chain */
+  "♣3 ♠3 ♦3 ♥3 ♠4 ♦4 ♦4 ♦4", /* four chain */
+  "♣3 ♠3 ♦3 ♥4 ♠4 ♦4 ♦5 ♠5 ♥5", /* trio chain */
+  "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J", /* solo chain */
+  "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J ♦Q ♦K ♦A ♦2 ♦r ♦R", /* none */
+  NULL
 };
 
 void test_hands() {
@@ -218,6 +217,10 @@ void test_hands() {
 int main(int argc, const char *argv[]) {
 //  test_hands();
   test_game();
+
+  history_purge();
+
+  printf("hello world\n");
 //  test_advanced_hand_analyzer();
   memtrack_list_allocations();
   return 0;
