@@ -24,13 +24,69 @@ SOFTWARE.
 
 #include "card.h"
 
-const uint8_t _card_set[] = {
-  0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D,
-  0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D,
-  0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D,
-  0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D,
-  0x1E, 0x2F
+const uint32_t _card_prime[] = {
+  0,
+  CARD_PRIME_3, CARD_PRIME_4, CARD_PRIME_5, CARD_PRIME_6,
+  CARD_PRIME_7, CARD_PRIME_8, CARD_PRIME_9, CARD_PRIME_T,
+  CARD_PRIME_J, CARD_PRIME_Q, CARD_PRIME_K, CARD_PRIME_A,
+  CARD_PRIME_2, CARD_PRIME_r, CARD_PRIME_R
 };
+
+const uint32_t _card_bin[] = {
+  0,
+  CARD_BIN_3, CARD_BIN_4, CARD_BIN_5, CARD_BIN_6,
+  CARD_BIN_7, CARD_BIN_8, CARD_BIN_9, CARD_BIN_T,
+  CARD_BIN_J, CARD_BIN_Q, CARD_BIN_K, CARD_BIN_A,
+  CARD_BIN_2, CARD_BIN_r, CARD_BIN_R
+};
+
+const uint32_t _card_preset[] = {
+  0x00011102, 0x00012102, 0x00014102, 0x00018102,
+  0x00021203, 0x00022203, 0x00024203, 0x00028203,
+  0x00041305, 0x00042305, 0x00044305, 0x00048305,
+  0x00081407, 0x00082407, 0x00084407, 0x00088407,
+  0x0010150B, 0x0010250B, 0x0010450B, 0x0010850B,
+  0x0020160D, 0x0020260D, 0x0020460D, 0x0020860D,
+  0x00401711, 0x00402711, 0x00404711, 0x00408711,
+  0x00801813, 0x00802813, 0x00804813, 0x00808813,
+  0x01001917, 0x01002917, 0x01004917, 0x01008917,
+  0x02001A1D, 0x02002A1D, 0x02004A1D, 0x02008A1D,
+  0x04001B1F, 0x04002B1F, 0x04004B1F, 0x04008B1F,
+  0x08001C25, 0x08002C25, 0x08004C25, 0x08008C25,
+  0x10001D29, 0x10002D29, 0x10004D29, 0x10008D29,
+  0x20001E2B, 0x40002F2F
+};
+
+uint32_t Card_Make(uint32_t suit, uint32_t rank) {
+  uint32_t card = 0;
+
+  card |= _card_prime[rank] << CARD_BIT_OFFSET_PRIME;
+  card |= rank << CARD_BIT_OFFSET_RANK;
+  card |= suit << CARD_BIT_OFFSET_SUIT;
+  card |= _card_bin[rank] << CARD_BIT_OFFSET_BIN;
+
+  return card;
+}
+
+/* card set generator
+int main(int argc, char* argv[]) {
+  for (int rank = CARD_RANK_3; rank < CARD_RANK_r; rank++) {
+    for (int suit = 1; suit <= 0x08; suit *= 2) {
+      if (suit == 1) {
+        printf("\n");
+      }
+      uint32_t c = Card_Make(suit, rank);
+      printf("0x%08X, ", c);
+    }
+  }
+
+  printf("\n0x%08X, ", Card_Make(CARD_SUIT_SPADE, CARD_RANK_r));
+  printf("0x%08X", Card_Make(CARD_SUIT_HEART, CARD_RANK_R));
+
+
+  return 0;
+}
+ */
 
 void *CardArray_InitFromString(card_array_t *array, const char *str) {
   uint8_t card = 0;
@@ -291,11 +347,9 @@ void CardArray_Insert(card_array_t *array, int before, uint8_t card) {
   if (!CardArray_IsFull(array)) {
     if (before == 0) {
       CardArray_PushFront(array, card);
-    }
-    else if (before == array->length) {
+    } else if (before == array->length) {
       CardArray_PushBack(array, card);
-    }
-    else if ((before > 0) && (before < array->length)) {
+    } else if ((before > 0) && (before < array->length)) {
       memmove(array->cards + before + 1,
               array->cards + before,
               array->length - before);
@@ -311,11 +365,9 @@ uint8_t CardArray_Remove(card_array_t *array, int where) {
   if (!CardArray_IsEmpty(array)) {
     if (where == 0) {
       ret = CardArray_PopFront(array);
-    }
-    else if (where == array->length - 1) {
+    } else if (where == array->length - 1) {
       ret = CardArray_PopBack(array);
-    }
-    else if ((where > 0) && (where < array->length - 1)) {
+    } else if ((where > 0) && (where < array->length - 1)) {
       ret = array->cards[where];
       array->length--;
       memmove(array->cards + where,
