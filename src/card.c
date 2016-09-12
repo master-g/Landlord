@@ -97,7 +97,7 @@ void *CardArray_InitFromString(card_array_t *array, const char *str) {
 
   while (*p != '\0') {
     switch ((uint8_t) *p) {
-#ifdef LL_GRAPHICAL_SUIT
+#if LL_GRAPHICAL_SUIT != 0
       case 0xA6:
         suit = CARD_SUIT_DIAMOND;
         break;
@@ -289,7 +289,7 @@ int32_t CardArray_PushFront(card_array_t *array, int32_t card) {
   int32_t ret = 0;
 
   if (!CardArray_IsFull(array)) {
-    memmove(array->cards + 1, array->cards, array->length);
+    CardsMove(array->cards + 1, array->cards, array->length);
     array->cards[0] = card;
 
     array->length++;
@@ -305,7 +305,7 @@ int32_t CardArray_PopFront(card_array_t *array) {
 
   if (!CardArray_IsEmpty(array)) {
     card = array->cards[0];
-    memmove(array->cards, array->cards + 1, array->length);
+    CardsMove(array->cards, array->cards + 1, array->length);
     array->cards[array->length--] = 0;
   }
 
@@ -328,9 +328,9 @@ int CardArray_DropFront(card_array_t *array, int count) {
   int drop = 0;
 
   drop = (array->length >= count) ? count : array->length;
-  memmove(array->cards, array->cards + drop, array->length);
+  CardsMove(array->cards, array->cards + drop, array->length);
   array->length -= drop;
-  memset(array->cards + array->length, 0, drop);
+  memset(array->cards + array->length, 0, sizeof(int32_t) * drop);
 
   return drop;
 }
@@ -339,7 +339,7 @@ int CardArray_DropBack(card_array_t *array, int count) {
   int drop = 0;
 
   drop = (array->length >= count) ? count : array->length;
-  memset(array->cards + array->length - drop, 0, drop);
+  memset(array->cards + array->length - drop, 0, sizeof(int32_t) * drop);
   array->length -= drop;
 
   return drop;
@@ -352,7 +352,7 @@ void CardArray_Insert(card_array_t *array, int before, int32_t card) {
     } else if (before == array->length) {
       CardArray_PushBack(array, card);
     } else if ((before > 0) && (before < array->length)) {
-      memmove(array->cards + before + 1,
+      CardsMove(array->cards + before + 1,
               array->cards + before,
               array->length - before);
       array->cards[before] = card;
@@ -372,7 +372,7 @@ int32_t CardArray_Remove(card_array_t *array, int where) {
     } else if ((where > 0) && (where < array->length - 1)) {
       ret = array->cards[where];
       array->length--;
-      memmove(array->cards + where,
+      CardsMove(array->cards + where,
               array->cards + where + 1,
               array->length - where);
       array->cards[array->length] = 0;
@@ -482,7 +482,7 @@ void CardArray_Reverse(card_array_t *array) {
   CardArray_Copy(array, &temp);
 }
 
-#ifdef LL_GRAPHICAL_SUIT
+#if LL_GRAPHICAL_SUIT != 0
 # define CARD_STRING_LENGTH 4
 
 unsigned char szDIAMOND[] = {0xE2, 0x99, 0xA6, 0};
@@ -492,10 +492,10 @@ unsigned char szSPADE[] = {0xE2, 0x99, 0xA0, 0};
 #else /* ifdef LL_GRAPHICAL_SUIT */
 # define CARD_STRING_LENGTH 2
 
-unsigned char szDIAMOND[] = { 'd', 0, 0, 0 };
-unsigned char szCLUB[] = { 'c', 0, 0, 0 };
-unsigned char szHEART[] = { 'h', 0, 0, 0 };
-unsigned char szSPADE[] = { 's', 0, 0, 0 };
+unsigned char szDIAMOND[] = {'d', 0, 0, 0};
+unsigned char szCLUB[] = {'c', 0, 0, 0};
+unsigned char szHEART[] = {'h', 0, 0, 0};
+unsigned char szSPADE[] = {'s', 0, 0, 0};
 #endif /* ifdef LL_GRAPHICAL_SUIT */
 
 char szRank[] =
@@ -540,12 +540,12 @@ void CardArray_Print(card_array_t *array) {
   char str[10];
 
   memset(str, 0, 10);
-  DBGLog ("Cards: (%d): ", array->length);
+  DBGLog("Cards: (%d): ", array->length);
 
   for (i = 0; i < array->length; i++) {
     Card_ToString(array->cards[i], str, 10);
-    DBGLog ("%s ", str);
+    DBGLog("%s ", str);
   }
 
-  DBGLog ("\n");
+  DBGLog("\n");
 }

@@ -147,6 +147,7 @@ int32_t Card_Make(int32_t suit, int32_t rank);
 #define CardArray_Capacity(a)   (CARD_ARRAY_PRESET_LENGTH - (a)->length)
 #define CardArray_Set(array, where, what, count)    (memset((array->cards + where), (what), (count) * sizeof(int32_t)))
 #define CardsCopy(d, s, l)      (memcpy((d), (s), sizeof(int32_t) * (l)))
+#define CardsMove(d, s, l)      (memmove((d), (s), sizeof(int32_t) * (l)))
 
 typedef struct _card_arr_s {
   int length;

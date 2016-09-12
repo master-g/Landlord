@@ -25,7 +25,7 @@ SOFTWARE.
 #ifndef LANDLORD_COMMON_H_
 #define LANDLORD_COMMON_H_
 
-#define LL_GRAPHICAL_SUIT
+#define LL_GRAPHICAL_SUIT 0
 
 #include <stdio.h>
 #include <stdint.h>

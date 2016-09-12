@@ -23,7 +23,6 @@ SOFTWARE.
 */
 
 #include "landlord.h"
-#include <pthread.h>
 
 char szr[] =
   {'3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'R'};
@@ -63,6 +62,10 @@ void test_advanced_hand_analyzer() {
 
   rk_list_clear_destroy(hl);
 }
+
+#ifndef WIN32
+
+#include <pthread.h>
 
 struct work_ctx {
   game_t game;
@@ -141,6 +144,8 @@ void test_game_mt() {
   }
 }
 
+#endif
+
 void test_game() {
   int peasantwon = 0;
   int landlordwon = 0;
@@ -152,7 +157,7 @@ void test_game() {
 
   Game_Init(&game);
 
-  for (i = 10000; i < 20000; i++) {
+  for (i = 10000; i < 10003; i++) {
     Game_Play(&game, i);
 
     if (game.winner == game.landlord) landlordwon++;
