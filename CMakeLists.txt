@@ -20,8 +20,8 @@ set(SOURCE_FILES
         src/ruiko_algorithm.h
         src/memtracker.c
         src/memtracker.h
-        src/mt19937.c
-        src/mt19937.h
+        src/lmath.c
+        src/lmath.h
         src/player.c
         src/player.h
         src/standard_ai.c

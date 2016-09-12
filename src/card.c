@@ -24,7 +24,7 @@ SOFTWARE.
 
 #include "card.h"
 
-const uint32_t _card_prime[] = {
+const int32_t _card_prime[] = {
   0,
   CARD_PRIME_3, CARD_PRIME_4, CARD_PRIME_5, CARD_PRIME_6,
   CARD_PRIME_7, CARD_PRIME_8, CARD_PRIME_9, CARD_PRIME_T,
@@ -32,7 +32,7 @@ const uint32_t _card_prime[] = {
   CARD_PRIME_2, CARD_PRIME_r, CARD_PRIME_R
 };
 
-const uint32_t _card_bin[] = {
+const int32_t _card_bin[] = {
   0,
   CARD_BIN_3, CARD_BIN_4, CARD_BIN_5, CARD_BIN_6,
   CARD_BIN_7, CARD_BIN_8, CARD_BIN_9, CARD_BIN_T,
@@ -40,7 +40,7 @@ const uint32_t _card_bin[] = {
   CARD_BIN_2, CARD_BIN_r, CARD_BIN_R
 };
 
-const uint32_t _card_preset[] = {
+const int32_t _card_preset[] = {
   0x00011102, 0x00012102, 0x00014102, 0x00018102,
   0x00021203, 0x00022203, 0x00024203, 0x00028203,
   0x00041305, 0x00042305, 0x00044305, 0x00048305,
@@ -57,8 +57,8 @@ const uint32_t _card_preset[] = {
   0x20001E2B, 0x40002F2F
 };
 
-uint32_t Card_Make(uint32_t suit, uint32_t rank) {
-  uint32_t card = 0;
+int32_t Card_Make(int32_t suit, int32_t rank) {
+  int32_t card = 0;
 
   card |= _card_prime[rank] << CARD_BIT_OFFSET_PRIME;
   card |= rank << CARD_BIT_OFFSET_RANK;
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
       if (suit == 1) {
         printf("\n");
       }
-      uint32_t c = Card_Make(suit, rank);
+      int32_t c = Card_Make(suit, rank);
       printf("0x%08X, ", c);
     }
   }
@@ -89,7 +89,8 @@ int main(int argc, char* argv[]) {
  */
 
 void *CardArray_InitFromString(card_array_t *array, const char *str) {
-  uint8_t card = 0;
+  int32_t rank = 0;
+  int32_t suit = 0;
   const char *p = str;
 
   CardArray_Clear(array);
@@ -98,69 +99,69 @@ void *CardArray_InitFromString(card_array_t *array, const char *str) {
     switch ((uint8_t) *p) {
 #ifdef LL_GRAPHICAL_SUIT
       case 0xA6:
-        card |= CARD_SUIT_DIAMOND;
+        suit = CARD_SUIT_DIAMOND;
         break;
 
       case 0xA3:
-        card |= CARD_SUIT_CLUB;
+        suit = CARD_SUIT_CLUB;
         break;
 
       case 0xA5:
-        card |= CARD_SUIT_HEART;
+        suit = CARD_SUIT_HEART;
         break;
 
       case 0xA0:
-        card |= CARD_SUIT_SPADE;
+        suit = CARD_SUIT_SPADE;
         break;
 
 #else /* ifdef LL_GRAPHICAL_SUIT */
       case 'd':
-        card |= CARD_SUIT_DIAMOND;
+        suit = CARD_SUIT_DIAMOND;
         break;
 
       case 'c':
-        card |= CARD_SUIT_CLUB;
+        suit = CARD_SUIT_CLUB;
         break;
 
       case 'h':
-        card |= CARD_SUIT_HEART;
+        suit = CARD_SUIT_HEART;
         break;
 
       case 's':
-        card |= CARD_SUIT_SPADE;
+        suit = CARD_SUIT_SPADE;
         break;
 
 #endif /* ifdef LL_GRAPHICAL_SUIT */
       case 'T':
-        card |= CARD_RANK_T;
+        rank = CARD_RANK_T;
         break;
 
       case 'J':
-        card |= CARD_RANK_J;
+        rank = CARD_RANK_J;
         break;
 
       case 'Q':
-        card |= CARD_RANK_Q;
+        rank = CARD_RANK_Q;
         break;
 
       case 'K':
-        card |= CARD_RANK_K;
+        rank = CARD_RANK_K;
         break;
 
       case 'A':
-        card |= CARD_RANK_A;
+        rank = CARD_RANK_A;
         break;
 
       case '2':
-        card |= CARD_RANK_2;
+        rank = CARD_RANK_2;
         break;
 
       case 'r':
-        card |= CARD_RANK_r;
+        rank = CARD_RANK_r;
         break;
 
       case 'R':
-        card |= CARD_RANK_R;
+        rank = CARD_RANK_R;
         break;
 
       default:
@@ -168,11 +169,12 @@ void *CardArray_InitFromString(card_array_t *array, const char *str) {
     }
 
     if ((*p <= '9') && (*p >= '3'))
-      card |= CARD_RANK_3 + (uint8_t) (*p) - '3';
+      rank = CARD_RANK_3 + (int32_t) ((*p) - '3');
 
-    if ((CARD_RANK(card) != 0) && (CARD_SUIT(card) != 0)) {
-      CardArray_PushBack(array, card);
-      card = 0;
+    if (suit != 0 && rank != 0) {
+      CardArray_PushBack(array, Card_Make(suit, rank));
+      suit = 0;
+      rank = 0;
     }
 
     p++;
@@ -182,7 +184,7 @@ void *CardArray_InitFromString(card_array_t *array, const char *str) {
 }
 
 void CardArray_Reset(card_array_t *array) {
-  memcpy(array->cards, _card_set, sizeof(uint8_t) * CARD_SET_LENGTH);
+  CardsCopy(array->cards, _card_preset, CARD_SET_LENGTH);
   array->length = CARD_SET_LENGTH;
 }
 
@@ -194,7 +196,7 @@ int CardArray_Concat(card_array_t *head, card_array_t *tail) {
 
   if (!CardArray_IsEmpty(tail) && (slot > 0)) {
     length = slot >= tail->length ? tail->length : slot;
-    memcpy(&head->cards[head->length], tail->cards, length);
+    CardsCopy(&head->cards[head->length], tail->cards, length);
     head->length += length;
   } else {
     length = 0;
@@ -206,7 +208,7 @@ int CardArray_Concat(card_array_t *head, card_array_t *tail) {
 void CardArray_Subtract(card_array_t *from, card_array_t *sub) {
   int i = 0;
   int j = 0;
-  uint8_t card = 0;
+  int32_t card = 0;
   card_array_t temp;
 
   CardArray_Clear(&temp);
@@ -279,12 +281,12 @@ int CardArray_IsContain(card_array_t *array, card_array_t *segment) {
   return contain;
 }
 
-void CardArray_PushBack(card_array_t *array, uint8_t card) {
+void CardArray_PushBack(card_array_t *array, int32_t card) {
   if (!CardArray_IsFull(array)) array->cards[array->length++] = card;
 }
 
-uint8_t CardArray_PushFront(card_array_t *array, uint8_t card) {
-  uint8_t ret = 0;
+int32_t CardArray_PushFront(card_array_t *array, int32_t card) {
+  int32_t ret = 0;
 
   if (!CardArray_IsFull(array)) {
     memmove(array->cards + 1, array->cards, array->length);
@@ -298,8 +300,8 @@ uint8_t CardArray_PushFront(card_array_t *array, uint8_t card) {
   return ret;
 }
 
-uint8_t CardArray_PopFront(card_array_t *array) {
-  uint8_t card = 0;
+int32_t CardArray_PopFront(card_array_t *array) {
+  int32_t card = 0;
 
   if (!CardArray_IsEmpty(array)) {
     card = array->cards[0];
@@ -310,8 +312,8 @@ uint8_t CardArray_PopFront(card_array_t *array) {
   return card;
 }
 
-uint8_t CardArray_PopBack(card_array_t *array) {
-  uint8_t card = 0;
+int32_t CardArray_PopBack(card_array_t *array) {
+  int32_t card = 0;
 
   if (!CardArray_IsEmpty(array)) {
     card = array->cards[array->length - 1];
@@ -343,7 +345,7 @@ int CardArray_DropBack(card_array_t *array, int count) {
   return drop;
 }
 
-void CardArray_Insert(card_array_t *array, int before, uint8_t card) {
+void CardArray_Insert(card_array_t *array, int before, int32_t card) {
   if (!CardArray_IsFull(array)) {
     if (before == 0) {
       CardArray_PushFront(array, card);
@@ -359,8 +361,8 @@ void CardArray_Insert(card_array_t *array, int before, uint8_t card) {
   }
 }
 
-uint8_t CardArray_Remove(card_array_t *array, int where) {
-  uint8_t ret = 0;
+int32_t CardArray_Remove(card_array_t *array, int where) {
+  int32_t ret = 0;
 
   if (!CardArray_IsEmpty(array)) {
     if (where == 0) {
@@ -380,8 +382,8 @@ uint8_t CardArray_Remove(card_array_t *array, int where) {
   return ret;
 }
 
-uint8_t CardArray_RemoveCard(card_array_t *array, uint8_t card) {
-  uint8_t ret = 0;
+int32_t CardArray_RemoveCard(card_array_t *array, int32_t card) {
+  int32_t ret = 0;
   int i = 0;
 
   for (i = 0; i < array->length; i++) {
@@ -410,7 +412,24 @@ int CardArray_PushBackCards(card_array_t *array,
   return cards;
 }
 
-void CardArray_CopyRank(card_array_t *dst, card_array_t *src, uint8_t rank) {
+int _CA_DescentSort(const void *a, const void *b) {
+  return *(int *) b - *(int *) a;
+}
+
+void CardArray_CountRank(card_array_t *array, int *count, int *sort) {
+  int i = 0;
+  memset(count, 0, sizeof(int) * CARD_RANK_END);
+
+  for (i = 0; i < array->length; i++)
+    count[CARD_RANK(array->cards[i])]++;
+
+  if (sort != NULL) {
+    memcpy(sort, count, sizeof(int) * CARD_RANK_END);
+    qsort(sort, CARD_RANK_END, sizeof(int), _CA_DescentSort);
+  }
+}
+
+void CardArray_CopyRank(card_array_t *dst, card_array_t *src, int32_t rank) {
   int i = 0;
 
   for (i = 0; i < src->length; i++) {
@@ -419,7 +438,7 @@ void CardArray_CopyRank(card_array_t *dst, card_array_t *src, uint8_t rank) {
   }
 }
 
-void CardArray_RemoveRank(card_array_t *array, uint8_t rank) {
+void CardArray_RemoveRank(card_array_t *array, int32_t rank) {
   int i = 0;
 
   card_array_t temp;
@@ -435,24 +454,21 @@ void CardArray_RemoveRank(card_array_t *array, uint8_t rank) {
 }
 
 int CardArray_StandardSort(const void *a, const void *b) {
-  uint8_t ra = 0;
-  uint8_t rb = 0;
-
-  /* rotation */
-  ra = ((*(uint8_t *) a & 0xF0) >> 4) | ((*(uint8_t *) a & 0x0F) << 4);
-  rb = ((*(uint8_t *) b & 0xF0) >> 4) | ((*(uint8_t *) b & 0x0F) << 4);
-
-  return rb - ra;
+  return (*(int32_t *) b) - (*(int32_t *) a);
 }
 
 void CardArray_Sort(card_array_t *array, int (*comparator)(const void *,
                                                            const void *)) {
   if (comparator == NULL)
     qsort(array->cards,
-          array->length,
-          sizeof(uint8_t),
+          (size_t) array->length,
+          sizeof(int32_t),
           CardArray_StandardSort);
-  else qsort(array->cards, array->length, sizeof(uint8_t), comparator);
+  else
+    qsort(array->cards,
+          (size_t) array->length,
+          sizeof(int32_t),
+          comparator);
 }
 
 void CardArray_Reverse(card_array_t *array) {
@@ -485,7 +501,7 @@ unsigned char szSPADE[] = { 's', 0, 0, 0 };
 char szRank[] =
   {'3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'r', 'R'};
 
-int Card_ToString(uint8_t card, char *buf, int len) {
+int Card_ToString(int32_t card, char *buf, int len) {
   if ((buf != NULL) && (len >= CARD_STRING_LENGTH)) {
     char *szSuit = NULL;
     int rank = CARD_RANK(card);
@@ -532,40 +548,4 @@ void CardArray_Print(card_array_t *array) {
   }
 
   DBGLog ("\n");
-}
-
-/* ************************************************************
- * helper function
- * ************************************************************/
-
-/*
-   https://compprog.wordpress.com/2007/10/17/generating-combinations-1/
-   next_comb(int comb[], int k, int n)
-   Generates the next combination of n elements as k after comb
-
-   comb => the previous combination ( use (0, 1, 2, ..., k) for first)
-   k => the size of the subsets to generate
-   n => the size of the original set
-
-   Returns: 1 if a valid combination was found
-   0, otherwise
- */
-int rk_next_comb(int comb[], int k, int n) {
-  int i = k - 1;
-
-  ++comb[i];
-
-  while ((i > 0) && (comb[i] >= n - k + 1 + i)) {
-    --i;
-    ++comb[i];
-  }
-
-  if (comb[0] > n - k) /* Combination (n-k, n-k+1, ..., n) reached */
-    return 0;          /* No more combinations can be generated */
-
-  /* comb now looks like (..., x, n, n, n, ..., n).
-     Turn it into (..., x, x + 1, x + 2, ...) */
-  for (i = i + 1; i < k; ++i) comb[i] = comb[i - 1] + 1;
-
-  return 1;
 }

@@ -22,7 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "mt19937.h"
+#include "lmath.h"
+
+/* ************************************************************
+ * MT19937 random number generator
+ * ************************************************************/
 
 #define M           397
 #define MATRIX_A    0x9908B0DF /* constant vector A */
@@ -135,4 +139,70 @@ int32_t Random_Int32(mt19937_t *context) {
 
 double Random_real_0_1(mt19937_t *context) {
   return (double) (Random_uint32(context) * (1.0 / 4294967296.0));
+}
+
+/* ************************************************************
+ * utils
+ * ************************************************************/
+
+/*
+   https://compprog.wordpress.com/2007/10/17/generating-combinations-1/
+   next_comb(int comb[], int k, int n)
+   Generates the next combination of n elements as k after comb
+
+   comb => the previous combination ( use (0, 1, 2, ..., k) for first)
+   k => the size of the subsets to generate
+   n => the size of the original set
+
+   Returns: 1 if a valid combination was found
+   0, otherwise
+ */
+int LMath_NextComb(int comb[], int k, int n) {
+  int i = k - 1;
+
+  ++comb[i];
+
+  while ((i > 0) && (comb[i] >= n - k + 1 + i)) {
+    --i;
+    ++comb[i];
+  }
+
+  if (comb[0] > n - k) /* Combination (n-k, n-k+1, ..., n) reached */
+    return 0;          /* No more combinations can be generated */
+
+  /* comb now looks like (..., x, n, n, n, ..., n).
+     Turn it into (..., x, x + 1, x + 2, ...) */
+  for (i = i + 1; i < k; ++i) comb[i] = comb[i - 1] + 1;
+
+  return 1;
+}
+
+void LMath_Shuffle(int32_t *a, size_t n, mt19937_t *mt) {
+  size_t i = n, j;
+  int32_t tmp = 0;
+
+  while (--i > 0) {
+    if (mt != NULL) j = Random_Int32(mt) % (i + 1);
+    else j = rand() % (i + 1);
+
+    tmp = a[j];
+    a[j] = a[i];
+    a[i] = tmp;
+  }
+}
+
+void LMath_ShuffleAny(void *a, size_t n, size_t es, mt19937_t *mt) {
+  size_t i = n, j;
+  void *tmp = malloc(es);
+
+  while (--i > 0) {
+    if (mt != NULL) j = Random_Int32(mt) % (i + 1);
+    else j = rand() % (i + 1);
+
+    memcpy(tmp, &a[j], es);
+    memcpy(&a[j], &a[i], es);
+    memcpy(&a[i], tmp, es);
+  }
+
+  free(tmp);
 }

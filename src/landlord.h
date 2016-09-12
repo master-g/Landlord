@@ -35,7 +35,7 @@ SOFTWARE.
 #include "standard_ai.h"
 #include "advanced_ai.h"
 #include "ruiko_algorithm.h"
-#include "mt19937.h"
+#include "lmath.h"
 #include "memtracker.h"
 
 #endif /* LANDLORD_LANDLORD_H */

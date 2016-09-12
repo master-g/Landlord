@@ -41,7 +41,7 @@ SOFTWARE.
 extern "C" {
 #endif
 
-#define PRINT_GAME_LOG 0
+#define PRINT_GAME_LOG 1
 
 #if (PRINT_GAME_LOG == 1)
 #define DBGLog printf

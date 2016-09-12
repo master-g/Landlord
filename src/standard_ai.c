@@ -33,7 +33,10 @@ int StandardAI_GetReady(void *p, void *game) {
 #if (PRINT_GAME_LOG == 1)
   CardArray_Print(&player->record);
 #endif /* ifdef PRINT_GAME_LOG */
+  // FIXME
   player->handlist = HandList_StandardAnalyze(&player->cards);
+
+  HandList_Print(player->handlist);
 
   return 0;
 }

@@ -92,6 +92,7 @@ void Game_Play(game_t *game, uint32_t seed) {
   int bid = 0;
 
   Random_Init(&game->mt, seed);
+  Deck_Shuffle(&game->deck, &game->mt);
 
   /* bid */
   /* TODO log */
@@ -105,6 +106,7 @@ void Game_Play(game_t *game, uint32_t seed) {
     for (i = 0; i < GAME_PLAYERS; i++) {
       Deck_Deal(&game->deck, &Game_GetCurrentPlayer(game)->cards,
                 GAME_HAND_CARDS);
+
       bid =
         Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Bid, game);
 

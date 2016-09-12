@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef MT19937_H_
-#define MT19937_H_
+#ifndef LMATH_H_
+#define LMATH_H_
 
 #include "common.h"
 
@@ -31,9 +31,13 @@ SOFTWARE.
 extern "C" {
 #endif
 
+/* ************************************************************
+ * MT19937 random number generator
+ * ************************************************************/
+
 #define MT_N    624
 
-typedef struct mt19937_s {
+typedef struct _mt19937_s {
   uint32_t mt[MT_N];
   /* state vector */
   int32_t mti;        /* mti == N+1 -> mt[N] not initialized */
@@ -46,8 +50,18 @@ uint32_t Random_uint32(mt19937_t *context);
 int32_t Random_Int32(mt19937_t *context);
 double Random_real_0_1(mt19937_t *context);
 
+/* ************************************************************
+ * math
+ * ************************************************************/
+
+void LMath_Shuffle(int32_t *a, size_t n, mt19937_t *mt);
+
+void LMath_ShuffleAny(void *a, size_t n, size_t es, mt19937_t *mt);
+
+int LMath_NextComb(int comb[], int k, int n);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* MT19937_H_ */
+#endif /* LMATH_H_ */

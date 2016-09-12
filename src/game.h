@@ -29,7 +29,7 @@ SOFTWARE.
 #include "deck.h"
 #include "hand.h"
 #include "handlist.h"
-#include "mt19937.h"
+#include "lmath.h"
 
 #ifdef __cplusplus
 extern "C" {

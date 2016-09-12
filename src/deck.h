@@ -31,7 +31,7 @@ SOFTWARE.
 extern "C" {
 #endif
 
-typedef struct deck_s {
+typedef struct _deck_s {
   card_array_t cards;
   card_array_t used;
 
@@ -50,12 +50,12 @@ void Deck_Reset(deck_t *deck);
 /*
  * deal single card
  */
-uint8_t Deck_DealSingle(deck_t *deck);
+int32_t Deck_DealSingle(deck_t *deck);
 
 /*
  * recyle single card
  */
-void Deck_RecycleSingle(deck_t *deck, uint8_t card);
+void Deck_RecycleSingle(deck_t *deck, int32_t card);
 
 /*
  * deal cards
