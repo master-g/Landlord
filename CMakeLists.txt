@@ -16,12 +16,12 @@ set(SOURCE_FILES
         src/hand.c
         src/hand.h
         src/main.c
+        src/lmath.c
+        src/lmath.h
         src/ruiko_algorithm.c
         src/ruiko_algorithm.h
         src/memtracker.c
         src/memtracker.h
-        src/lmath.c
-        src/lmath.h
         src/player.c
         src/player.h
         src/standard_ai.c

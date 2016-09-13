@@ -33,4 +33,6 @@ stamp-h1
 *.lo
 *.gcno
 *.gcda
-.idea/
+.idea/workspace.xml
+.idea/*.iml
+.idea/dictionaries/

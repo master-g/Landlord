@@ -54,7 +54,7 @@ double Random_real_0_1(mt19937_t *context);
  * math
  * ************************************************************/
 
-void LMath_Shuffle(int32_t *a, size_t n, mt19937_t *mt);
+void LMath_Shuffle(uint8_t *a, size_t n, mt19937_t *mt);
 
 void LMath_ShuffleAny(void *a, size_t n, size_t es, mt19937_t *mt);
 

@@ -25,10 +25,22 @@ SOFTWARE.
 #include "deck.h"
 #include "lmath.h"
 
+void shuffle(uint8_t arr[], int len, mt19937_t *mt) {
+  int i = len, j;
+  uint8_t tmp = 0;
+
+  while (--i > 0) {
+    if (mt != NULL) j = Random_Int32(mt) % (i + 1);
+    else j = rand() % (i + 1);
+
+    tmp = arr[j];
+    arr[j] = arr[i];
+    arr[i] = tmp;
+  }
+}
+
 void Deck_Shuffle(deck_t *deck, void *mtctx) {
-  LMath_Shuffle(deck->cards.cards,
-                (size_t) deck->cards.length,
-                (mt19937_t *) mtctx);
+  shuffle(deck->cards.cards, deck->cards.length, (mt19937_t *) mtctx);
 }
 
 void Deck_Reset(deck_t *deck) {
@@ -36,11 +48,11 @@ void Deck_Reset(deck_t *deck) {
   CardArray_Clear(&deck->used);
 }
 
-int32_t Deck_DealSingle(deck_t *deck) {
+uint8_t Deck_DealSingle(deck_t *deck) {
   return CardArray_PopBack(&deck->cards);
 }
 
-void Deck_RecycleSingle(deck_t *deck, int32_t card) {
+void Deck_RecycleSingle(deck_t *deck, uint8_t card) {
   CardArray_PushBack(&deck->used, card);
 }
 
@@ -52,7 +64,7 @@ int Deck_Deal(deck_t *deck, card_array_t *array, int count) {
   actualDealt = deck->cards.length >= count ? count : deck->cards.length;
 
   deck->cards.length -= actualDealt;
-  CardsCopy(array->cards, &deck->cards.cards[deck->cards.length], actualDealt);
+  memcpy(array->cards, &deck->cards.cards[deck->cards.length], actualDealt);
   array->length = actualDealt;
 
   return actualDealt;
@@ -64,7 +76,7 @@ int Deck_Recycle(deck_t *deck, card_array_t *array) {
   actualRecycled = CardArray_Capacity(&deck->used) <
     array->length ? CardArray_Capacity(&deck->used) : array->length;
 
-  CardsCopy(&deck->used.cards[deck->used.length], array->cards, actualRecycled);
+  memcpy(&deck->used.cards[deck->used.length], array->cards, actualRecycled);
   deck->used.length += actualRecycled;
 
   return actualRecycled;

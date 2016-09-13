@@ -230,6 +230,34 @@ void Hand_Copy(hand_t *dst, hand_t *src) {
  * parser
  * ************************************************************/
 
+/* sort function for rank count array */
+int _Hand_PatternSort(const void *a, const void *b) {
+  return *(int *) b - *(int *) a;
+}
+
+/* sort count array by counts */
+void _Hand_SortCount(int *count) {
+  qsort(count, CARD_RANK_END, sizeof(int), _Hand_PatternSort);
+}
+
+/*
+ * count rank in card array
+ * count[rank] = num
+ */
+void Hand_CountRank(card_array_t *array, int *count, int *sort) {
+  int i = 0;
+
+  memset(count, 0, sizeof(int) * CARD_RANK_END);
+
+  for (i = 0; i < array->length; i++)
+    count[CARD_RANK(array->cards[i])]++;
+
+  if (sort != NULL) {
+    memcpy(sort, count, sizeof(int) * CARD_RANK_END);
+    _Hand_SortCount(sort);
+  }
+}
+
 /* check if a sorted count array matches specific pattern */
 int _Hand_PatternMatch(int *sorted, int pattern) {
   int ret =
@@ -281,7 +309,7 @@ void _Hand_Distribute(hand_t *hand,
                       int length) {
   int i = 0;
   int num = 0;
-  int32_t card = 0;
+  uint8_t card = 0;
   card_array_t temp;
 
   CardArray_Clear(&temp);
@@ -347,7 +375,7 @@ int Hand_Parse(hand_t *hand, card_array_t *array) {
   CardArray_Sort(array, NULL);
 
   /* count ranks */
-  CardArray_CountRank(array, count, sorted);
+  Hand_CountRank(array, count, sorted);
 
   /* clear hand */
   Hand_Clear(hand);
@@ -462,12 +490,14 @@ int Hand_Compare(hand_t *a, hand_t *b) {
       (b->type != HAND_PRIMAL_BOMB))
       result = HAND_CMP_ILLEGAL;
     else result = _Hand_CompareBomb(a, b);
-  } else /* same hand type and with no bombs */
+  }
+  else /* same hand type and with no bombs */
   {
     /* same hand type but different length */
     if (a->cards.length != b->cards.length) {
       result = HAND_CMP_ILLEGAL;
-    } else /* same hand type and same length */
+    }
+    else /* same hand type and same length */
     {
       if (CARD_RANK(a->cards.cards[0]) ==
         CARD_RANK(b->cards.cards[0]))

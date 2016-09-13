@@ -177,9 +177,9 @@ int LMath_NextComb(int comb[], int k, int n) {
   return 1;
 }
 
-void LMath_Shuffle(int32_t *a, size_t n, mt19937_t *mt) {
+void LMath_Shuffle(uint8_t *a, size_t n, mt19937_t *mt) {
   size_t i = n, j;
-  int32_t tmp = 0;
+  uint8_t tmp = 0;
 
   while (--i > 0) {
     if (mt != NULL) j = Random_Int32(mt) % (i + 1);

@@ -223,7 +223,9 @@ int main(int argc, const char *argv[]) {
 //  test_hands();
   test_game();
 
-//  history_purge();
+  history_purge();
+
+  printf("hello world\n");
 //  test_advanced_hand_analyzer();
   memtrack_list_allocations();
   return 0;
