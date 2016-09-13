@@ -157,7 +157,7 @@ void test_game() {
 
   Game_Init(&game);
 
-  for (i = 10000; i < 10003; i++) {
+  for (i = 10000; i < 20000; i++) {
     Game_Play(&game, i);
 
     if (game.winner == game.landlord) landlordwon++;

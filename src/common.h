@@ -25,7 +25,7 @@ SOFTWARE.
 #ifndef LANDLORD_COMMON_H_
 #define LANDLORD_COMMON_H_
 
-#define LL_GRAPHICAL_SUIT 0
+#define LL_GRAPHICAL_SUIT 1
 
 #include <stdio.h>
 #include <stdint.h>
@@ -41,7 +41,7 @@ SOFTWARE.
 extern "C" {
 #endif
 
-#define PRINT_GAME_LOG 1
+#define PRINT_GAME_LOG 0
 
 #if (PRINT_GAME_LOG == 1)
 #define DBGLog printf

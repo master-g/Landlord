@@ -472,14 +472,13 @@ void CardArray_Sort(card_array_t *array, int (*comparator)(const void *,
 }
 
 void CardArray_Reverse(card_array_t *array) {
-  int i = 0;
-  card_array_t temp;
-
-  CardArray_Clear(&temp);
-
-  for (i = array->length; i--;) temp.cards[temp.length++] = array->cards[i];
-
-  CardArray_Copy(array, &temp);
+  int i, j;
+  int32_t tmp;
+  for (i = 0, j = array->length - 1; i < array->length / 2; i++, j--) {
+    tmp = array->cards[i];
+    array->cards[i] = array->cards[j];
+    array->cards[j] = tmp;
+  }
 }
 
 #if LL_GRAPHICAL_SUIT != 0
