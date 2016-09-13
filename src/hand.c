@@ -31,7 +31,7 @@ SOFTWARE.
  * their patterns are 11111, 333111
  * which can help us to determine the type of a specific hand
  *
- * for exampe, a 6 cards can have 4 types of hands
+ * for example, a 6 cards can have 4 types of hands
  * solo-chain, pair-chain, trio-chain and four-dual-solo
  *
  * the parse process can be simply describe as
