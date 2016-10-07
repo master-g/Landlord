@@ -22,6 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+/*
+ * TODO
+ * add handlist_sort
+ */
+
 #include "handlist.h"
 #include "lmath.h"
 
@@ -1069,7 +1074,7 @@ typedef void (*_HandList_SearchPrimalFunc)(hand_ctx_t *,
  * result stores in hand
  * return 0 when stop
  */
-int _HLAA_TraverseHands(hand_ctx_t *ctx, int *begin, hand_t *hand) {
+int _HLAA_TraverseChains(hand_ctx_t *ctx, int *begin, hand_t *hand) {
   int found = 0;
   int i = *begin;
   int primals[] = {1, 2, 3};
@@ -1121,7 +1126,7 @@ void _HLAA_ExtractAllChains(hand_ctx_t *ctx, rk_list_t *hands) {
   Hand_Clear(&workinghand);
   Hand_Clear(&lasthand);
 
-  found = _HLAA_TraverseHands(ctx, &lastsearch, &lasthand);
+  found = _HLAA_TraverseChains(ctx, &lastsearch, &lasthand);
 
   while (found != 0) {
     HandList_PushFront(hands, &lasthand);
@@ -1129,7 +1134,7 @@ void _HLAA_ExtractAllChains(hand_ctx_t *ctx, rk_list_t *hands) {
     Hand_Copy(&workinghand, &lasthand);
 
     while ((found =
-              _HLAA_TraverseHands(ctx, &lastsearch, &workinghand)) != 0)
+              _HLAA_TraverseChains(ctx, &lastsearch, &workinghand)) != 0)
       HandList_PushFront(hands, &workinghand);
 
     /* can't find any more hands, try to reduce chain length */
@@ -1169,7 +1174,7 @@ void _HLAA_ExtractAllChains(hand_ctx_t *ctx, rk_list_t *hands) {
       if (found == 0) {
         lastsearch++;
         Hand_Clear(&lasthand);
-        found = _HLAA_TraverseHands(ctx, &lastsearch, &lasthand);
+        found = _HLAA_TraverseChains(ctx, &lastsearch, &lasthand);
       }
     }
   }
@@ -1215,7 +1220,6 @@ rk_list_t *HandList_AdvancedAnalyze(card_array_t *array) {
   rk_list_t *others = NULL;
   rk_list_node_t *hlnode = NULL;
   rk_list_t *st = NULL;
-  rk_list_t *temp = NULL;
   rk_tree_t *grandtree = NULL;
   rk_tree_t *workingtree = NULL;
   rk_tree_t *tnode = NULL;

@@ -48,7 +48,7 @@ void test_advanced_hand_analyzer() {
      const char* str = "♠K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5";
      const char* str = "s9 d8 s7 h6 s5 c4";
    */
-  const char *str = "♦2 ♥K ♦Q ♥J ♣J ♠T ♦T ♦9 ♠8 ♥8 ♦8 ♣8 ♠7 ♣6 ♦4 ♠3 ♦3";
+  const char *str = "♣T ♦9 ♠8 ♥8 ♠7 ♣7 ♦6 ♣6 ♠5 ♣5 ♣4";
   card_array_t cards;
   rk_list_t *hl;
 
@@ -60,6 +60,13 @@ void test_advanced_hand_analyzer() {
 
   HandList_Print(hl);
 
+  rk_list_clear_destroy(hl);
+
+  printf("------\n");
+
+  hl = NULL;
+  hl = HandList_StandardAnalyze(&cards);
+  HandList_Print(hl);
   rk_list_clear_destroy(hl);
 }
 
@@ -219,13 +226,74 @@ void test_hands() {
   }
 }
 
+#define _POSIX_C_SOURCE 201610L
+
+long get_current_time_with_ns(void) {
+  struct timespec spec;
+
+  clock_gettime(CLOCK_REALTIME, &spec);
+  return spec.tv_nsec;
+}
+
+int test_adv() {
+  int diff = 0;
+  deck_t deck;
+  card_array_t cards;
+  rk_list_t *hladv = NULL;
+  rk_list_t *hlstd = NULL;
+  mt19937_t mt;
+
+//  shit = 0;
+
+  Random_Init(&mt, (uint32_t) get_current_time_with_ns());
+  Deck_Reset(&deck);
+  Deck_Shuffle(&deck, &mt);
+  Deck_Deal(&deck, &cards, 11);
+
+  hladv = HandList_AdvancedAnalyze(&cards);
+  hlstd = HandList_StandardAnalyze(&cards);
+
+  diff = hlstd->count - hladv->count;
+  if (diff >= 2) {
+    CardArray_Sort(&cards, NULL);
+    CardArray_Print(&cards);
+    printf("***************************\n");
+    HandList_Print(hlstd);
+    printf("***************************\n");
+    HandList_Print(hladv);
+  }
+
+  rk_list_clear_destroy(hladv);
+  rk_list_clear_destroy(hlstd);
+
+  return diff;
+}
+
+void do_the_test() {
+  const char *str_card = "♣T ♦9 ♠8 ♥8 ♠7 ♣7 ♦6 ♣6 ♠5 ♣5 ♣4";
+  card_array_t cards;
+  rk_list_t *hl = NULL;
+  CardArray_InitFromString(&cards, str_card);
+  hl = HandList_AdvancedAnalyze(&cards);
+  rk_list_clear_destroy(hl);
+}
+
 int main(int argc, const char *argv[]) {
 //  test_hands();
-  test_game();
+  int diff = 0;
+  char *pool = (char *) malloc(512 * 1024);
+  memset(pool, 0, 512 * 1024);
+  free(pool);
+//  test_game();
 
   history_purge();
 
-  printf("hello world\n");
+//  while ((diff = test_adv()) < 2 || shit == 0) {
+//    printf("%d...\n", diff);
+//  }
+
+  do_the_test();
+
 //  test_advanced_hand_analyzer();
   memtrack_list_allocations();
   return 0;
