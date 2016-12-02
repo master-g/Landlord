@@ -1,6 +1,7 @@
 .DS_Store
 *.xcuserdatad
 xcuserdata
+/cmake-build-debug/
 /autom4te.cache/
 /config/
 landlord
