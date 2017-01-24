@@ -610,7 +610,7 @@ void _HandList_ExtractConsecutive(rk_list_t *hl,
 
   Hand_Clear(&hand);
 
-  cardnum = array->length / duplicate;
+  cardnum = array->length / duplicate - 1;
   lastrank = CARD_RANK(array->cards[0]);
   i = duplicate;
 
@@ -653,27 +653,25 @@ void _HandList_ExtractConsecutive(rk_list_t *hl,
     }
   }
 
-  k = i - duplicate; /* step back */
-
   /* all chained up */
-  if ((k != 0) && (k == array->length)) {
+  if ((i != 0) && (i == array->length)) {
     /* can chain up */
-    if (k >= chainlen[duplicate]) {
+    if (i >= chainlen[duplicate]) {
       Hand_Clear(&hand);
       hand.type = Hand_Format(primal[duplicate], HAND_KICKER_NONE, HAND_CHAIN);
 
-      for (j = 0; j < i - duplicate; j++)
+      for (j = 0; j < i; j++)
         CardArray_PushBack(&hand.cards, CardArray_PopFront(array));
 
       HandList_PushFront(hl, &hand);
     } else {
-      for (j = 0; j < k / duplicate; j++) {
+      for (j = 0; j < i / duplicate; j++) {
         Hand_Clear(&hand);
         hand.type = Hand_Format(primal[duplicate],
                                 HAND_KICKER_NONE,
                                 HAND_CHAINLESS);
 
-        for (i = 0; i < duplicate; i++)
+        for (k = 0; k < duplicate; k++)
           CardArray_PushBack(&hand.cards, CardArray_PopFront(array));
 
         HandList_PushFront(hl, &hand);

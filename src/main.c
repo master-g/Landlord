@@ -270,11 +270,19 @@ int test_adv() {
 }
 
 void do_the_test() {
-  const char *str_card = "♣T ♦9 ♠8 ♥8 ♠7 ♣7 ♦6 ♣6 ♠5 ♣5 ♣4";
+//  const char *str_card = "♣T ♦9 ♠8 ♥8 ♠7 ♣7 ♦6 ♣6 ♠5 ♣5 ♣4";
+//  card_array_t cards;
+//  rk_list_t *hl = NULL;
+//  CardArray_InitFromString(&cards, str_card);
+//  hl = HandList_AdvancedAnalyze(&cards);
+//  rk_list_clear_destroy(hl);
+
+  const char *str_card = "♣3 ♣4 ♣5 ♣6 ♣7 ♣8";
   card_array_t cards;
   rk_list_t *hl = NULL;
   CardArray_InitFromString(&cards, str_card);
-  hl = HandList_AdvancedAnalyze(&cards);
+  hl = HandList_StandardAnalyze(&cards);
+  HandList_Print(hl);
   rk_list_clear_destroy(hl);
 }
 
