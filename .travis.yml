@@ -1,12 +1,37 @@
+sudo: required
+dist: trusty
 language: c
 
+cache:
+  ccache: true
+  directories:
+    - cmake-3.4.3-Linux-x86_64/bin
+    - cmake-3.4.3-Linux-x86_64/plugins
+    - cmake-3.4.3-Linux-x86_64/share
+
+os:
+  - linux
 compiler:
   - gcc
   - clang
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-4.9
+      - g++-4.9
+      - clang
 
-before_script:
-  - mkdir build
-  - cd build
-  - cmake ..
+install:
+  - sudo apt-get update -qq
+  - if [[ "$CXX" = "g++" ]]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
+  - pwd
+  - ls
+  - if [[ ! -f "cmake-3.4.3-Linux-x86_64/bin/cmake" ]]; then wget --no-check-certificate http://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz && tar -xvf cmake-3.4.3-Linux-x86_64.tar.gz; fi
 
-script: make
+script:
+  - mkdir build && cd build
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ../cmake-3.4.3-Linux-x86_64/bin/cmake .. ;fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ../cmake-3.4.3-Linux-x86_64/bin/cmake --build . --config Release ;fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ../cmake-3.4.3-Linux-x86_64/bin/cmake --build . --config Debug ;fi
