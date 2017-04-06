@@ -70,7 +70,7 @@ void test_advanced_hand_analyzer() {
   rk_list_clear_destroy(hl);
 }
 
-#ifndef WIN32
+#ifdef TRY_MULTITHREAD
 
 #include <pthread.h>
 
