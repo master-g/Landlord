@@ -1,9 +1,12 @@
-language: "c"
+language: c
+
+compiler:
+  - gcc
+  - clang
+
 before_script:
-  - sudo add-apt-repository ppa:dns/gnu -y
-  - sudo apt-get update -q
-  - sudo apt-get install --only-upgrade autoconf
-script:
-  - autoreconf -iv
-  - ./configure
-  - make
+  - mkdir build
+  - cd build
+  - cmake ..
+
+script: make
