@@ -28,29 +28,28 @@ SOFTWARE.
  * MT19937 random number generator
  * ************************************************************/
 
-#define M           397
-#define MATRIX_A    0x9908B0DF /* constant vector A */
-#define UPPER_MASK  0x80000000 /* most significant w-r bits */
-#define LOWER_MASK  0x7FFFFFFF /* least significant w-r bits */
+#define M 397
+#define MATRIX_A 0x9908B0DF   /* constant vector A */
+#define UPPER_MASK 0x80000000 /* most significant w-r bits */
+#define LOWER_MASK 0x7FFFFFFF /* least significant w-r bits */
 
-#define FULL_MASK   0xFFFFFFFF
-#define DEF_SEED    0x012BD6AA
+#define FULL_MASK 0xFFFFFFFF
+#define DEF_SEED 0x012BD6AA
 
-void Random_Init(mt19937_t *context, uint32_t seed) {
+void Random_Init(mt19937_t* context, uint32_t seed) {
   context->mt[0] = seed & FULL_MASK;
 
   for (context->mti = 1; context->mti < MT_N; context->mti++) {
     /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
     context->mt[context->mti] =
-      (1812433253 *
-        (context->mt[context->mti - 1] ^ (context->mt[context->mti - 1] >> 30))
-        +
-          context->mti);
+        (1812433253 * (context->mt[context->mti - 1] ^
+                       (context->mt[context->mti - 1] >> 30)) +
+         context->mti);
     context->mt[context->mti] &= FULL_MASK;
   }
 }
 
-void Random_InitWithArray(mt19937_t *context, uint32_t initarr[], int length) {
+void Random_InitWithArray(mt19937_t* context, uint32_t initarr[], int length) {
   int i, j, k;
 
   Random_Init(context, DEF_SEED);
@@ -59,17 +58,16 @@ void Random_InitWithArray(mt19937_t *context, uint32_t initarr[], int length) {
 
   for (; k; k--) {
     context->mt[i] =
-      (context->mt[i] ^
-        ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1664525)) +
-        initarr[j] +
-        j;
+        (context->mt[i] ^
+         ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1664525)) +
+        initarr[j] + j;
     context->mt[i] &= FULL_MASK;
     i++;
     j++;
 
     if (j >= MT_N) {
       context->mt[0] = context->mt[MT_N - 1];
-      i = 1;
+      i              = 1;
     }
 
     if (j >= length) {
@@ -79,21 +77,22 @@ void Random_InitWithArray(mt19937_t *context, uint32_t initarr[], int length) {
 
   for (k = MT_N - 1; k; k--) {
     context->mt[i] =
-      (context->mt[i] ^
-        ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1566083941)) - i;
+        (context->mt[i] ^
+         ((context->mt[i - 1] ^ (context->mt[i - 1] >> 30)) * 1566083941)) -
+        i;
     context->mt[i] &= FULL_MASK;
     i++;
 
     if (i >= MT_N) {
       context->mt[0] = context->mt[MT_N - 1];
-      i = 1;
+      i              = 1;
     }
   }
 
   context->mt[0] = UPPER_MASK;
 }
 
-uint32_t Random_uint32(mt19937_t *context) {
+uint32_t Random_uint32(mt19937_t* context) {
   uint32_t y;
   int kk;
   static uint32_t mag01[2] = {0x0, MATRIX_A};
@@ -101,22 +100,20 @@ uint32_t Random_uint32(mt19937_t *context) {
   /* mag01[x] = x * MATRIX_A for x = 0, 1 */
 
   if (context->mti >= MT_N) {
-    if (context->mti == MT_N + 1) Random_Init(context, 5489);
+    if (context->mti == MT_N + 1)
+      Random_Init(context, 5489);
 
     for (kk = 0; kk < MT_N - M; kk++) {
-      y = (context->mt[kk] & UPPER_MASK) |
-        (context->mt[kk + 1] & LOWER_MASK);
+      y = (context->mt[kk] & UPPER_MASK) | (context->mt[kk + 1] & LOWER_MASK);
       context->mt[kk] = context->mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1];
     }
 
     for (; kk < MT_N - 1; kk++) {
-      y = (context->mt[kk] & UPPER_MASK) |
-        (context->mt[kk + 1] & LOWER_MASK);
+      y = (context->mt[kk] & UPPER_MASK) | (context->mt[kk + 1] & LOWER_MASK);
       context->mt[kk] =
-        context->mt[kk + (M - MT_N)] ^ (y >> 1) ^ mag01[y & 0x1];
+          context->mt[kk + (M - MT_N)] ^ (y >> 1) ^ mag01[y & 0x1];
     }
-    y = (context->mt[MT_N - 1] & UPPER_MASK) |
-      (context->mt[0] & LOWER_MASK);
+    y = (context->mt[MT_N - 1] & UPPER_MASK) | (context->mt[0] & LOWER_MASK);
     context->mt[MT_N - 1] = context->mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1];
 
     context->mti = 0;
@@ -133,12 +130,12 @@ uint32_t Random_uint32(mt19937_t *context) {
   return y;
 }
 
-int32_t Random_Int32(mt19937_t *context) {
-  return (int32_t) (Random_uint32(context) >> 1);
+int32_t Random_Int32(mt19937_t* context) {
+  return (int32_t)(Random_uint32(context) >> 1);
 }
 
-double Random_real_0_1(mt19937_t *context) {
-  return (double) (Random_uint32(context) * (1.0 / 4294967296.0));
+double Random_real_0_1(mt19937_t* context) {
+  return (double)(Random_uint32(context) * (1.0 / 4294967296.0));
 }
 
 /* ************************************************************
@@ -172,32 +169,37 @@ int LMath_NextComb(int comb[], int k, int n) {
 
   /* comb now looks like (..., x, n, n, n, ..., n).
      Turn it into (..., x, x + 1, x + 2, ...) */
-  for (i = i + 1; i < k; ++i) comb[i] = comb[i - 1] + 1;
+  for (i    = i + 1; i < k; ++i)
+    comb[i] = comb[i - 1] + 1;
 
   return 1;
 }
 
-void LMath_Shuffle(uint8_t *a, size_t n, mt19937_t *mt) {
-  size_t i = n, j;
+void LMath_Shuffle(uint8_t* a, size_t n, mt19937_t* mt) {
+  size_t i    = n, j;
   uint8_t tmp = 0;
 
   while (--i > 0) {
-    if (mt != NULL) j = Random_Int32(mt) % (i + 1);
-    else j = rand() % (i + 1);
+    if (mt != NULL)
+      j = Random_Int32(mt) % (i + 1);
+    else
+      j = rand() % (i + 1);
 
-    tmp = a[j];
+    tmp  = a[j];
     a[j] = a[i];
     a[i] = tmp;
   }
 }
 
-void LMath_ShuffleAny(void *a, size_t n, size_t es, mt19937_t *mt) {
-  size_t i = n, j;
-  void *tmp = malloc(es);
+void LMath_ShuffleAny(void* a, size_t n, size_t es, mt19937_t* mt) {
+  size_t i  = n, j;
+  void* tmp = malloc(es);
 
   while (--i > 0) {
-    if (mt != NULL) j = Random_Int32(mt) % (i + 1);
-    else j = rand() % (i + 1);
+    if (mt != NULL)
+      j = Random_Int32(mt) % (i + 1);
+    else
+      j = rand() % (i + 1);
 
     memcpy(tmp, &a[j], es);
     memcpy(&a[j], &a[i], es);

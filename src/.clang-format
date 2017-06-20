@@ -1,0 +1,12 @@
+---
+BasedOnStyle: LLVM
+---
+# Force pointers to the type of C++.
+Language: Cpp
+AlignConsecutiveAssignments: true
+AlignOperands: true
+AlignTrailingComments: true
+AllowAllParametersOfDeclarationOnNextLine: true
+DerivePointerAlignment: false
+PointerAlignment: Left
+UseTab: Never

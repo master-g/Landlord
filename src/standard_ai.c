@@ -25,8 +25,8 @@ SOFTWARE.
 #include "standard_ai.h"
 #include "game.h"
 
-int StandardAI_GetReady(void *p, void *game) {
-  player_t *player = (player_t *) p;
+int StandardAI_GetReady(void* p, void* game) {
+  player_t* player = (player_t*)p;
 
   CardArray_Sort(&player->cards, NULL);
   CardArray_Copy(&player->record, &player->cards);
@@ -38,15 +38,15 @@ int StandardAI_GetReady(void *p, void *game) {
   return 0;
 }
 
-int StandardAI_Bid(void *p, void *g) {
-  int shouldbid = 0;
-  int handlistlen = 0;
-  game_t *game = (game_t *) g;
-  player_t *player = (player_t *) p;
+int StandardAI_Bid(void* p, void* g) {
+  int shouldbid    = 0;
+  int handlistlen  = 0;
+  game_t* game     = (game_t*)g;
+  player_t* player = (player_t*)p;
 
   CardArray_Sort(&player->cards, NULL);
   player->handlist = HandList_StandardAnalyze(&player->cards);
-  handlistlen = rk_list_count(player->handlist);
+  handlistlen      = rk_list_count(player->handlist);
   rk_list_clear_destroy(player->handlist);
 
   if (handlistlen > 9) {
@@ -65,17 +65,17 @@ int StandardAI_Bid(void *p, void *g) {
     return 0;
 }
 
-int StandardAI_Play(void *p, void *game) {
-  int countpair = 0;
-  int countsolo = 0;
-  int need = 0;
-  int searchprimal = 0;
-  int kicker = 0;
-  player_t *player = (player_t *) p;
-  hand_t *node = NULL;
-  rk_list_node_t *temp = NULL;
+int StandardAI_Play(void* p, void* game) {
+  int countpair        = 0;
+  int countsolo        = 0;
+  int need             = 0;
+  int searchprimal     = 0;
+  int kicker           = 0;
+  player_t* player     = (player_t*)p;
+  hand_t* node         = NULL;
+  rk_list_node_t* temp = NULL;
 
-  hand_t *hand = &((game_t *) game)->lastHand;
+  hand_t* hand = &((game_t*)game)->lastHand;
 
   do {
     /* empty hands */
@@ -86,16 +86,15 @@ int StandardAI_Play(void *p, void *game) {
 
     /* last hand */
     if (rk_list_count(player->handlist) == 1) {
-      Hand_Copy(hand, (hand_t *) player->handlist->first->payload);
+      Hand_Copy(hand, (hand_t*)player->handlist->first->payload);
       HandList_Remove(player->handlist, player->handlist->first->payload);
       break;
     }
 
     /* try to find longest hand combination */
-    node = HandList_Find(player->handlist,
-                         Hand_Format(HAND_PRIMAL_TRIO,
-                                     HAND_KICKER_NONE,
-                                     HAND_CHAIN));
+    node = HandList_Find(
+        player->handlist,
+        Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAIN));
 
     if (node != NULL) {
       /* copy hand*/
@@ -108,7 +107,7 @@ int StandardAI_Play(void *p, void *game) {
       HandList_Remove(player->handlist, node);
 
       /* count solo and pair number */
-      temp = player->handlist->first;
+      temp      = player->handlist->first;
       countpair = 0;
       countsolo = 0;
 
@@ -126,10 +125,10 @@ int StandardAI_Play(void *p, void *game) {
         break;
       } else if (countpair >= need) {
         searchprimal = HAND_PRIMAL_PAIR;
-        kicker = HAND_KICKER_PAIR;
+        kicker       = HAND_KICKER_PAIR;
       } else {
         searchprimal = HAND_PRIMAL_SOLO;
-        kicker = HAND_KICKER_SOLO;
+        kicker       = HAND_KICKER_SOLO;
       }
 
       /* detach pairs from list */
@@ -137,7 +136,7 @@ int StandardAI_Play(void *p, void *game) {
 
       while (need > 0 && temp != NULL) {
         if (HandList_GetHand(temp)->type ==
-          Hand_Format(searchprimal, HAND_KICKER_NONE, HAND_CHAINLESS)) {
+            Hand_Format(searchprimal, HAND_KICKER_NONE, HAND_CHAINLESS)) {
           /* copy cards */
           CardArray_Concat(&hand->cards, &HandList_GetHand(temp)->cards);
           HandList_Remove(player->handlist, temp->payload);
@@ -153,16 +152,15 @@ int StandardAI_Play(void *p, void *game) {
     }
 
     /* pair chain */
-    node = HandList_Find(player->handlist,
-                    Hand_Format(HAND_PRIMAL_PAIR,
-                                HAND_KICKER_NONE,
-                                HAND_CHAIN));
+    node = HandList_Find(
+        player->handlist,
+        Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAIN));
 
     /* solo chain */
     if (node == NULL)
-      node = HandList_Find(player->handlist,
-                           Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE,
-                                       HAND_CHAIN));
+      node = HandList_Find(
+          player->handlist,
+          Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAIN));
 
     if (node != NULL) {
       Hand_Copy(hand, node);
@@ -171,31 +169,28 @@ int StandardAI_Play(void *p, void *game) {
     }
 
     /* trio */
-    node = HandList_Find(player->handlist,
-                         Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE,
-                                     HAND_CHAINLESS));
+    node = HandList_Find(
+        player->handlist,
+        Hand_Format(HAND_PRIMAL_TRIO, HAND_KICKER_NONE, HAND_CHAINLESS));
 
-    if ((node != NULL) &&
-      (CARD_RANK(node->cards.cards[0]) != CARD_RANK_2)) {
+    if ((node != NULL) && (CARD_RANK(node->cards.cards[0]) != CARD_RANK_2)) {
       Hand_Copy(hand, node);
       HandList_Remove(player->handlist, node);
 
       /* pair */
-      node = HandList_Find(player->handlist,
-                           Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE,
-                                       HAND_CHAINLESS));
+      node = HandList_Find(
+          player->handlist,
+          Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAINLESS));
 
-      if ((node != NULL) &&
-        (CARD_RANK(node->cards.cards[0]) != CARD_RANK_2)) {
+      if ((node != NULL) && (CARD_RANK(node->cards.cards[0]) != CARD_RANK_2)) {
         kicker = HAND_KICKER_PAIR;
       } else {
         /* solo */
-        node = HandList_Find(player->handlist,
-                             Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE,
-                                         HAND_CHAINLESS));
+        node = HandList_Find(
+            player->handlist,
+            Hand_Format(HAND_PRIMAL_SOLO, HAND_KICKER_NONE, HAND_CHAINLESS));
 
-        if ((node != NULL) &&
-          (CARD_RANK(node->cards.cards[0]) < CARD_RANK_2))
+        if ((node != NULL) && (CARD_RANK(node->cards.cards[0]) < CARD_RANK_2))
           kicker = HAND_KICKER_SOLO;
       }
 
@@ -211,12 +206,11 @@ int StandardAI_Play(void *p, void *game) {
     }
 
     /* pair */
-    node = HandList_Find(player->handlist,
-                         Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE,
-                                     HAND_CHAINLESS));
+    node = HandList_Find(
+        player->handlist,
+        Hand_Format(HAND_PRIMAL_PAIR, HAND_KICKER_NONE, HAND_CHAINLESS));
 
-    if ((node != NULL) &&
-      (CARD_RANK(node->cards.cards[0]) != CARD_RANK_2)) {
+    if ((node != NULL) && (CARD_RANK(node->cards.cards[0]) != CARD_RANK_2)) {
       Hand_Copy(hand, node);
       HandList_Remove(player->handlist, node);
       break;
@@ -233,24 +227,24 @@ int StandardAI_Play(void *p, void *game) {
   return 0;
 }
 
-int StandardAI_Beat(void *p, void *g) {
+int StandardAI_Beat(void* p, void* g) {
   /*
    * HandList_SearchBeats can search for beat in loop mode
    * but we just simply find a beat here
    */
   int canbeat = 0;
-  int i = 0;
-  hand_t *tobeat;
+  int i       = 0;
+  hand_t* tobeat;
   hand_t beat;
-  player_t *player = (player_t *) p;
-  player_t *prevplayer = NULL;
-  player_t *teammate = NULL;
-  player_t *landlord = NULL;
-  game_t *game = (game_t *) g;
+  player_t* player     = (player_t*)p;
+  player_t* prevplayer = NULL;
+  player_t* teammate   = NULL;
+  player_t* landlord   = NULL;
+  game_t* game         = (game_t*)g;
 
   Hand_Clear(&beat);
 
-  tobeat = &((game_t *) game)->lastHand;
+  tobeat = &((game_t*)game)->lastHand;
 
   canbeat = HandList_BestBeat(&player->cards, tobeat, &beat, NULL);
 
@@ -261,30 +255,28 @@ int StandardAI_Beat(void *p, void *g) {
   /* peasant cooperation */
   prevplayer = &game->players[game->lastplay];
 
-  if (canbeat &&
-    (player->identity == PlayerIdentity_Peasant) &&
-    (prevplayer->identity == PlayerIdentity_Peasant)) {
+  if (canbeat && (player->identity == PlayerIdentity_Peasant) &&
+      (prevplayer->identity == PlayerIdentity_Peasant)) {
     /* find teammate and landlord */
     for (i = 0; i < GAME_PLAYERS; i++) {
       if (game->players[i].identity == PlayerIdentity_Landlord)
         landlord = &game->players[i];
 
       if ((game->players[i].identity == PlayerIdentity_Peasant) &&
-        (game->players[i].seatId !=
-          player->seatId))
+          (game->players[i].seatId != player->seatId))
         teammate = &game->players[i];
     }
 
     /* don't bomb/nuke teammate */
     if (canbeat &&
-      (((beat.type ==
-        Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAINLESS)) ||
-        (beat.type ==
-          Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE,
-                      HAND_CHAINLESS)))))
+        (((beat.type ==
+           Hand_Format(HAND_PRIMAL_BOMB, HAND_KICKER_NONE, HAND_CHAINLESS)) ||
+          (beat.type ==
+           Hand_Format(HAND_PRIMAL_NUKE, HAND_KICKER_NONE, HAND_CHAINLESS)))))
       canbeat = 0;
 
-    if (canbeat && (teammate->cards.length < player->cards.length)) canbeat = 0;
+    if (canbeat && (teammate->cards.length < player->cards.length))
+      canbeat = 0;
   }
 
   if (canbeat) {

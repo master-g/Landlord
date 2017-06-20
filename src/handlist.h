@@ -32,27 +32,27 @@ SOFTWARE.
  * hand list
  * ************************************************************/
 
-typedef int (*HandList_EvaluateFunc)(card_array_t *);
+typedef int (*HandList_EvaluateFunc)(card_array_t*);
 
 /*
  * push a hand into the front of hand list
  */
-void HandList_PushFront(rk_list_t *hl, hand_t *hand);
+void HandList_PushFront(rk_list_t* hl, hand_t* hand);
 
 /*
  * remove a hand from hand list
  */
-void HandList_Remove(rk_list_t *hl, hand_t *hand);
+void HandList_Remove(rk_list_t* hl, hand_t* hand);
 
 /*
  * search a specific hand type from hand list
  */
-hand_t *HandList_Find(rk_list_t *hl, int handtype);
+hand_t* HandList_Find(rk_list_t* hl, int handtype);
 
 /*
  * get payload as hand_t
  */
-#define HandList_GetHand(h) ((hand_t *)((h)->payload))
+#define HandList_GetHand(h) ((hand_t*)((h)->payload))
 
 /* ************************************************************
  * utils
@@ -61,41 +61,42 @@ hand_t *HandList_Find(rk_list_t *hl, int handtype);
 /*
  * search a beat in card array
  */
-int HandList_SearchBeat(card_array_t *cards, hand_t *tobeat, hand_t *beat);
+int HandList_SearchBeat(card_array_t* cards, hand_t* tobeat, hand_t* beat);
 
 /*
  * search all the beats
  */
-rk_list_t *HandList_SearchBeatList(card_array_t *cards, hand_t *tobeat);
+rk_list_t* HandList_SearchBeatList(card_array_t* cards, hand_t* tobeat);
 
 /*
  * standard analyze a card array into hand list
  */
-rk_list_t *HandList_StandardAnalyze(card_array_t *array);
+rk_list_t* HandList_StandardAnalyze(card_array_t* array);
 
 /*
  * count how many primal hands in array
  */
-int HandList_StandardEvaluator(card_array_t *array);
+int HandList_StandardEvaluator(card_array_t* array);
 
 /*
  * advanced hand analyze
  */
-rk_list_t *HandList_AdvancedAnalyze(card_array_t *array);
+rk_list_t* HandList_AdvancedAnalyze(card_array_t* array);
 
 /*
  * advanced hand evaluator
  */
-int HandList_AdvancedEvaluator(card_array_t *array);
+int HandList_AdvancedEvaluator(card_array_t* array);
 
 /*
  * search best beat from given cards
  */
-int HandList_BestBeat(card_array_t *array, hand_t *tobeat, hand_t *beat, HandList_EvaluateFunc func);
+int HandList_BestBeat(card_array_t* array, hand_t* tobeat, hand_t* beat,
+                      HandList_EvaluateFunc func);
 
 /*
  * print hand_list_t
  */
-void HandList_Print(rk_list_t *hl);
+void HandList_Print(rk_list_t* hl);
 
 #endif /* LANDLORD_HANDLIST_H */

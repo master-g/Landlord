@@ -24,23 +24,23 @@ SOFTWARE.
 
 #include "game.h"
 
-void Game_Init(game_t *game) {
+void Game_Init(game_t* game) {
   int i = 0;
 
   for (i = 0; i < GAME_PLAYERS; i++) {
     Player_SetupStandardAI(&game->players[i]);
     game->players[i].identity = PlayerIdentity_Peasant;
-    game->players[i].seatId = i;
+    game->players[i].seatId   = i;
     game->players[i].handlist = NULL;
   }
 
-  game->bid = 0;
+  game->bid         = 0;
   game->playerIndex = 0;
-  game->landlord = 0;
-  game->lastplay = 0;
-  game->winner = 0;
-  game->status = 0;
-  game->phase = 0;
+  game->landlord    = 0;
+  game->lastplay    = 0;
+  game->winner      = 0;
+  game->status      = 0;
+  game->phase       = 0;
 
   Deck_Reset(&game->deck);
   Deck_Shuffle(&game->deck, &game->mt);
@@ -49,21 +49,23 @@ void Game_Init(game_t *game) {
   Random_Init(&game->mt, 0);
 }
 
-void Game_Clear(game_t *game) {
+void Game_Clear(game_t* game) {
   int i = 0;
 
-  for (i = 0; i < GAME_PLAYERS; i++) Player_Clear(&game->players[i]);
+  for (i = 0; i < GAME_PLAYERS; i++)
+    Player_Clear(&game->players[i]);
 }
 
-void Game_Destroy(game_t *game) {
+void Game_Destroy(game_t* game) {
   int i = 0;
 
-  for (i = 0; i < GAME_PLAYERS; i++) Player_Clear(&game->players[i]);
+  for (i = 0; i < GAME_PLAYERS; i++)
+    Player_Clear(&game->players[i]);
 
   free(game);
 }
 
-void Game_Reset(game_t *game) {
+void Game_Reset(game_t* game) {
   int i = 0;
 
   for (i = 0; i < GAME_PLAYERS; i++) {
@@ -71,13 +73,13 @@ void Game_Reset(game_t *game) {
     Player_Clear(&game->players[i]);
   }
 
-  game->bid = 0;
+  game->bid         = 0;
   game->playerIndex = 0;
-  game->landlord = 0;
-  game->lastplay = 0;
-  game->winner = 0;
-  game->status = 0;
-  game->phase = 0;
+  game->landlord    = 0;
+  game->lastplay    = 0;
+  game->winner      = 0;
+  game->status      = 0;
+  game->phase       = 0;
 
   Hand_Clear(&game->lastHand);
   Deck_Reset(&game->deck);
@@ -86,17 +88,17 @@ void Game_Reset(game_t *game) {
   CardArray_Clear(&game->cardRecord);
 }
 
-void Game_Play(game_t *game, uint32_t seed) {
-  int i = 0;
+void Game_Play(game_t* game, uint32_t seed) {
+  int i    = 0;
   int beat = 0;
-  int bid = 0;
+  int bid  = 0;
 
   Random_Init(&game->mt, seed);
 
   /* bid */
   /* TODO log */
-  game->status = GameStatus_Bid;
-  game->bid = 0;
+  game->status        = GameStatus_Bid;
+  game->bid           = 0;
   game->highestBidder = -1;
 
   while (game->status == GameStatus_Bid) {
@@ -105,13 +107,13 @@ void Game_Play(game_t *game, uint32_t seed) {
     for (i = 0; i < GAME_PLAYERS; i++) {
       Deck_Deal(&game->deck, &Game_GetCurrentPlayer(game)->cards,
                 GAME_HAND_CARDS);
-      bid =
-        Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Bid, game);
+      bid = Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Bid,
+                               game);
 
       if (bid > game->bid) {
-        DBGLog ("\nPlayer ---- %d ---- bid for %d\n", game->playerIndex, bid);
+        DBGLog("\nPlayer ---- %d ---- bid for %d\n", game->playerIndex, bid);
         game->highestBidder = game->playerIndex;
-        game->bid = bid;
+        game->bid           = bid;
       }
 
       Game_IncPlayerIndex(game);
@@ -120,13 +122,12 @@ void Game_Play(game_t *game, uint32_t seed) {
     /* check if bid stage is done */
     if (game->bid == 0) {
       Deck_Reset(&game->deck);
-    }
-    else {
+    } else {
       /* setup landlord, game start! */
-      game->landlord = game->highestBidder;
+      game->landlord                         = game->highestBidder;
       game->players[game->landlord].identity = PlayerIdentity_Landlord;
-      game->playerIndex = game->landlord;
-      game->phase = Phase_Play;
+      game->playerIndex                      = game->landlord;
+      game->phase                            = Phase_Play;
       Deck_Deal(&game->deck, &game->kittyCards, GAME_REST_CARDS);
       CardArray_Concat(&game->players[game->landlord].cards, &game->kittyCards);
       game->status = GameStatus_Ready;
@@ -150,39 +151,38 @@ void Game_Play(game_t *game, uint32_t seed) {
    */
 
   for (i = 0; i < GAME_PLAYERS; i++)
-    Player_HandleEvent(&game->players[i],
-                       Player_Event_GetReady,
-                       game);
+    Player_HandleEvent(&game->players[i], Player_Event_GetReady, game);
 
   /* game play */
   while (game->status != GameStatus_Over) {
     if (game->phase == Phase_Play) {
       Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Play, game);
       game->lastplay = game->playerIndex;
-      game->phase = Phase_Query;
+      game->phase    = Phase_Query;
 
       CardArray_Concat(&game->cardRecord, &game->lastHand.cards);
 
-      DBGLog ("\nPlayer ---- %d ---- played\n", game->playerIndex);
+      DBGLog("\nPlayer ---- %d ---- played\n", game->playerIndex);
       Hand_Print(&game->lastHand);
-    }
-    else if ((game->phase == Phase_Query) || (game->phase == Phase_Pass)) {
-      beat = Player_HandleEvent(Game_GetCurrentPlayer(
-                                  game), Player_Event_Beat, game);
+    } else if ((game->phase == Phase_Query) || (game->phase == Phase_Pass)) {
+      beat = Player_HandleEvent(Game_GetCurrentPlayer(game), Player_Event_Beat,
+                                game);
 
       /* has beat in this phase */
       if (beat == 0) {
         /* two player pass */
-        if (game->phase == Phase_Pass) game->phase = Phase_Play;
-        else game->phase = Phase_Pass;
+        if (game->phase == Phase_Pass)
+          game->phase = Phase_Play;
+        else
+          game->phase = Phase_Pass;
 
-        DBGLog ("\nPlayer ---- %d ---- passed\n", game->playerIndex);
+        DBGLog("\nPlayer ---- %d ---- passed\n", game->playerIndex);
       } else {
         game->lastplay = game->playerIndex;
-        game->phase = Phase_Query;
+        game->phase    = Phase_Query;
         CardArray_Concat(&game->cardRecord, &game->lastHand.cards);
 
-        DBGLog ("\nPlayer ---- %d ---- beat\n", game->playerIndex);
+        DBGLog("\nPlayer ---- %d ---- beat\n", game->playerIndex);
         Hand_Print(&game->lastHand);
       }
     }
@@ -195,7 +195,7 @@ void Game_Play(game_t *game, uint32_t seed) {
         game->status = GameStatus_Over;
         game->winner = i;
 
-        DBGLog ("\nPlayer ++++ %d ++++ wins!\n", i);
+        DBGLog("\nPlayer ++++ %d ++++ wins!\n", i);
         break;
       }
     }

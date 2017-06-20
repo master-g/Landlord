@@ -10,7 +10,7 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in 
+The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -55,14 +55,14 @@ typedef enum {
 
 } PlayerBidAction;
 
-typedef int (*PlayerEventHandler)(void *player, void *context);
+typedef int (*PlayerEventHandler)(void* player, void* context);
 
 typedef struct player_s {
   card_array_t cards;
   /* card array, will change during game play */
   card_array_t record;
   /* card record */
-  rk_list_t *handlist;
+  rk_list_t* handlist;
   /* the analyze result of cards */
   int identity;
   /* 0: peasant, 1: landlord */
@@ -78,27 +78,27 @@ typedef struct player_s {
 /*
  * setup standard AI player
  */
-void Player_SetupStandardAI(player_t *player);
+void Player_SetupStandardAI(player_t* player);
 
 /*
  * setup advanced AI player
  */
-void Player_SetupAdvancedAI(player_t *player);
+void Player_SetupAdvancedAI(player_t* player);
 
 /*
  * destroy a player context
  */
-void Player_Destroy(player_t *player);
+void Player_Destroy(player_t* player);
 
 /*
  * clear a player context
  */
-void Player_Clear(player_t *player);
+void Player_Clear(player_t* player);
 
-/* 
- * handle event 
+/*
+ * handle event
  */
-int Player_HandleEvent(void *player, int event, void *ctx);
+int Player_HandleEvent(void* player, int event, void* ctx);
 
 /*
  * sort cards, analyze hands etc.

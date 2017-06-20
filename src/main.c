@@ -24,10 +24,10 @@ SOFTWARE.
 
 #include "landlord.h"
 
-char szr[] =
-  {'3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A', '2', 'R'};
+char szr[] = {'3', '4', '5', '6', '7', '8', '9',
+              'T', 'J', 'Q', 'K', 'A', '2', 'R'};
 
-void Count_Print(int *count) {
+void Count_Print(int* count) {
   int i = 0;
 
   for (i = CARD_RANK_BEG; i < CARD_RANK_END; i++) {
@@ -44,13 +44,13 @@ void Count_Print(int *count) {
 void test_advanced_hand_analyzer() {
   /*
      const char* str = "♣3 ♣4 ♠5 ♦6 ♠6 ♥7 ♠7 ♦7 ♦8 ♣8 ♣9 ♦9 ♦T";
-     const char* str = "♣r ♣2 ♠K ♦K ♠Q ♥J ♠T ♥T ♦T ♣T ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5 ♠4 ♣4";
-     const char* str = "♠K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5";
-     const char* str = "s9 d8 s7 h6 s5 c4";
+     const char* str = "♣r ♣2 ♠K ♦K ♠Q ♥J ♠T ♥T ♦T ♣T ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5 ♠4
+     ♣4"; const char* str = "♠K ♠Q ♥J ♠9 ♥9 ♦8 ♠7 ♥6 ♣6 ♠5 ♦5"; const char* str
+     = "s9 d8 s7 h6 s5 c4";
    */
-  const char *str = "♣T ♦9 ♠8 ♥8 ♠7 ♣7 ♦6 ♣6 ♠5 ♣5 ♣4";
+  const char* str = "♣T ♦9 ♠8 ♥8 ♠7 ♣7 ♦6 ♣6 ♠5 ♣5 ♣4";
   card_array_t cards;
-  rk_list_t *hl;
+  rk_list_t* hl;
 
   CardArray_InitFromString(&cards, str);
 
@@ -85,7 +85,7 @@ struct work_ctx {
 
 static struct work_ctx works[4];
 
-void cleanup(void *arg) {
+void cleanup(void* arg) {
   int i = 0;
   int pwon, lwon;
   for (i = 0; i < 4; i++) {
@@ -107,33 +107,33 @@ void cleanup(void *arg) {
   printf("ended at %ld\n", time(NULL));
 }
 
-void work_func(void *arg) {
-  int i = 0;
-  struct work_ctx *ctx = (struct work_ctx *) arg;
-  game_t *game = &ctx->game;
+void work_func(void* arg) {
+  int i                = 0;
+  struct work_ctx* ctx = (struct work_ctx*)arg;
+  game_t* game         = &ctx->game;
 
   printf("%lx starts at %d\n", pthread_self(), time(0));
 
   pthread_cleanup_push(cleanup, arg);
 
-    Game_Init(game);
-    ctx->peasantwon = 0;
-    ctx->landlordwon = 0;
+  Game_Init(game);
+  ctx->peasantwon  = 0;
+  ctx->landlordwon = 0;
 
-    for (i = ctx->index; i < ctx->index + 2500; i++) {
-      Game_Play(game, i);
+  for (i = ctx->index; i < ctx->index + 2500; i++) {
+    Game_Play(game, i);
 
-      if (game->winner == game->landlord)
-        ctx->landlordwon++;
-      else
-        ctx->peasantwon++;
+    if (game->winner == game->landlord)
+      ctx->landlordwon++;
+    else
+      ctx->peasantwon++;
 
-      Game_Reset(game);
-    }
+    Game_Reset(game);
+  }
 
-    ctx->status = 1;
+  ctx->status = 1;
 
-    pthread_exit(arg);
+  pthread_exit(arg);
   pthread_cleanup_pop(0);
 }
 
@@ -142,7 +142,7 @@ void test_game_mt() {
 
   for (i = 0; i < 4; i++) {
     works[i].status = 0;
-    works[i].index = 10000 + i * 2500;
+    works[i].index  = 10000 + i * 2500;
     pthread_create(&works[i].pid, NULL, work_func, &works[i]);
   }
 
@@ -154,9 +154,9 @@ void test_game_mt() {
 #endif
 
 void test_game() {
-  int peasantwon = 0;
+  int peasantwon  = 0;
   int landlordwon = 0;
-  int i = 0;
+  int i           = 0;
 
   game_t game;
 
@@ -167,8 +167,10 @@ void test_game() {
   for (i = 10000; i < 20000; i++) {
     Game_Play(&game, i);
 
-    if (game.winner == game.landlord) landlordwon++;
-    else peasantwon++;
+    if (game.winner == game.landlord)
+      landlordwon++;
+    else
+      peasantwon++;
 
     Game_Reset(&game);
 
@@ -189,30 +191,29 @@ void test_game() {
 
 // "♣3 ♣4 ♠5 ♠6 ♥7 ♦8"
 
-const char *hand_strings[] = {
-  "♣3",    /* solo */
-  "♣3 ♠3", /* pair */
-  "♠r ♠R", /* nuke */
-  "♠6 ♥6 ♦6", /* trio */
-  "♣3 ♠3 ♥3 ♥7", /* trio solo */
-  "♣7 ♠7 ♥7 ♥7", /* bomb */
-  "♣3 ♣4 ♠5 ♠6 ♥7", /* solo chain */
-  "♣3 ♣5 ♠5 ♠3 ♥5", /* trio pair */
-  "♣3 ♣4 ♠5 ♠6 ♥7 ♦8", /* solo chain */
-  "♣4 ♠4 ♠5 ♥6 ♥5 ♦6", /* pair chain */
-  "♣4 ♠4 ♦4 ♥5 ♠5 ♦5", /* trio chain */
-  "♣4 ♠4 ♦4 ♥4 ♠5 ♦6", /* four dual solo */
-  "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9", /* solo chain */
-  "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9 ♦T", /* solo chain */
-  "♣3 ♠3 ♦4 ♥4 ♠6 ♦6 ♦5 ♦5", /* pair chain */
-  "♣3 ♠3 ♦3 ♥4 ♠6 ♦6 ♦6 ♦9", /* trio solo chain */
-  "♣3 ♠3 ♦3 ♥3 ♠6 ♦6 ♦9 ♦9", /* trio solo chain */
-  "♣3 ♠3 ♦3 ♥3 ♠4 ♦4 ♦4 ♦4", /* four chain */
-  "♣3 ♠3 ♦3 ♥4 ♠4 ♦4 ♦5 ♠5 ♥5", /* trio chain */
-  "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J", /* solo chain */
-  "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J ♦Q ♦K ♦A ♦2 ♦r ♦R", /* none */
-  NULL
-};
+const char* hand_strings[] = {
+    "♣3",                                           /* solo */
+    "♣3 ♠3",                                        /* pair */
+    "♠r ♠R",                                        /* nuke */
+    "♠6 ♥6 ♦6",                                     /* trio */
+    "♣3 ♠3 ♥3 ♥7",                                  /* trio solo */
+    "♣7 ♠7 ♥7 ♥7",                                  /* bomb */
+    "♣3 ♣4 ♠5 ♠6 ♥7",                               /* solo chain */
+    "♣3 ♣5 ♠5 ♠3 ♥5",                               /* trio pair */
+    "♣3 ♣4 ♠5 ♠6 ♥7 ♦8",                            /* solo chain */
+    "♣4 ♠4 ♠5 ♥6 ♥5 ♦6",                            /* pair chain */
+    "♣4 ♠4 ♦4 ♥5 ♠5 ♦5",                            /* trio chain */
+    "♣4 ♠4 ♦4 ♥4 ♠5 ♦6",                            /* four dual solo */
+    "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9",                         /* solo chain */
+    "♣3 ♠4 ♦6 ♥8 ♠7 ♦5 ♦9 ♦T",                      /* solo chain */
+    "♣3 ♠3 ♦4 ♥4 ♠6 ♦6 ♦5 ♦5",                      /* pair chain */
+    "♣3 ♠3 ♦3 ♥4 ♠6 ♦6 ♦6 ♦9",                      /* trio solo chain */
+    "♣3 ♠3 ♦3 ♥3 ♠6 ♦6 ♦9 ♦9",                      /* trio solo chain */
+    "♣3 ♠3 ♦3 ♥3 ♠4 ♦4 ♦4 ♦4",                      /* four chain */
+    "♣3 ♠3 ♦3 ♥4 ♠4 ♦4 ♦5 ♠5 ♥5",                   /* trio chain */
+    "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J",                   /* solo chain */
+    "♣3 ♠4 ♦5 ♥6 ♠7 ♦8 ♦9 ♦T ♦J ♦Q ♦K ♦A ♦2 ♦r ♦R", /* none */
+    NULL};
 
 void test_hands() {
   int i = 0;
@@ -239,13 +240,13 @@ int test_adv() {
   int diff = 0;
   deck_t deck;
   card_array_t cards;
-  rk_list_t *hladv = NULL;
-  rk_list_t *hlstd = NULL;
+  rk_list_t* hladv = NULL;
+  rk_list_t* hlstd = NULL;
   mt19937_t mt;
 
-//  shit = 0;
+  //  shit = 0;
 
-  Random_Init(&mt, (uint32_t) get_current_time_with_ns());
+  Random_Init(&mt, (uint32_t)get_current_time_with_ns());
   Deck_Reset(&deck);
   Deck_Shuffle(&deck, &mt);
   Deck_Deal(&deck, &cards, 11);
@@ -270,31 +271,31 @@ int test_adv() {
 }
 
 void do_the_test() {
-  const char *str_card = "♣T ♦9 ♠8 ♥8 ♠7 ♣7 ♦6 ♣6 ♠5 ♣5 ♣4";
+  const char* str_card = "♣T ♦9 ♠8 ♥8 ♠7 ♣7 ♦6 ♣6 ♠5 ♣5 ♣4";
   card_array_t cards;
-  rk_list_t *hl = NULL;
+  rk_list_t* hl = NULL;
   CardArray_InitFromString(&cards, str_card);
   hl = HandList_AdvancedAnalyze(&cards);
   rk_list_clear_destroy(hl);
 }
 
-int main(int argc, const char *argv[]) {
-//  test_hands();
-  int diff = 0;
-  char *pool = (char *) malloc(512 * 1024);
+int main(int argc, const char* argv[]) {
+  //  test_hands();
+  int diff   = 0;
+  char* pool = (char*)malloc(512 * 1024);
   memset(pool, 0, 512 * 1024);
   free(pool);
-//  test_game();
+  //  test_game();
 
   history_purge();
 
-//  while ((diff = test_adv()) < 2 || shit == 0) {
-//    printf("%d...\n", diff);
-//  }
+  //  while ((diff = test_adv()) < 2 || shit == 0) {
+  //    printf("%d...\n", diff);
+  //  }
 
   do_the_test();
 
-//  test_advanced_hand_analyzer();
+  //  test_advanced_hand_analyzer();
   memtrack_list_allocations();
   return 0;
 }

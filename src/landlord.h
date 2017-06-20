@@ -25,17 +25,17 @@ SOFTWARE.
 #ifndef LANDLORD_LANDLORD_H
 #define LANDLORD_LANDLORD_H
 
-#include "common.h"
+#include "advanced_ai.h"
 #include "card.h"
+#include "common.h"
 #include "deck.h"
+#include "game.h"
 #include "hand.h"
 #include "handlist.h"
-#include "player.h"
-#include "game.h"
-#include "standard_ai.h"
-#include "advanced_ai.h"
-#include "ruiko_algorithm.h"
 #include "lmath.h"
 #include "memtracker.h"
+#include "player.h"
+#include "ruiko_algorithm.h"
+#include "standard_ai.h"
 
 #endif /* LANDLORD_LANDLORD_H */

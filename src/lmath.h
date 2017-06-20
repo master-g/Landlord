@@ -10,7 +10,7 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in 
+The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -35,28 +35,28 @@ extern "C" {
  * MT19937 random number generator
  * ************************************************************/
 
-#define MT_N    624
+#define MT_N 624
 
 typedef struct _mt19937_s {
   uint32_t mt[MT_N];
   /* state vector */
-  int32_t mti;        /* mti == N+1 -> mt[N] not initialized */
+  int32_t mti; /* mti == N+1 -> mt[N] not initialized */
 
 } mt19937_t;
 
-void Random_Init(mt19937_t *context, uint32_t seed);
-void Random_InitWithArray(mt19937_t *context, uint32_t array[], int length);
-uint32_t Random_uint32(mt19937_t *context);
-int32_t Random_Int32(mt19937_t *context);
-double Random_real_0_1(mt19937_t *context);
+void Random_Init(mt19937_t* context, uint32_t seed);
+void Random_InitWithArray(mt19937_t* context, uint32_t array[], int length);
+uint32_t Random_uint32(mt19937_t* context);
+int32_t Random_Int32(mt19937_t* context);
+double Random_real_0_1(mt19937_t* context);
 
 /* ************************************************************
  * math
  * ************************************************************/
 
-void LMath_Shuffle(uint8_t *a, size_t n, mt19937_t *mt);
+void LMath_Shuffle(uint8_t* a, size_t n, mt19937_t* mt);
 
-void LMath_ShuffleAny(void *a, size_t n, size_t es, mt19937_t *mt);
+void LMath_ShuffleAny(void* a, size_t n, size_t es, mt19937_t* mt);
 
 int LMath_NextComb(int comb[], int k, int n);
 

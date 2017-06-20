@@ -10,7 +10,7 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in 
+The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -25,27 +25,27 @@ SOFTWARE.
 #ifndef LANDLORD_GAME_H_
 #define LANDLORD_GAME_H_
 
-#include "player.h"
 #include "deck.h"
 #include "hand.h"
 #include "handlist.h"
 #include "lmath.h"
+#include "player.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define GAME_PLAYERS    3
+#define GAME_PLAYERS 3
 #define GAME_HAND_CARDS 17
 #define GAME_REST_CARDS 3
-#define GAME_BID_1      1
-#define GAME_BID_2      2
-#define GAME_BID_3      3
+#define GAME_BID_1 1
+#define GAME_BID_2 2
+#define GAME_BID_3 3
 
-
-#define IncPlayerIdx(x)             (((x) + 1) % GAME_PLAYERS)
-#define Game_GetCurrentPlayer(g)    (&(g)->players[(g)->playerIndex])
-#define Game_IncPlayerIndex(g)      ((g)->playerIndex = IncPlayerIdx((g)->playerIndex))
+#define IncPlayerIdx(x) (((x) + 1) % GAME_PLAYERS)
+#define Game_GetCurrentPlayer(g) (&(g)->players[(g)->playerIndex])
+#define Game_IncPlayerIndex(g)                                                 \
+  ((g)->playerIndex = IncPlayerIdx((g)->playerIndex))
 
 typedef enum {
   GameStatus_Halt = 0,
@@ -90,19 +90,19 @@ typedef struct game_s {
   /* who win the last game */
   int status;
   /* game status */
-  int phase;                      /* game phase */
+  int phase; /* game phase */
 
 } game_t;
 
-void Game_Init(game_t *game);
+void Game_Init(game_t* game);
 
-void Game_Clear(game_t *game);
+void Game_Clear(game_t* game);
 
-void Game_Destroy(game_t *game);
+void Game_Destroy(game_t* game);
 
-void Game_Reset(game_t *game);
+void Game_Reset(game_t* game);
 
-void Game_Play(game_t *game, uint32_t seed);
+void Game_Play(game_t* game, uint32_t seed);
 
 #ifdef __cplusplus
 }
