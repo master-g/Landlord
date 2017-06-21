@@ -44,7 +44,9 @@ int AdvancedAI_GetReady(void* p, void* game) {
 /*
  * decide whether to bid for landlord
  */
-int AdvancedAI_Bid(void* p, void* g) { return 0; }
+int AdvancedAI_Bid(void* p, void* g) {
+  return 0;
+}
 
 /*
  * free play, result will return by hand_t *

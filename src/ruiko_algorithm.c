@@ -266,9 +266,13 @@ error:
   return tree;
 }
 
-void _rk_tree_free(void* p) { free(p); }
+void _rk_tree_free(void* p) {
+  free(p);
+}
 
-void rk_tree_clear(rk_tree_t* tree) { rk_tree_levelorder(tree, _rk_tree_free); }
+void rk_tree_clear(rk_tree_t* tree) {
+  rk_tree_levelorder(tree, _rk_tree_free);
+}
 
 void rk_tree_destroy(rk_tree_t* tree) {
   rk_list_t* list = rk_list_create();
