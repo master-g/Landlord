@@ -111,13 +111,19 @@ void* CardArray_InitFromString(card_array_t* array, const char* str);
  */
 void CardArray_Reset(card_array_t* array);
 
-/*
- * concatenates two card arrays
+/**
+ * Concatenates two card arrays
+ *
+ * @param head pointer to the destination card array
+ * @param tail card array to be appended, should not overlap head
+ * @return length of the card array after concat
  */
 int CardArray_Concat(card_array_t* head, card_array_t* tail);
 
-/*
- * subtract two card arrays
+/**
+ * remove cards from
+ * @param from
+ * @param sub
  */
 void CardArray_Subtract(card_array_t* from, card_array_t* sub);
 
