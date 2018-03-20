@@ -4,7 +4,7 @@ BasedOnStyle: LLVM
 # Force pointers to the type of C++.
 Language: Cpp
 AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: true
+# AlignConsecutiveAssignments: true
 AlignOperands: true
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: true

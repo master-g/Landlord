@@ -189,7 +189,7 @@ void test_game() {
   printf("\n");
 }
 
-// "♣3 ♣4 ♠5 ♠6 ♥7 ♦8"
+/* "♣3 ♣4 ♠5 ♠6 ♥7 ♦8" */
 
 const char* hand_strings[] = {
     "♣3",                                           /* solo */
@@ -244,8 +244,6 @@ int test_adv() {
   rk_list_t* hlstd = NULL;
   mt19937_t mt;
 
-  //  shit = 0;
-
   Random_Init(&mt, (uint32_t)get_current_time_with_ns());
   Deck_Reset(&deck);
   Deck_Shuffle(&deck, &mt);
@@ -280,22 +278,17 @@ void do_the_test() {
 }
 
 int main(int argc, const char* argv[]) {
-  //  test_hands();
-  int diff   = 0;
+  /*  test_hands(); */
   char* pool = (char*)malloc(512 * 1024);
   memset(pool, 0, 512 * 1024);
   free(pool);
-  //  test_game();
+  /*  test_game(); */
 
   history_purge();
 
-  //  while ((diff = test_adv()) < 2 || shit == 0) {
-  //    printf("%d...\n", diff);
-  //  }
-
   do_the_test();
 
-  //  test_advanced_hand_analyzer();
+  /*  test_advanced_hand_analyzer(); */
   memtrack_list_allocations();
   return 0;
 }

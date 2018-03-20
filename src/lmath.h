@@ -56,8 +56,6 @@ double Random_real_0_1(mt19937_t* context);
 
 void LMath_Shuffle(uint8_t* a, size_t n, mt19937_t* mt);
 
-void LMath_ShuffleAny(void* a, size_t n, size_t es, mt19937_t* mt);
-
 int LMath_NextComb(int comb[], int k, int n);
 
 #ifdef __cplusplus

@@ -169,7 +169,7 @@ int LMath_NextComb(int comb[], int k, int n) {
 
   /* comb now looks like (..., x, n, n, n, ..., n).
      Turn it into (..., x, x + 1, x + 2, ...) */
-  for (i    = i + 1; i < k; ++i)
+  for (i = i + 1; i < k; ++i)
     comb[i] = comb[i - 1] + 1;
 
   return 1;
@@ -189,22 +189,4 @@ void LMath_Shuffle(uint8_t* a, size_t n, mt19937_t* mt) {
     a[j] = a[i];
     a[i] = tmp;
   }
-}
-
-void LMath_ShuffleAny(void* a, size_t n, size_t es, mt19937_t* mt) {
-  size_t i  = n, j;
-  void* tmp = malloc(es);
-
-  while (--i > 0) {
-    if (mt != NULL)
-      j = Random_Int32(mt) % (i + 1);
-    else
-      j = rand() % (i + 1);
-
-    memcpy(tmp, &a[j], es);
-    memcpy(&a[j], &a[i], es);
-    memcpy(&a[i], tmp, es);
-  }
-
-  free(tmp);
 }
