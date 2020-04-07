@@ -58,18 +58,12 @@ typedef enum {
 typedef int (*PlayerEventHandler)(void* player, void* context);
 
 typedef struct player_s {
-  card_array_t cards;
-  /* card array, will change during game play */
-  card_array_t record;
-  /* card record */
-  rk_list_t* handlist;
-  /* the analyze result of cards */
-  int identity;
-  /* 0: peasant, 1: landlord */
-  int seatId;
-  /* 0, 1, 2 */
-  int bid;
-  /* 0, 1, 2, 3 */
+  card_array_t cards;  /* card array, will change during game play */
+  card_array_t record; /* card record */
+  rk_list_t* handlist; /* the analyze result of cards */
+  int identity;        /* 0: peasant, 1: landlord */
+  int seatId;          /* 0, 1, 2 */
+  int bid;             /* 0, 1, 2, 3 */
 
   PlayerEventHandler eventHandlers[Player_Event_Count];
 

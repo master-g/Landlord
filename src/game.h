@@ -64,33 +64,20 @@ typedef enum {
 } StagePhase;
 
 typedef struct game_s {
-  player_t players[GAME_PLAYERS];
-  /* player array */
-  deck_t deck;
-  /* deck */
-  mt19937_t mt;
-  /* random context */
-  hand_t lastHand;
-  /* last played hand */
-  card_array_t cardRecord;
-  /* card record */
-  card_array_t kittyCards;
-  /* kitty cards */
-  int bid;
-  /* current bid */
-  int highestBidder;
-  /* for the highest bidder! */
-  int playerIndex;
-  /* current player index */
-  int landlord;
-  /* landlord index */
-  int lastplay;
-  /* who played the last hand */
-  int winner;
-  /* who win the last game */
-  int status;
-  /* game status */
-  int phase; /* game phase */
+  player_t players[GAME_PLAYERS]; /* player array */
+  deck_t deck;                    /* deck */
+  mt19937_t mt;                   /* random context */
+  hand_t lastHand;                /* last played hand */
+  card_array_t cardRecord;        /* card record */
+  card_array_t kittyCards;        /* kitty cards */
+  int bid;                        /* current bid */
+  int highestBidder;              /* for the highest bidder! */
+  int playerIndex;                /* current player index */
+  int landlord;                   /* landlord index */
+  int lastplay;                   /* who played the last hand */
+  int winner;                     /* who win the last game */
+  int status;                     /* game status */
+  int phase;                      /* game phase */
 
 } game_t;
 
