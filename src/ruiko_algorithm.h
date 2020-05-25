@@ -69,7 +69,7 @@ typedef struct _rk_list_s {
 
 #define rk_list_foreach(L, S, M, V)                                            \
   rk_list_node_t* _rkfn_ = NULL;                                               \
-  rk_list_node_t* V      = NULL;                                               \
+  rk_list_node_t* V = NULL;                                                    \
   for (V = _rkfn_ = L->S; _rkfn_ != NULL; V = _rkfn_ = _rkfn_->M)
 
 rk_list_t* rk_list_create(void);

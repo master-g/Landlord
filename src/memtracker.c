@@ -34,7 +34,7 @@ struct memblock {
   struct memblock* prev;
 };
 
-static size_t memtrack_peak      = 0;
+static size_t memtrack_peak = 0;
 static size_t memtrack_livebytes = 0;
 
 #define MAGIC1 0xDEADBEEF
@@ -59,16 +59,16 @@ void* memtrack_malloc(size_t size, const char* expr, const char* file,
   memtrack_livebytes += size;
 
   mb->magic = MAGIC1;
-  mb->file  = file;
-  mb->line  = line;
-  mb->expr  = expr;
-  mb->size  = size;
-  mb->prev  = NULL;
-  mb->next  = memblockList;
+  mb->file = file;
+  mb->line = line;
+  mb->expr = expr;
+  mb->size = size;
+  mb->prev = NULL;
+  mb->next = memblockList;
 
   if (memblockList)
     memblockList->prev = mb;
-  memblockList         = mb;
+  memblockList = mb;
   return (void*)&mb[1];
 }
 
@@ -87,16 +87,16 @@ void* memtrack_calloc(size_t count, size_t elem_size, const char* expr,
   memtrack_livebytes += count * elem_size;
 
   mb->magic = MAGIC1;
-  mb->file  = file;
-  mb->line  = line;
-  mb->expr  = expr;
-  mb->size  = count * elem_size;
-  mb->prev  = NULL;
-  mb->next  = memblockList;
+  mb->file = file;
+  mb->line = line;
+  mb->expr = expr;
+  mb->size = count * elem_size;
+  mb->prev = NULL;
+  mb->next = memblockList;
 
   if (memblockList)
     memblockList->prev = mb;
-  memblockList         = mb;
+  memblockList = mb;
   return (void*)&mb[1];
 }
 
@@ -105,8 +105,8 @@ void* memtrack_realloc(void* ptr, const char* eptr, size_t size,
   if (!ptr)
     return memtrack_malloc(size, expr, file, line);
   else {
-    void* newPtr        = NULL;
-    size_t copysize     = 0;
+    void* newPtr = NULL;
+    size_t copysize = 0;
     struct memblock* mb = &((struct memblock*)(ptr))[-1];
 
     if (mb->magic == MAGIC2) {

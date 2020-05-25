@@ -67,14 +67,14 @@ int AdvancedAI_Beat(void* p, void* g) {
    * but we just simply find a beat here
    */
   int canbeat = 0;
-  int i       = 0;
+  int i = 0;
   hand_t* tobeat;
   hand_t beat;
-  player_t* player     = (player_t*)p;
+  player_t* player = (player_t*)p;
   player_t* prevplayer = NULL;
-  player_t* teammate   = NULL;
-  player_t* landlord   = NULL;
-  game_t* game         = (game_t*)g;
+  player_t* teammate = NULL;
+  player_t* landlord = NULL;
+  game_t* game = (game_t*)g;
 
   Hand_Clear(&beat);
 

@@ -76,8 +76,8 @@ extern "C" {
 
 typedef enum {
   HAND_CMP_ILLEGAL = -3,
-  HAND_CMP_LESS    = -1,
-  HAND_CMP_EQUAL   = 0,
+  HAND_CMP_LESS = -1,
+  HAND_CMP_EQUAL = 0,
   HAND_CMP_GREATER = 1
 
 } HandCompareResult;

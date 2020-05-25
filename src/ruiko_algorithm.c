@@ -40,16 +40,18 @@ typedef struct _history_entry_s {
 
 } history_entry_t;
 
-typedef struct _history_s { history_entry_t* first; } history_t;
+typedef struct _history_s {
+  history_entry_t* first;
+} history_t;
 
 static history_t history = {NULL};
 
 void history_mark(void* addr) {
   history_entry_t* entry = calloc(1, sizeof(history_entry_t));
-  entry->addr            = addr;
-  entry->frames          = backtrace(entry->callstack, 128);
-  entry->next            = history.first;
-  history.first          = entry;
+  entry->addr = addr;
+  entry->frames = backtrace(entry->callstack, 128);
+  entry->next = history.first;
+  history.first = entry;
 }
 
 void history_unmark(void* addr) {
@@ -143,11 +145,11 @@ void rk_list_push(rk_list_t* list, void* payload) {
 
   if (list->last == NULL) {
     list->first = node;
-    list->last  = node;
+    list->last = node;
   } else {
     list->last->next = node;
-    node->prev       = list->last;
-    list->last       = node;
+    node->prev = list->last;
+    list->last = node;
   }
 
   list->count++;
@@ -168,11 +170,11 @@ void rk_list_unshift(rk_list_t* list, void* payload) {
   node->payload = payload;
   if (list->last == NULL) {
     list->first = node;
-    list->last  = node;
+    list->last = node;
   } else {
-    node->next        = list->first;
+    node->next = list->first;
     list->first->prev = node;
-    list->first       = node;
+    list->first = node;
   }
 
   list->count++;
@@ -193,11 +195,11 @@ void rk_list_concat(rk_list_t* head, rk_list_t* tail) {
 
   if (head->last == NULL) {
     head->first = tail->first;
-    head->last  = tail->last;
+    head->last = tail->last;
   } else {
-    head->last->next  = tail->first;
+    head->last->next = tail->first;
     tail->first->prev = head->last;
-    head->last        = tail->last;
+    head->last = tail->last;
   }
 
   head->count += tail->count;
@@ -211,7 +213,7 @@ void* rk_list_remove(rk_list_t* list, rk_list_node_t* node) {
 
   if (node == list->first && node == list->last) {
     list->first = NULL;
-    list->last  = NULL;
+    list->last = NULL;
   } else if (node == list->first) {
     list->first = node->next;
     rk_check(list->first != NULL); /* invalid list with non-null first */
@@ -221,10 +223,10 @@ void* rk_list_remove(rk_list_t* list, rk_list_node_t* node) {
     rk_check(list->last != NULL); /* invalid list with non-null last */
     list->last->next = NULL;
   } else {
-    rk_list_node_t* after  = node->next;
+    rk_list_node_t* after = node->next;
     rk_list_node_t* before = node->prev;
-    after->prev            = before;
-    before->next           = after;
+    after->prev = before;
+    before->next = after;
   }
 
   list->count--;
@@ -310,7 +312,7 @@ rk_tree_t* rk_tree_add_child(rk_tree_t* node, void* payload) {
     newnode->sibling = node->child;
   }
 
-  node->child     = newnode;
+  node->child = newnode;
   newnode->parent = node;
 
 error:
@@ -323,8 +325,8 @@ rk_tree_t* rk_tree_add_sibling(rk_tree_t* node, void* payload) {
 
   newnode->payload = payload;
   newnode->sibling = node->sibling;
-  node->sibling    = newnode;
-  newnode->parent  = node->parent;
+  node->sibling = newnode;
+  newnode->parent = node->parent;
 
 error:
   return newnode;
@@ -336,7 +338,7 @@ void rk_tree_dump(rk_tree_t* tree, rk_list_t* list) {
 
   while (!rk_list_empty(q)) {
     rk_tree_t* child = NULL;
-    rk_tree_t* v     = rk_list_shift(q);
+    rk_tree_t* v = rk_list_shift(q);
 
     rk_list_push(list, v);
 
@@ -352,8 +354,8 @@ void rk_tree_dump(rk_tree_t* tree, rk_list_t* list) {
 
 void rk_tree_dump_leaves(rk_tree_t* tree, rk_list_t* list) {
   rk_list_t* stack = NULL;
-  rk_tree_t* node  = NULL;
-  rk_tree_t* temp  = NULL;
+  rk_tree_t* node = NULL;
+  rk_tree_t* temp = NULL;
 
   stack = rk_list_create();
   rk_check_mem(stack);
@@ -387,7 +389,7 @@ void rk_tree_levelorder(rk_tree_t* tree, rk_tree_visitor visitor) {
 
   while (!rk_list_empty(q)) {
     rk_tree_t* child = NULL;
-    rk_tree_t* v     = rk_list_shift(q);
+    rk_tree_t* v = rk_list_shift(q);
     visitor(v->payload);
 
     child = v->child;

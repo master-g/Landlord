@@ -108,16 +108,16 @@ void cleanup(void* arg) {
 }
 
 void work_func(void* arg) {
-  int i                = 0;
+  int i = 0;
   struct work_ctx* ctx = (struct work_ctx*)arg;
-  game_t* game         = &ctx->game;
+  game_t* game = &ctx->game;
 
   printf("%lx starts at %d\n", pthread_self(), time(0));
 
   pthread_cleanup_push(cleanup, arg);
 
   Game_Init(game);
-  ctx->peasantwon  = 0;
+  ctx->peasantwon = 0;
   ctx->landlordwon = 0;
 
   for (i = ctx->index; i < ctx->index + 2500; i++) {
@@ -142,7 +142,7 @@ void test_game_mt() {
 
   for (i = 0; i < 4; i++) {
     works[i].status = 0;
-    works[i].index  = 10000 + i * 2500;
+    works[i].index = 10000 + i * 2500;
     pthread_create(&works[i].pid, NULL, work_func, &works[i]);
   }
 
@@ -154,9 +154,9 @@ void test_game_mt() {
 #endif
 
 void test_game() {
-  int peasantwon  = 0;
+  int peasantwon = 0;
   int landlordwon = 0;
-  int i           = 0;
+  int i = 0;
 
   game_t game;
 
@@ -175,7 +175,7 @@ void test_game() {
     Game_Reset(&game);
 
     if (i % 100 == 0) {
-      printf("%.1f%%\n", (i - 10000) / 10000.0f * 100.0f);
+      printf("%.1f%%\n", ((float)i - 10000.0f) / 10000.0f * 100.0f);
     }
   }
 
@@ -282,11 +282,11 @@ int main(int argc, const char* argv[]) {
   char* pool = (char*)malloc(512 * 1024);
   memset(pool, 0, 512 * 1024);
   free(pool);
-  /*  test_game(); */
+  test_game();
 
   history_purge();
 
-  do_the_test();
+  /* do_the_test(); */
 
   /*  test_advanced_hand_analyzer(); */
   memtrack_list_allocations();

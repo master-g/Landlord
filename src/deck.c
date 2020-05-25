@@ -26,7 +26,7 @@ SOFTWARE.
 #include "lmath.h"
 
 void shuffle(uint8_t arr[], int len, mt19937_t* mt) {
-  int i       = len, j;
+  int i = len, j;
   uint8_t tmp = 0;
 
   while (--i > 0) {
@@ -35,7 +35,7 @@ void shuffle(uint8_t arr[], int len, mt19937_t* mt) {
     else
       j = rand() % (i + 1);
 
-    tmp    = arr[j];
+    tmp = arr[j];
     arr[j] = arr[i];
     arr[i] = tmp;
   }

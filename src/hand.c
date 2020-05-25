@@ -282,7 +282,7 @@ int _Hand_PatternMatch(int* sorted, int pattern) {
  * |  1     2     3     4  | expectLength: 4
  */
 int _Hand_CheckChain(int* count, int duplicate, int expectLength) {
-  int i      = 0;
+  int i = 0;
   int marker = 0;
   int length = 0;
 
@@ -311,8 +311,8 @@ int _Hand_CheckChain(int* count, int duplicate, int expectLength) {
  */
 void _Hand_Distribute(hand_t* hand, card_array_t* array, int* count, int d1,
                       int d2, int length) {
-  int i        = 0;
-  int num      = 0;
+  int i = 0;
+  int num = 0;
   uint8_t card = 0;
   card_array_t temp;
 
@@ -320,7 +320,7 @@ void _Hand_Distribute(hand_t* hand, card_array_t* array, int* count, int d1,
 
   for (i = 0; i < array->length; i++) {
     card = array->cards[i];
-    num  = count[CARD_RANK(card)];
+    num = count[CARD_RANK(card)];
 
     if (num == d1)
       CardArray_PushBack(&hand->cards, card);
@@ -419,9 +419,9 @@ int Hand_Parse(hand_t* hand, card_array_t* array) {
 
       for (i = 0; i < 2; i++) {
         pattern = _hand_specs[array->length][i][0];
-        primal  = _hand_specs[array->length][i][1];
-        kicker  = _hand_specs[array->length][i][2];
-        chain   = _hand_specs[array->length][i][3];
+        primal = _hand_specs[array->length][i][1];
+        kicker = _hand_specs[array->length][i][2];
+        chain = _hand_specs[array->length][i][3];
 
         if (pattern == 0) {
           hand->type = 0;

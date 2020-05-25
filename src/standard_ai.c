@@ -39,14 +39,14 @@ int StandardAI_GetReady(void* p, void* game) {
 }
 
 int StandardAI_Bid(void* p, void* g) {
-  int shouldbid    = 0;
-  int handlistlen  = 0;
-  game_t* game     = (game_t*)g;
+  int shouldbid = 0;
+  int handlistlen = 0;
+  game_t* game = (game_t*)g;
   player_t* player = (player_t*)p;
 
   CardArray_Sort(&player->cards, NULL);
   player->handlist = HandList_StandardAnalyze(&player->cards);
-  handlistlen      = rk_list_count(player->handlist);
+  handlistlen = rk_list_count(player->handlist);
   rk_list_clear_destroy(player->handlist);
 
   if (handlistlen > 9) {
@@ -66,13 +66,13 @@ int StandardAI_Bid(void* p, void* g) {
 }
 
 int StandardAI_Play(void* p, void* game) {
-  int countpair        = 0;
-  int countsolo        = 0;
-  int need             = 0;
-  int searchprimal     = 0;
-  int kicker           = 0;
-  player_t* player     = (player_t*)p;
-  hand_t* node         = NULL;
+  int countpair = 0;
+  int countsolo = 0;
+  int need = 0;
+  int searchprimal = 0;
+  int kicker = 0;
+  player_t* player = (player_t*)p;
+  hand_t* node = NULL;
   rk_list_node_t* temp = NULL;
 
   hand_t* hand = &((game_t*)game)->lastHand;
@@ -107,7 +107,7 @@ int StandardAI_Play(void* p, void* game) {
       HandList_Remove(player->handlist, node);
 
       /* count solo and pair number */
-      temp      = player->handlist->first;
+      temp = player->handlist->first;
       countpair = 0;
       countsolo = 0;
 
@@ -125,10 +125,10 @@ int StandardAI_Play(void* p, void* game) {
         break;
       } else if (countpair >= need) {
         searchprimal = HAND_PRIMAL_PAIR;
-        kicker       = HAND_KICKER_PAIR;
+        kicker = HAND_KICKER_PAIR;
       } else {
         searchprimal = HAND_PRIMAL_SOLO;
-        kicker       = HAND_KICKER_SOLO;
+        kicker = HAND_KICKER_SOLO;
       }
 
       /* detach pairs from list */
@@ -233,14 +233,14 @@ int StandardAI_Beat(void* p, void* g) {
    * but we just simply find a beat here
    */
   int canbeat = 0;
-  int i       = 0;
+  int i = 0;
   hand_t* tobeat;
   hand_t beat;
-  player_t* player     = (player_t*)p;
+  player_t* player = (player_t*)p;
   player_t* prevplayer = NULL;
-  player_t* teammate   = NULL;
-  player_t* landlord   = NULL;
-  game_t* game         = (game_t*)g;
+  player_t* teammate = NULL;
+  player_t* landlord = NULL;
+  game_t* game = (game_t*)g;
 
   Hand_Clear(&beat);
 

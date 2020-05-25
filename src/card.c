@@ -32,7 +32,7 @@ const uint8_t _card_set[] = {
     0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x1E, 0x2F};
 
 void* CardArray_InitFromString(card_array_t* array, const char* str) {
-  uint8_t card  = 0;
+  uint8_t card = 0;
   const char* p = str;
 
   CardArray_Clear(array);
@@ -131,7 +131,7 @@ void CardArray_Reset(card_array_t* array) {
 
 int CardArray_Concat(card_array_t* head, card_array_t* tail) {
   int length = 0;
-  int slot   = 0;
+  int slot = 0;
 
   slot = CARD_SET_LENGTH - head->length;
 
@@ -147,8 +147,8 @@ int CardArray_Concat(card_array_t* head, card_array_t* tail) {
 }
 
 void CardArray_Subtract(card_array_t* from, card_array_t* sub) {
-  int i        = 0;
-  int j        = 0;
+  int i = 0;
+  int j = 0;
   uint8_t card = 0;
   card_array_t temp;
 
@@ -172,7 +172,7 @@ void CardArray_Subtract(card_array_t* from, card_array_t* sub) {
 }
 
 int CardArray_IsIdentity(card_array_t* a, card_array_t* b) {
-  int i        = 0;
+  int i = 0;
   int identity = 1;
   card_array_t ta, tb;
 
@@ -200,8 +200,8 @@ int CardArray_IsIdentity(card_array_t* a, card_array_t* b) {
 
 int CardArray_IsContain(card_array_t* array, card_array_t* segment) {
   int contain = 0;
-  int i       = 0;
-  int j       = 0;
+  int i = 0;
+  int j = 0;
   card_array_t temp;
 
   if ((array->length == 0) || (segment->length == 0))
@@ -261,7 +261,7 @@ uint8_t CardArray_PopBack(card_array_t* array) {
   uint8_t card = 0;
 
   if (!CardArray_IsEmpty(array)) {
-    card                            = array->cards[array->length - 1];
+    card = array->cards[array->length - 1];
     array->cards[array->length - 1] = 0;
     array->length--;
   }
@@ -327,7 +327,7 @@ uint8_t CardArray_Remove(card_array_t* array, int where) {
 
 uint8_t CardArray_RemoveCard(card_array_t* array, uint8_t card) {
   uint8_t ret = 0;
-  int i       = 0;
+  int i = 0;
 
   for (i = 0; i < array->length; i++) {
     if (array->cards[i] == card) {
@@ -343,7 +343,7 @@ uint8_t CardArray_RemoveCard(card_array_t* array, uint8_t card) {
 int CardArray_PushBackCards(card_array_t* array, card_array_t* from, int where,
                             int count) {
   int cards = 0;
-  int i     = 0;
+  int i = 0;
 
   for (i = 0; i < count; i++) {
     CardArray_PushBack(array, from->cards[where + i]);
@@ -400,7 +400,7 @@ void CardArray_Reverse(card_array_t* array) {
   int i, j;
   uint8_t tmp;
   for (i = 0, j = array->length - 1; i < array->length / 2; i++, j--) {
-    tmp             = array->cards[i];
+    tmp = array->cards[i];
     array->cards[i] = array->cards[j];
     array->cards[j] = tmp;
   }
@@ -410,16 +410,16 @@ void CardArray_Reverse(card_array_t* array) {
 #define CARD_STRING_LENGTH 4
 
 unsigned char szDIAMOND[] = {0xE2, 0x99, 0xA6, 0};
-unsigned char szCLUB[]    = {0xE2, 0x99, 0xA3, 0};
-unsigned char szHEART[]   = {0xE2, 0x99, 0xA5, 0};
-unsigned char szSPADE[]   = {0xE2, 0x99, 0xA0, 0};
+unsigned char szCLUB[] = {0xE2, 0x99, 0xA3, 0};
+unsigned char szHEART[] = {0xE2, 0x99, 0xA5, 0};
+unsigned char szSPADE[] = {0xE2, 0x99, 0xA0, 0};
 #else /* ifdef LL_GRAPHICAL_SUIT */
 #define CARD_STRING_LENGTH 2
 
 unsigned char szDIAMOND[] = {'d', 0, 0, 0};
-unsigned char szCLUB[]    = {'c', 0, 0, 0};
-unsigned char szHEART[]   = {'h', 0, 0, 0};
-unsigned char szSPADE[]   = {'s', 0, 0, 0};
+unsigned char szCLUB[] = {'c', 0, 0, 0};
+unsigned char szHEART[] = {'h', 0, 0, 0};
+unsigned char szSPADE[] = {'s', 0, 0, 0};
 #endif /* ifdef LL_GRAPHICAL_SUIT */
 
 char szRank[] = {'3', '4', '5', '6', '7', '8', '9', 'T',
@@ -428,8 +428,8 @@ char szRank[] = {'3', '4', '5', '6', '7', '8', '9', 'T',
 int Card_ToString(uint8_t card, char* buf, int len) {
   if ((buf != NULL) && (len >= CARD_STRING_LENGTH)) {
     char* szSuit = NULL;
-    int rank     = CARD_RANK(card);
-    int suit     = CARD_SUIT(card);
+    int rank = CARD_RANK(card);
+    int suit = CARD_SUIT(card);
 
     switch (suit) {
     case CARD_SUIT_DIAMOND:
